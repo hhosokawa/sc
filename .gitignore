@@ -4,6 +4,7 @@ i/*
 o/*
 *.exe
 *.manifest
+*.lnk
 easy_install-2.7-script.py
 easy_install-script.py
 ipcluster-script.py
