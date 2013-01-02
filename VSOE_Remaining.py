@@ -282,4 +282,4 @@ def main():
     f.close()
     return 'Process completed! Duration:', t1-t0
 
-cProfile.run('main()')
+print main()
