@@ -18,8 +18,8 @@ def csv_dic(filename, style=1):     # Converts CSV to dict
 ## Update Item Inputs
 
 output = 'o\\10-DEC-12 future billing.csv'
-input1 = 'i\\SB - future billings dec.csv'  # Reminder: Manually do Renewal * 90%
-input2 = 'i\\SB - contract repo - 10-dec-12.csv' # Reminder: delete Duplicates
+input1 = 'i\\future_billing\\SB - future billings dec.csv'  # Reminder: Manually do Renewal * 90%
+input2 = 'i\\future_billing\\SB - contract repo - 04-Jan-13.csv' # Reminder: delete Duplicates
 
 enrollhistory = csv_dic('auxiliary\\MS Future Billing - Enroll History.csv', 6)
 indirectpo = csv_dic('auxiliary\\MS PO ItemNumber Sell Price.csv') # Left 9
@@ -31,7 +31,8 @@ def tree(): return collections.defaultdict(tree)
 #################################################################################
 ## Function Definitions - Future Billings File
 
-def header_add(header):             # Adds New Headers
+# Adds New Headers
+def header_add(header):             
     newfields = ['Custom Category A', 'Custom Category B', 'GP',
                  'Imputed Rev', 'Gross Rev', 'Custom Category C',
                  'Custom Category D', 'Div', 'Region',
@@ -88,7 +89,8 @@ def helpdesk(r):
     r['Gross Rev'] = r['GP']
     return r
 
-def gpcalc(r):                                # Calculates GP
+# Calculates GP
+def gpcalc(r):                                
     adc = 'Agreement Desktop Count'
     ir = 'Imputed Rev'
     if r[adc] == '': r[adc] = 0
@@ -107,7 +109,8 @@ def gpcalc(r):                                # Calculates GP
         return Decimal(0.02)
     return
 
-def notescalcESA2(r):                             # Calculates Item Notes
+# Calculates Item Notes
+def notescalcESA2(r):                             
     adc = 'Agreement Desktop Count'
     if r[adc] == '': r[adc] = 0
     if r['Custom Category A'] == 'ESA 2.0':
@@ -126,7 +129,8 @@ def notescalcESA2(r):                             # Calculates Item Notes
         else: return 'Level E 90%+'
     return
 
-def refclean(r):                                # Clean MS Future Billings Data
+# Clean MS Future Billings Data
+def refclean(r):                               
     fb_enrol_set.add(r['Agreement Number'])
     esa2date = dparser.parse('10/30/2011')
     podate = dparser.parse(r['Purchase Order Date'])
@@ -134,7 +138,8 @@ def refclean(r):                                # Clean MS Future Billings Data
                + r['Part Number'])
     r['Anniversary Year'] = r['Scheduled Bill Date'][-4:]
 
-    if (pocheck in indirectpo):                 # Non-EA Indirect
+    # Non-EA Indirect
+    if (pocheck in indirectpo):                 
         r['Custom Category A'] = 'NON-EA DIRECT'
         r['Custom Category B'] = r['Program']
         r['Custom Category C'] = ''
@@ -142,8 +147,10 @@ def refclean(r):                                # Clean MS Future Billings Data
         r['Imputed Rev'] = (Decimal(r['Quantity']) *  Decimal(indirectpo[pocheck]))
         r['GP'] = Decimal(r['Imputed Rev']) - Decimal(r['Extended Amount'])
         r['Gross Rev'] = r['Imputed Rev']
+
+    # ESA 2.0
     else:
-        if esa2date > podate:                   # ESA 2.0
+        if esa2date > podate:                   
             r['Custom Category A'] = 'ESA 2.0'
             agreementyear = (int(r['Scheduled Bill Date'][-4:]) -
                              int(r['Purchase Order Date'][-4:]) + 1)
@@ -153,8 +160,10 @@ def refclean(r):                                # Clean MS Future Billings Data
             r['Imputed Rev'] = Decimal(r['Extended Amount'])
             r['GP'] = Decimal(r['Extended Amount']) * gpcalc(r)
             r['Gross Rev'] = r['GP']
-        else:                                   # ESA 3.0 - MAJOR / CORPORATE
-                                                # Custom Category B/C ID
+        else:                                   
+                                                
+            # ESA 3.0 - MAJOR / CORPORATE            
+            # Custom Category B/C ID
             try:
                 if (enrollmentcat[r['Agreement Number']] == 'Renew Contract' or
                 r['Agreement Status'] == 'Renewal Assumption - Annual Bill * 90%'):
@@ -178,14 +187,16 @@ def refclean(r):                                # Clean MS Future Billings Data
                 r['Imputed Rev'] = Decimal(r['Extended Amount'])
                 r['GP'] = Decimal(r['Extended Amount']) * gpcalc(r)
                 r['Gross Rev'] = r['GP']
-                                                # Absorb ESA 3.0 #'s
+                                                
+            # Absorb ESA 3.0 #'s
             esa3key = r['Agreement Number'] + ' - ' + r['Scheduled Bill Date']
             if esa3key in esa3dict:
                 esa3dict[esa3key]['GP'] += r['GP']
                 esa3dict[esa3key]['Imputed Rev'] += r['Imputed Rev']
                 esa3dict[esa3key]['Gross Rev'] += r['Gross Rev']
             else: esa3dict[esa3key] = r
-# HAVE TO READDRESS HOW DETERMINING DIVISION AND REGION
+
+    # HAVE TO READDRESS HOW DETERMINING DIVISION AND REGION
     try:
         r['Div'] = enrollmentdiv[r['Agreement Number']]
         r['Region'] = enrollmentregion[r['Agreement Number']]
@@ -206,6 +217,7 @@ def refclean(r):                                # Clean MS Future Billings Data
 def historydataparse(r, oldr, ehdata, o, writer, ow):
     dp = dparser.parse
     extrayrs = 0
+
     # Enrollment History - Date, Amount, True-Up, Add-on, Type
     eh_date, eh_amt, eh_trup, eh_addon, eh_refsource, eh_billtype = ehdata
     r['Div'] = oldr['Contract Division']
@@ -236,7 +248,8 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         r['Div'] = 'N/A'
         r['Region'] = 'N/A'
 
-    if eh_refsource == 'ESA 2.0':           # ESA 2.0 Analysis
+    # ESA 2.0 Analysis
+    if eh_refsource == 'ESA 2.0':           
         r['Custom Category A'] = 'ESA 2.0'
         if eh_billtype == 'OAP3':
             r['Custom Category B'] = 'Year 3'
@@ -253,7 +266,9 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         r['GP'] = r['Imputed Rev'] * gpcalc(r)
         r['Gross Rev'] = r['GP']
         ow.writerow(r)
-    elif eh_refsource == 'ESA 3.0':         # ESA 3.0 CORP/MAJOR Analysis
+
+    # ESA 3.0 CORP/MAJOR Analysis
+    elif eh_refsource == 'ESA 3.0':         
         try:
             if enrollmentcat[r['Agreement Number']] == 'Renew Contract':
                 r['Custom Category B'] = 'Renew Contract'
@@ -278,10 +293,14 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         calcfees(r, o, writer, ow)
         extrayrs = (int(r['Agreement End Date'].strftime("%Y")) -
                     int(r['Scheduled Bill Date'].strftime("%Y"))) - 1
-                                        # Calculate Timing of Enrollment Cycle
-    if extrayrs == 0:                   # Enrollment up for Renewal
+                                        
+    # Calculate Timing of Enrollment Cycle
+    # Enrollment up for Renewal
+    if extrayrs == 0:                   
         addrenewal(r, o, writer, ow)
-    else:                               # Enrollment has X years remaining (Max 2)
+
+    # Enrollment has X years remaining (Max 2)
+    else:                               
         for yr in range(extrayrs):
             if yr > 1: break
             if r['Custom Category A'] == 'ESA 2.0':
@@ -453,7 +472,7 @@ def main():
         with open(input2) as i2:
             dp = dparser.parse
             i2r = csv.DictReader(i2)
-            for oldr in i2r:
+            for oldr in i2r:# Adds New Headers
                 if (oldr['Contract Number'] in enrollhistory and
                     oldr['Contract Number'] not in fb_enrol_set):
                     r = dict.fromkeys(header)
