@@ -5,9 +5,9 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 import dateutil.parser as dparser
 
-output = 'o\\10-Dec-12 Enrol Repo.csv'
-input1 = 'i\\10-DEC-12 future billing.csv'
-input2 = 'i\\SB - contract repo - 10-Dec-12.csv'
+output = 'o\\04-Jan-13 Enrol Repo.csv'
+input1 = 'i\\enrol_repo\\04-jan-13 future billing.csv'
+input2 = 'i\\enrol_repo\\SB - contract repo - 04-Jan-13.csv'
 
 #################################################################################
 ## Function Definitions
@@ -71,7 +71,7 @@ def fb_datascrape(r):
                                 renewal]
         except:
             print ankey
-            raw_input('...')
+            raw_input('Error Push any key to continue...')   
     else:
         enroldict[ankey][1] += ir
         enroldict[ankey][2] += tgp

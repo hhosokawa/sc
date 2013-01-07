@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from decimal import Decimal
 
-output = 'o\\10-Dec-12 - enrol history.csv'
+output = 'o\\04-Jan-13 - enrol history.csv'
 input1 = 'i\\2010-2012 - Enrollment PAST.csv'
 refset = set()
 enroldict = defaultdict(str)
