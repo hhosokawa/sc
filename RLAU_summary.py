@@ -23,7 +23,7 @@ def csv_dic2(filename):
 
 # Adds New Headers
 def header_add(header):
-    newfields = ['Net Revenue','COGS', 'Cust Type']
+    newfields = ['Net Revenue','COGS', 'Cust Type', '']
     for newfield in newfields: header.add(newfield)
     return header
 
@@ -34,25 +34,23 @@ def refclean(row):
     row['Gross Revenue'] = row['GP']
     row['Custom Category'] = row['Referral Source']
     row['Custom Item Category'] = ''
-    customsc = row['Custom Sub Category']
     pibt = row['Product Item Bill Type']
     rrt = row['Referral Rev Type']
-    cic = row['Custom Item Category']
     pid = row['Product Item Desc']
 
     # ESA 3.0 Classification
     if row['Referral Source'] == 'ESA 3.0':
         try:
             if ref_agreementcat[row['Referral Number']] == 'New Contract':
-                csc = 'New Contract'
+                row['Custom Sub Category'] = 'New Contract'
             else:
-                csc = 'Renew Contract'
+                row['Custom Sub Category'] = 'Renew Contract'
         except:
-            csc = 'Renew Contract'
-        if rrt == 'N': csc = 'New Contract'
-        elif rrt == 'RN': csc = 'Renew Contract'
-        if rrt in ref_revtype: row[cic] = ref_revtype[rrt]
-        else: row[cic] = 'Other'
+            row['Custom Sub Category'] = 'Renew Contract'
+        if rrt == 'N': row['Custom Sub Category'] = 'New Contract'
+        elif rrt == 'RN': row['Custom Sub Category'] = 'Renew Contract'
+        if rrt in ref_revtype: row['Custom Item Category'] = ref_revtype[rrt]
+        else: row['Custom Item Category'] = 'Other'
         if row['Customer Number'] in majoraccts:
             row['Custom Category'] = 'ESA 3.0 - MAJOR'
         else: row['Custom Category'] = 'ESA 3.0 - CORPORATE'
@@ -62,21 +60,21 @@ def refclean(row):
         else: row['Imputed Revenue'] = 0
     # ESA 2.0 Classification
     elif row['Referral Source'] == 'ESA 2.0':
-        if pibt == 'TRUP': csc = 'EA True Up'
-        elif pibt == 'ADOT': csc = 'EA Add On'
-        elif pibt == 'OAP2': csc = 'Year 2'
-        elif pibt == 'OAP3': csc = 'Year 3'
+        if pibt == 'TRUP': row['Custom Sub Category'] = 'EA True Up'
+        elif pibt == 'ADOT': row['Custom Sub Category'] = 'EA Add On'
+        elif pibt == 'OAP2': row['Custom Sub Category'] = 'Year 2'
+        elif pibt == 'OAP3': row['Custom Sub Category'] = 'Year 3'
         elif pibt == 'O':
-            if ('Y1' or 'YR1') in pid: csc = 'Year 1'
-            elif ('Y2' or 'YR2') in pid: csc = 'Year 2'
-            elif ('Y3' or 'YR3') in pid: csc = 'Year 3'
-            else: csc = 'Other'
-        else: csc = 'Year 1'
+            if ('Y1' or 'YR1') in pid: row['Custom Sub Category'] = 'Year 1'
+            elif ('Y2' or 'YR2') in pid: row['Custom Sub Category'] = 'Year 2'
+            elif ('Y3' or 'YR3') in pid: row['Custom Sub Category'] = 'Year 3'
+            else: row['Custom Sub Category'] = 'Other'
+        else: row['Custom Sub Category'] = 'Year 1'
     # MS SIP Classification
     elif row['Referral Source'] == 'MS SIP':
-        csc = pid.title()
+        row['Custom Sub Category'] = pid.title()
     # Other Classification
-    else: csc = 'Other'
+    else: row['Custom Sub Category'] = 'Other'
 
     # Ref PO 'CR' = 0 Rule
     if row['Referral PO Reference'] == 'CR':
