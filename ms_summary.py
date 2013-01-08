@@ -9,9 +9,9 @@ def csv_dic(filename):
 
 #################################################################################
 ## Function Definitions
-output = 'o\\10-Dec-12 - Yoy Q4 - MS Summary.csv'
-input1 = 'i\\2011-2012 Yoy Raw Data - Referral - MS Dec 10.csv'
-input2 = 'i\\2011-2012 Yoy Raw Data - Indirect - MS Dec 10.csv'
+output = 'o\\31-Dec-12 - MS Summary.csv'
+input1 = 'i\\2011-2012 Yoy Raw Data - Referral - MS 31-Dec-12.csv'
+input2 = 'i\\2011-2012 Yoy Raw Data - Indirect - MS 31-Dec-12.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
 ref_agreementcat = csv_dic('auxiliary\\ref-agreementcategory.csv')
