@@ -1,3 +1,4 @@
+from aux_reader import *
 import csv
 import time
 import dateutil.parser as dparser
@@ -6,36 +7,41 @@ import collections
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-def csv_dic(filename, style=1):     # Converts CSV to dict
-    reader = csv.reader(open(filename, "rb"))
-    if style == 1: my_dict = dict((k, v) for k, v in reader)
-    elif style == 6:
-        my_dict = dict((k, (v1, v2, v3, v4, v5, v6))
-                        for k, v1, v2, v3, v4, v5, v6 in reader)
-    return my_dict
-
 #################################################################################
 ## Update Item Inputs
 
-output = 'o\\10-DEC-12 future billing.csv'
-input1 = 'i\\future_billing\\SB - future billings dec.csv'  # Reminder: Manually do Renewal * 90%
-input2 = 'i\\future_billing\\SB - contract repo - 04-Jan-13.csv' # Reminder: delete Duplicates
-
+output = 'o\\09-Jan-13 future billing.csv'
+missing_enrol_output = 'C:/Portable Python 2.7/App/Scripts/o/missing_enrol.txt'
+input1 = 'i\\future_billing\\SB - future billings jan.csv'  # Reminder: Manually do Renewal * 90%
+input2 = 'i\\future_billing\\SB - contract repo - 09-Jan-13.csv' # Reminder: delete Duplicates
 enrollhistory = csv_dic('auxiliary\\MS Future Billing - Enroll History.csv', 6)
 indirectpo = csv_dic('auxiliary\\MS PO ItemNumber Sell Price.csv') # Left 9
 
 #################################################################################
-## Class Declaration
-def tree(): return collections.defaultdict(tree)
+## Dictionary Pictionary Jars
+
+divregion = csv_dic('auxiliary\\div-region.csv')
+divdistrict = csv_dic('auxiliary\\div-district.csv')
+majoraccts = csv_set('auxiliary\\enrol - major customers.csv')
+esa3dict = tree()
+enroltree = tree()
+fb_enrol_set = set()
+missing_enrol = set()
+quarterperiod = {'01': 'Q1', '02': 'Q1', '03': 'Q1', '04': 'Q2', '05': 'Q2',
+                 '06': 'Q2', '07': 'Q3', '08': 'Q3', '09': 'Q3', '10': 'Q4',
+                 '11': 'Q4', '12': 'Q4'}
+# Absorb Div, Category, Major/Corp, Region, District, Rep from Contract Repo
+enrolinfo = collections.namedtuple(
+'enrolinfo', 'div, category, major, region, district, rep')
 
 #################################################################################
 ## Function Definitions - Future Billings File
 
 # Adds New Headers
 def header_add(header):             
-    newfields = ['Custom Category A', 'Custom Category B', 'GP',
+    newfields = ['Custom Category A', 'Custom Category B', 'GP', 'Rep',
                  'Imputed Rev', 'Gross Rev', 'Custom Category C',
-                 'Custom Category D', 'Div', 'Region',
+                 'Custom Category D', 'Div', 'Region', 'District',
                  'Scheduled Bill Month', 'Scheduled Bill Quarter']
     for newfield in newfields: header.add(newfield)
     return header
@@ -165,14 +171,15 @@ def refclean(r):
             # ESA 3.0 - MAJOR / CORPORATE            
             # Custom Category B/C ID
             try:
-                if (enrollmentcat[r['Agreement Number']] == 'Renew Contract' or
+                if (enroltree[r['Agreement Number']].category == 'Renew Contract' or
                 r['Agreement Status'] == 'Renewal Assumption - Annual Bill * 90%'):
                     r['Custom Category B'] = 'Renew Contract'
                     r['Custom Category C'] = 'EA Renewal'
                 else:
                     r['Custom Category B'] = 'New Contract'
                     r['Custom Category C'] = 'EA New'
-            except:
+            except AttributeError:
+                missing_enrol.add(r['Agreement Number'])
                 r['Custom Category B'] = 'Renew Contract'
                 r['Custom Category C'] = 'EA Renewal'
             if (r['Primary Public Customer Number'] in majoraccts):
@@ -198,11 +205,16 @@ def refclean(r):
 
     # HAVE TO READDRESS HOW DETERMINING DIVISION AND REGION
     try:
-        r['Div'] = enrollmentdiv[r['Agreement Number']]
-        r['Region'] = enrollmentregion[r['Agreement Number']]
-    except:
+        r['Div'] = enroltree[r['Agreement Number']].div
+        r['Region'] = enroltree[r['Agreement Number']].region
+        r['District'] = enroltree[r['Agreement Number']].district
+        r['Rep'] = enroltree[r['Agreement Number']].rep
+    except AttributeError:
+        missing_enrol.add(r['Agreement Number'])
         r['Div'] = 'N/A'
         r['Region'] = 'N/A'
+        r['District'] = 'N/A'
+        r['Rep'] = 'N/A'
     sbm = dparser.parse(r['Scheduled Bill Date']).date()
     r['Scheduled Bill Month'] = sbm.strftime("%Y-%m")
     sbqmonth = sbm.strftime("%m")
@@ -212,8 +224,10 @@ def refclean(r):
 #################################################################################
 ## Contract Repository Functions
 
-# Cleans Contract Repository + Enrollment History -> Output Future Billing
-# New Row, Old Row, Enrollment History Data, (Writer Objects)
+"""
+Cleans Contract Repository + Enrollment History -> Output Future Billing
+New Row, Old Row, Enrollment History Data, (Writer Objects)
+"""
 def historydataparse(r, oldr, ehdata, o, writer, ow):
     dp = dparser.parse
     extrayrs = 0
@@ -240,13 +254,18 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
     r['Extended Amount'] = Decimal(eh_amt)
     try:
         if oldr['Master Divloc'] == '':
-            r['Div'] = 'N/A'
-            r['Region'] = enrollmentregion[r['Agreement Number']]
+            r['Div'] = enroltree[r['Agreement Number']].div
+            r['Region'] = enroltree[r['Agreement Number']].region
+            r['District'] = enroltree[r['Agreement Number']].district
+            r['Rep'] = enroltree[r['Agreement Number']].rep
         else:
             r['Region'] = divregion[r['Div'] + oldr['Master Divloc']]
-    except:
+            r['District'] = divdistrict[r['Div'] + oldr['Master Divloc']]
+    except KeyError:
         r['Div'] = 'N/A'
         r['Region'] = 'N/A'
+        r['District'] = 'N/A'
+        r['Rep'] = 'N/A'
 
     # ESA 2.0 Analysis
     if eh_refsource == 'ESA 2.0':           
@@ -270,13 +289,14 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
     # ESA 3.0 CORP/MAJOR Analysis
     elif eh_refsource == 'ESA 3.0':         
         try:
-            if enrollmentcat[r['Agreement Number']] == 'Renew Contract':
+            if enroltree[r['Agreement Number']].category == 'Renew Contract':
                 r['Custom Category B'] = 'Renew Contract'
                 r['Custom Category C'] = 'EA Renewal'
             else:
                 r['Custom Category B'] = 'New Contract'
                 r['Custom Category C'] = 'EA New'
-        except:
+        except KeyError:
+            missing_enrol.add(r['Agreement Number'])
             r['Custom Category B'] = 'Renew Contract'
             r['Custom Category C'] = 'EA Renewal'
 
@@ -294,8 +314,7 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         extrayrs = (int(r['Agreement End Date'].strftime("%Y")) -
                     int(r['Scheduled Bill Date'].strftime("%Y"))) - 1
                                         
-    # Calculate Timing of Enrollment Cycle
-    # Enrollment up for Renewal
+    # Calculate Timing of Enrollment Cycle, Enrollment Up for Renewal
     if extrayrs == 0:                   
         addrenewal(r, o, writer, ow)
 
@@ -387,32 +406,42 @@ def ontimerenewal(r):
     elif 6000 < r[adc] < 14999: return Decimal(0.0025)
     else: return Decimal(0.0025)
 
-#################################################################################
-## Dictionary Pictionary Jars
 
-majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
-enrollmentcat = csv_dic('auxiliary\\MS Enrollment - Category.csv')
-enrollmentdiv = csv_dic('auxiliary\\Ms Enrollment - Div.csv')
-enrollmentregion = csv_dic('auxiliary\\Ms Enrollment - Region.csv')
-divregion = csv_dic('auxiliary\\div-region.csv')
-esa3dict = tree()
-enroltree = tree()
-fb_enrol_set = set()
-quarterperiod = {'01': 'Q1', '02': 'Q1', '03': 'Q1', '04': 'Q2', '05': 'Q2',
-                 '06': 'Q2', '07': 'Q3', '08': 'Q3', '09': 'Q3', '10': 'Q4',
-                 '11': 'Q4', '12': 'Q4'}
 
 #################################################################################
 ## Main
 
 def main():
     t0 = time.clock()
-    header = set()                  # Get all input headers -> output header
+
+	# Get all input headers -> output header	
+    header = set()                  
     with open(input1) as i1: header.update(csv.DictReader(i1).fieldnames)
     header = header_add(header)
     header = tuple(header)
 
-# Analyze Input 1: Explore.ms Future Billings Report -> Output
+	# Absorb Div, Category, Major/Corp, Region, District, Rep from Contract Repo
+    with open(input2) as i2:
+        for r in csv.DictReader(i2):
+            divloc = r['Master Division'] + r['Master Divloc']
+            try:
+                temp_region = divregion[divloc]
+                temp_district = divdistrict[divloc]
+            except KeyError:
+                temp_region = 'N/A'
+                temp_district = 'N/A'
+            if (r['MS Major Acct (Y/N)'] == 'Y' and 
+                r['Master Number'] not in majoraccts):
+                majoraccts.add(r['Master Number'])
+            enroltree[r['Contract Number']] = enrolinfo(
+                div = r['Contract Division'],
+                category = r['Contract Category'],
+                major = r['MS Major Acct (Y/N)'],
+                region = temp_region,
+                district = temp_district,
+                rep = r['Master OB Rep Name'])
+
+	# Analyze Input 1: Explore.ms Future Billings Report -> Output
     with open(output, 'wb') as o:
         writer = csv.writer(o)
         writer.writerows([header])
@@ -421,7 +450,8 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for r in i1r:
                 ow.writerow(refclean(r))
-                                    # On-Time Renewal
+				
+                # On-Time Renewal
                 if (r['Custom Category A'] == 'ESA 3.0 - CORPORATE' and
                     r['Custom Category B'] == 'Renew Contract' and
                     r['Agreement Status'] == 'Renewal Assumption - Annual Bill * 90%'):
@@ -441,7 +471,7 @@ def main():
                     r['Imputed Rev'] = 0
                     ow.writerow(r)
 
-                                    # Inserts Monthly Billings for ESA 3.0
+            # Inserts Monthly Billings for ESA 3.0
             for month_esa3 in esa3dict:
                 if esa3dict[month_esa3]['Imputed Rev'] == 0:
                     pass
@@ -468,17 +498,27 @@ def main():
                         r['Scheduled Bill Quarter'] = (billdate.strftime("%Y-") +
                                                        quarterperiod[sbqmonth])
 
-# Analyze Input 2: Contract Repository -> Output
+		# Get all input headers -> output header
+		# Analyze Input 2: Contract Repository -> Output
         with open(input2) as i2:
             dp = dparser.parse
             i2r = csv.DictReader(i2)
-            for oldr in i2r:# Adds New Headers
+            for oldr in i2r:
+
+				# Adds New Headers
                 if (oldr['Contract Number'] in enrollhistory and
-                    oldr['Contract Number'] not in fb_enrol_set):
+                    oldr['Contract Number'] not in fb_enrol_set and
+                    oldr['Contract Status'] == 'Active'):
                     r = dict.fromkeys(header)
                     ehdata = enrollhistory[oldr['Contract Number']]
                     historydataparse(r, oldr, ehdata, o, writer, ow)
         t1 = time.clock()
+        
+        # Write missing enrollments to txt
+        f = open(missing_enrol_output, 'w')
+        for enrol in missing_enrol:
+            f.write(enrol + '\n')
+        f.close()
         return 'Process completed! Duration:', t1-t0
 
 print main()
