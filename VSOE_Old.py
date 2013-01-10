@@ -6,8 +6,8 @@ import numpy as np
 import sys
 
 output = 'o\\10-Jan-13 - VSOE Old Analysis.csv'
-input1 = 'i\\2011-2012 SWBNDL.csv'
-input2 = 'i\\2010-2012 SWLIC-SWMTN.csv'
+input1 = 'i\\2011 SWBNDL.csv'
+input2 = 'i\\2011 SWLIC-SWMTN.csv'
 f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - VSOE Old.txt", "w")
 
 #################################################################################
@@ -251,14 +251,6 @@ def main():
                     sadict[year][bndlpublish][sa]['Product Title & Description'])):
                         bndldict[ls] = compare(bndldict[ls],
                                        sadict[year][bndlpublish][sa])
-                for sa in sadict[str(int(year)-1)][bndlpublish]:
-                    bundlsell = float(bndldict[ls]['Item Sell Price'])
-                    sasell = float(sadict[str(int(year)-1)][bndlpublish][sa]['Item Sell Price'])
-                    if ((0.05*bundlsell <= sasell < bundlsell) and
-                    (bndldict[ls]['Product Title & Description'][:20] in
-                    sadict[str(int(year)-1)][bndlpublish][sa]['Product Title & Description'])):
-                        bndldict[ls] = compare(bndldict[ls],
-                                       sadict[str(int(year)-1)][bndlpublish][sa])
             except KeyboardInterrupt:
                 print 'Aborting!'
                 f.close()
