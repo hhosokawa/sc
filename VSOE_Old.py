@@ -6,8 +6,8 @@ import numpy as np
 import sys
 
 output = 'o\\10-Jan-13 - VSOE Old Analysis.csv'
-input1 = 'i\\2011 SWBNDL.csv'
-input2 = 'i\\2011 SWLIC-SWMTN.csv'
+input1 = 'i\\VSOE\\2011 SWBNDL.csv'
+input2 = 'i\\VSOE\\2011 SWLIC-SWMTN.csv'
 f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - VSOE Old.txt", "w")
 
 #################################################################################
