@@ -5,10 +5,10 @@ from collections import defaultdict
 import numpy as np
 import sys
 
-output = 'o\\10-Jan-13 - VSOE Old Analysis.csv'
-input1 = 'i\\VSOE\\2011 SWBNDL.csv'
+output = 'o\\10-Jan-13 - VSOE Old Analysis sample.csv'
+input1 = 'i\\VSOE\\2011 SWBNDL sample.csv'
 input2 = 'i\\VSOE\\2011 SWLIC-SWMTN.csv'
-f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - VSOE Old.txt", "w")
+f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - VSOE Old sample.txt", "w")
 
 #################################################################################
 ## Function Definition
@@ -103,14 +103,7 @@ def compare(bundlr, r):
     sasell = float(r['Item Sell Price'])
 
     # Keyword + Product Match 95
-    if ((listinstring(bundlr['Keyword'], saname) and
-        fuzz.token_set_ratio(lsproddesc, saproddesc) >= 90 and
-        len(bundlr['Keyword']) > 0 and
-        (0.1*bundsell <= sasell <= bundsell)) or
-
-        # OR Product Match 100
-        (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
-        (0.1*bundsell <= sasell <= bundsell))):
+    if listinstring(bundlr['Keyword'], saname):
         if r['Item Revenue Recognition'] == 'SWLIC':
             bundlr['LIC Sample $'].append(sasell)
             bundlr['LIC Sample Inv'].append(inv_item)
@@ -181,13 +174,13 @@ def acceptsample(r):
     if r['Trigger'] == False: return False
     else:
         if r['MTN Sample Pop'] == 'No Samples':
-            if r['LIC Sample Pop'] < 0.8: return False
+            if r['LIC Sample Pop'] <= 0.7: return False
             else: return True
         elif r['LIC Sample Pop'] == 'No Samples':
-            if r['MTN Sample Pop'] < 0.8: return False
+            if r['MTN Sample Pop'] <= 0.7: return False
             else: return True
         else:
-            if (r['LIC Sample Pop'] or r['MTN Sample Pop']) < 0.8: return False
+            if (r['LIC Sample Pop'] or r['MTN Sample Pop']) <= 0.7: return False
             else: return True
 
 def aftertxtclean(r):
@@ -246,8 +239,8 @@ def main():
                 for sa in sadict[year][bndlpublish]:
                     bundlsell = float(bndldict[ls]['Item Sell Price'])
                     sasell = float(sadict[year][bndlpublish][sa]['Item Sell Price'])
-                    if ((0.05*bundlsell <= sasell < bundlsell) and
-                    (bndldict[ls]['Product Title & Description'][:20] in
+                    if ((sasell < bundlsell) and
+                    (bndldict[ls]['Product Title'][:20] in
                     sadict[year][bndlpublish][sa]['Product Title & Description'])):
                         bndldict[ls] = compare(bndldict[ls],
                                        sadict[year][bndlpublish][sa])
@@ -263,12 +256,9 @@ def main():
                 bndldict[ls] = med_analysis(bndldict[ls])
 
             # Output SWBNDL
-            if acceptsample(bndldict[ls]):
-                totext(bndldict[ls])
-                ow.writerow(aftertxtclean(bndldict[ls]))
-                print 'Bundle:', ls, '- Matched -', time.clock()
-            else:
-                print 'Bundle:', ls, '- No Matches -', time.clock()
+            totext(bndldict[ls])
+            ow.writerow(aftertxtclean(bndldict[ls]))
+            print 'Bundle:', ls, '- Matched -', time.clock()
     t1 = time.clock()
     f.close()
     return 'Process completed! Duration:', t1-t0

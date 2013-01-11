@@ -6,10 +6,10 @@ from collections import defaultdict
 import numpy as np
 import sys
 
-output = 'o\\21-Dec-12 - VSOE Analysis.csv'
-input1 = 'i\\2011-2012 SWBNDL.csv'
-input2 = 'i\\2010-2012 SWLIC-SWMTN.csv'
-f = open("21-Dec-12 - VSOE.txt", "w")
+output = 'o\\10-Jan-12 - VSOE Analysis.csv'
+input1 = 'i\\VSOE\\VSOE 2012-2013 swbndl.csv'
+input2 = 'i\\VSOE\\VSOE 2012-2013 swlic-swmtn.csv'
+f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - VSOE.txt", "w")
 
 #################################################################################
 ## Function Definition
@@ -96,8 +96,10 @@ def compare(bundlr, r):
               r['Product Title'] + ' ' +
               r['Item Prodtype Description'] + ' ' +
               r['Item Prodtype Venprogram']).upper()
-    lsproddesc = bundlr['Product Title & Description'].upper()
-    saproddesc = r['Product Title & Description'].upper()
+    lsproddesc = (bundlr['Product Title & Description'].upper() +
+                  bundlr['Product Title'].upper())  
+    saproddesc = (r['Product Title & Description'].upper() +
+                  r['Product Title'].upper())  
     inv_item = (r['Invoice Number'] + '-' + r['Item Number']  + '-' +
                 r['Product Title & Description'] + '-' + r['Item Sell Price'])
     bundsell = float(bundlr['Item Sell Price'])
@@ -107,11 +109,11 @@ def compare(bundlr, r):
     if ((listinstring(bundlr['Keyword'], saname) and
         fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
         len(bundlr['Keyword']) > 0 and
-        (0.1*bundsell <= sasell <= bundsell)) or
+        (sasell <= bundsell)) or
 
         # OR Product Match 100
         (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 100 and
-        (0.1*bundsell <= sasell <= bundsell))):
+        (sasell <= bundsell))):
         if r['Item Revenue Recognition'] == 'SWLIC':
             bundlr['LIC Sample $'].append(sasell)
             bundlr['LIC Sample Inv'].append(inv_item)
