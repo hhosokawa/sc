@@ -184,13 +184,13 @@ def acceptsample(r):
     if r['Trigger'] == False: return False
     else:
         if r['MTN Sample Pop'] == 'No Samples':
-            if r['LIC Sample Pop'] < 0.8: return False
-            else: return True
+            return False
         elif r['LIC Sample Pop'] == 'No Samples':
             if r['MTN Sample Pop'] < 0.8: return False
             else: return True
         else:
-            if (r['LIC Sample Pop'] or r['MTN Sample Pop']) < 0.8: return False
+            if r['LIC Sample Pop']  < 0.8: return False
+            elif r['MTN Sample Pop']  < 0.8: return False            
             else: return True
 
 def aftertxtclean(r):
