@@ -6,10 +6,10 @@ from collections import defaultdict
 import numpy as np
 import sys
 
-output = 'o\\10-Jan-12 - VSOE Analysis.csv'
-input1 = 'i\\VSOE\\VSOE 2012-2013 swbndl.csv'
-input2 = 'i\\VSOE\\VSOE 2012-2013 swlic-swmtn.csv'
-f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - VSOE.txt", "w")
+output = 'o\\10-Jan-12 - 2012 VSOE Analysis.csv'
+input1 = 'i\\VSOE\\VSOE 2012 swbndl.csv'
+input2 = 'i\\VSOE\\VSOE 2012 swlic-swmtn.csv'
+f = open("C:/Portable Python 2.7/App/Scripts/o/10-Jan-13 - 2012 VSOE.txt", "w")
 
 #################################################################################
 ## Function Definition
@@ -254,14 +254,6 @@ def main():
                     sadict[year][bndlpublish][sa]['Product Title & Description'])):
                         bndldict[ls] = compare(bndldict[ls],
                                        sadict[year][bndlpublish][sa])
-                for sa in sadict[str(int(year)-1)][bndlpublish]:
-                    bundlsell = float(bndldict[ls]['Item Sell Price'])
-                    sasell = float(sadict[str(int(year)-1)][bndlpublish][sa]['Item Sell Price'])
-                    if ((0.1*bundlsell <= sasell < bundlsell) and
-                    (bndldict[ls]['Product Title & Description'][:20] in
-                    sadict[str(int(year)-1)][bndlpublish][sa]['Product Title & Description'])):
-                        bndldict[ls] = compare(bndldict[ls],
-                                       sadict[str(int(year)-1)][bndlpublish][sa])
             except KeyboardInterrupt:
                 print 'Aborting!'
                 f.close()
