@@ -107,7 +107,7 @@ def custtype(row):
             cus_type = ref_cus_type[row['Customer Number']][2]
         elif row['Revenue Type'] == 'Sales':
             pc_count = row["Softchoice Master # PC's"]
-            cus_type = ['Softchoice Master Cust Type']
+            cus_type = row['Softchoice Master Cust Type']
         else:
             raise RuntimeError('Invalid Revenue Type')
     except:
