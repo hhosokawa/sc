@@ -2,9 +2,9 @@ import csv
 import time
 from collections import defaultdict
 
-output = 'o/2012 Dec 31 - NNEA COCP Summary.csv'
-input1 = 'i/ms_cocp/COCP Summary to Dec 31 2012.csv'
-input2 = 'i/ms_cocp/NNEA Summary to Dec 31 2012.csv'
+output = 'o/2013 Jan 15 - NNEA COCP Summary.csv'
+input1 = 'i/ms_cocp/COCP Summary to Jan 15 2013.csv'
+input2 = 'i/ms_cocp/NNEA Summary to Jan 15 2013.csv'
 
 #################################################################################
 ## Function Definition
