@@ -1,15 +1,17 @@
-import cProfile
+import os
+import sys
 import csv
 import time
+import numpy as np
+from aux_reader import *
 from fuzzywuzzy import fuzz
 from collections import defaultdict
-import numpy as np
-import sys
 
-output = 'o\\12-Jan-12 - 2012-2013 VSOE Analysis.csv'
+output = 'o\\15-Jan-12 - 2012-2013 VSOE Analysis.csv'
+input0 = 'i\\VSOE\\Old_VSOE_Key.csv'
 input1 = 'i\\VSOE\\VSOE 2012-2013 swbndl.csv'
 input2 = 'i\\VSOE\\VSOE 2012-2013 swlic-swmtn.csv'
-f = open("C:/Portable Python 2.7/App/Scripts/o/12-Jan-13 - 2012-2013 VSOE.txt", "w")
+f = open("C:/Portable Python 2.7/App/Scripts/o/15-Jan-13 - 2011-2012 VSOE Analysis.txt", "w")
 
 #################################################################################
 ## Function Definition
@@ -19,11 +21,11 @@ def tree(): return defaultdict(tree)
 # Extract Keywords from Bundle
 def keyword(r):
     keywordlist = []
-    name = (r['Product Description'] + ' ' +
-            r['Product Title & Description'] + ' ' +
-            r['Product Title'] + ' ' +
-            r['Item Prodtype Description'] + ' ' +
-            r['Item Prodtype Venprogram']).upper()
+    name = ' '.join([r['Product Description'], 
+                     r['Product Title & Description'],
+                     r['Product Title'],
+                     r['Item Prodtype Description'],
+                     r['Item Prodtype Venprogram']]).upper()
     if r['Product Publisher Name'] == 'MICROSOFT':
         if 'SVR' in name: keywordlist.append('SVR')
         elif 'APP' in name: keywordlist.append('APP')
@@ -91,36 +93,53 @@ def keyword(r):
 
 # Compare Bundle Row to Lic/Mtn Row
 def compare(bundlr, r):
-    saname = (r['Product Description'] + ' ' +
-              r['Product Title & Description'] + ' ' +
-              r['Product Title'] + ' ' +
-              r['Item Prodtype Description'] + ' ' +
-              r['Item Prodtype Venprogram']).upper()
-    lsproddesc = (bundlr['Product Title & Description'].upper() +
-                  bundlr['Product Title'].upper())  
-    saproddesc = (r['Product Title & Description'].upper() +
-                  r['Product Title'].upper())  
-    inv_item = (r['Invoice Number'] + '-' + r['Item Number']  + '-' +
-                r['Product Title & Description'] + '-' + r['Item Sell Price'])
+    saname = ' '.join([r['Product Description'],
+                       r['Product Title & Description'],
+                       r['Product Title'],
+                       r['Item Prodtype Description'],
+                       r['Item Prodtype Venprogram'],
+                       r['Item Category'],
+                       r['Product Publisher Name']]).upper()
+    lsproddesc = ' '.join([bundlr['Product Title & Description'],
+                           bundlr['Product Title']]).upper()
+    saproddesc = ' '.join([r['Product Title & Description'],
+                           r['Product Title']]).upper()  
+    inv_item = '-'.join([r['Invoice Number'], r['Item Number'],
+                         r['Product Title & Description'], 
+                         r['Item Sell Price']])
     bundsell = float(bundlr['Item Sell Price'])
     sasell = float(r['Item Sell Price'])
+    inv_item_key = bundlr['Invoice Number'] + bundlr['Item Number']
 
-    # Keyword + Product Match 95
-    if ((listinstring(bundlr['Keyword'], saname) and
-        fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
-        len(bundlr['Keyword']) > 0 and
-        (sasell <= bundsell)) or
+    # 2011 Data Match
+    if inv_item_key in hist_key:
+        if listinstring(bundlr['Keyword'], saname):
+            if r['Item Revenue Recognition'] == 'SWLIC':
+                bundlr['LIC Sample $'].append(sasell)
+                bundlr['LIC Sample Inv'].append(inv_item)
+            elif r['Item Revenue Recognition'] == 'SWMTN':
+                bundlr['MTN Sample $'].append(sasell)
+                bundlr['MTN Sample Inv'].append(inv_item)
+            bundlr['Trigger'] = True
+    else:
+    
+    # 2012 Data Match
+        # Keyword + Product Match 95
+        if ((listinstring(bundlr['Keyword'], saname) and
+            fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
+            len(bundlr['Keyword']) > 0 and
+            (sasell <= bundsell)) or
 
-        # OR Product Match 100
-        (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 100 and
-        (sasell <= bundsell))):
-        if r['Item Revenue Recognition'] == 'SWLIC':
-            bundlr['LIC Sample $'].append(sasell)
-            bundlr['LIC Sample Inv'].append(inv_item)
-        elif r['Item Revenue Recognition'] == 'SWMTN':
-            bundlr['MTN Sample $'].append(sasell)
-            bundlr['MTN Sample Inv'].append(inv_item)
-        bundlr['Trigger'] = True
+            # OR Product Match 100
+            (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 100 and
+            (sasell <= bundsell))):
+            if r['Item Revenue Recognition'] == 'SWLIC':
+                bundlr['LIC Sample $'].append(sasell)
+                bundlr['LIC Sample Inv'].append(inv_item)
+            elif r['Item Revenue Recognition'] == 'SWMTN':
+                bundlr['MTN Sample $'].append(sasell)
+                bundlr['MTN Sample Inv'].append(inv_item)
+            bundlr['Trigger'] = True
     return bundlr
 
 # Compares KeywordList to Item Description String
@@ -181,16 +200,18 @@ def medianloop(samplelist):
     return float(count) / float(len(samplelist))
 
 def acceptsample(r):
+    if r['Invoice date (SC FY)'] == '2012': limit = 0.7
+    else: limit = 0.8
     if r['Trigger'] == False: return False
     else:
         if r['MTN Sample Pop'] == 'No Samples':
             return False
         elif r['LIC Sample Pop'] == 'No Samples':
-            if r['MTN Sample Pop'] < 0.8: return False
+            if r['MTN Sample Pop'] < limit: return False
             else: return True
         else:
-            if r['LIC Sample Pop']  < 0.8: return False
-            elif r['MTN Sample Pop']  < 0.8: return False            
+            if r['LIC Sample Pop']  < limit: return False
+            elif r['MTN Sample Pop']  < limit: return False            
             else: return True
 
 def aftertxtclean(r):
@@ -202,16 +223,22 @@ def aftertxtclean(r):
 
 bndldict = defaultdict(str)
 sadict = tree()
+hist_key = {}
 #################################################################################
 ## Main Program
 
 def main():
     t0 = time.clock()
 
+    # Historic Keyword extraction
+    hist_key = csv_dic(input0, 7)
+    print 'Historic Key Extration Complete.', time.clock()-t0
+
     # Build SWBNDL Dict
     with open(input1) as i1:
         i1r = csv.DictReader(i1)
         for r in i1r:
+            inv_item_key = r['Invoice Number'] + r['Item Number']
             bndldict[r['Item Number']] =r
             bndldict[r['Item Number']]['Keyword'] = keyword(r)
             bndldict[r['Item Number']]['LIC Sample $'] = []
@@ -222,8 +249,11 @@ def main():
             bndldict[r['Item Number']]['MTN Sample Pop'] = 0.
             bndldict[r['Item Number']]['LIC Sample Pop'] = 0.
             bndldict[r['Item Number']]['Trigger'] = False
-            keys = tuple(bndldict[r['Item Number']].keys())
-    print 'SWBNDL Dictionary Built', time.clock()
+            if inv_item_key in hist_key:
+                bndldict[r['Item Number']]['Keyword'] = (
+                list(hist_key[inv_item_key]))
+        keys = tuple(bndldict[r['Item Number']].keys())
+    print 'SWBNDL Dictionary Built', time.clock()-t0
 
     # Build STAND ALONE Dict
     with open(input2) as i2:
@@ -234,7 +264,7 @@ def main():
             year = r['Invoice date (SC FY)']
             sadict[year][ppn][id] = r
 
-    print 'STAND ALONE Dictionary Built', time.clock()
+    print 'STAND ALONE Dictionary Built', time.clock()-t0
 
     with open(output, 'wb') as o:
         writer = csv.writer(o)
@@ -249,19 +279,11 @@ def main():
                 for sa in sadict[year][bndlpublish]:
                     bundlsell = float(bndldict[ls]['Item Sell Price'])
                     sasell = float(sadict[year][bndlpublish][sa]['Item Sell Price'])
-                    if ((sasell < bundlsell) and
-                    (bndldict[ls]['Product Title & Description'][:20] in
-                    sadict[year][bndlpublish][sa]['Product Title & Description'])):
+                    bundlname = bndldict[ls]['Product Title & Description'][:10]
+                    saname = sadict[year][bndlpublish][sa]['Product Title & Description']
+                    if (sasell < bundlsell) and (bundlname in saname):
                         bndldict[ls] = compare(bndldict[ls],
                                        sadict[year][bndlpublish][sa])
-                for sa in sadict[str(int(year)-1)][bndlpublish]:
-                    bundlsell = float(bndldict[ls]['Item Sell Price'])
-                    sasell = float(sadict[str(int(year)-1)][bndlpublish][sa]['Item Sell Price'])
-                    if ((sasell < bundlsell) and
-                    (bndldict[ls]['Product Title & Description'][:20] in
-                    sadict[str(int(year)-1)][bndlpublish][sa]['Product Title & Description'])):
-                        bndldict[ls] = compare(bndldict[ls],
-                                       sadict[str(int(year)-1)][bndlpublish][sa])
             except KeyboardInterrupt:
                 print 'Aborting!'
                 f.close()
@@ -277,9 +299,9 @@ def main():
             if acceptsample(bndldict[ls]):
                 totext(bndldict[ls])
                 ow.writerow(aftertxtclean(bndldict[ls]))
-                print 'Bundle:', ls, '- Matched -', time.clock()
+                print 'Bundle:', ls, '- Matched -', time.clock()-t0
             else:
-                print 'Bundle:', ls, '- No Matches -', time.clock()
+                print 'Bundle:', ls, '- No Matches -', time.clock()-t0
     t1 = time.clock()
     f.close()
     return 'Process completed! Duration:', t1-t0
