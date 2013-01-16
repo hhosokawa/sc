@@ -279,7 +279,7 @@ def main():
                 for sa in sadict[year][bndlpublish]:
                     bundlsell = float(bndldict[ls]['Item Sell Price'])
                     sasell = float(sadict[year][bndlpublish][sa]['Item Sell Price'])
-                    bundlname = bndldict[ls]['Product Title & Description'][:10]
+                    bundlname = bndldict[ls]['Product Title & Description'][:20]
                     saname = sadict[year][bndlpublish][sa]['Product Title & Description']
                     if (sasell < bundlsell) and (bundlname in saname):
                         bndldict[ls] = compare(bndldict[ls],
