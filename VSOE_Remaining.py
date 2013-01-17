@@ -7,10 +7,10 @@ from aux_reader import *
 from fuzzywuzzy import fuzz
 from collections import defaultdict
 
-output = 'o\\15-Jan-12 - 2012-2013 VSOE Analysis.csv'
+output = 'o\\17-Jan-12 - 2012-2013 VSOE Analysis.csv'
 input0 = 'i\\VSOE\\Old_VSOE_Key.csv'
 input1 = 'i\\VSOE\\VSOE 2012-2013 swbndl-swlic-swmtn.csv'
-f = open("C:/Portable Python 2.7/App/Scripts/o/15-Jan-13 - 2011-2012 VSOE Analysis.txt", "w")
+f = open("C:/Portable Python 2.7/App/Scripts/o/17-Jan-13 - 2011-2012 VSOE Analysis.txt", "w")
 
 #################################################################################
 ## Function Definition
@@ -120,38 +120,25 @@ def compare(bundlr, r):
         lssku = ''
         sasku = ''
 
-        
     inv_item_key = bundlr['Invoice Number'] + bundlr['Item Number']
 
-    # 2011 Data Match
-    if inv_item_key in hist_key:
-        if listinstring(bundlr['Keyword'], saname):
-            if r['Item Revenue Recognition'] == 'SWLIC':
-                bundlr['LIC Sample $'].append(sasell)
-                bundlr['LIC Sample Inv'].append(inv_item)
-            elif r['Item Revenue Recognition'] == 'SWMTN':
-                bundlr['MTN Sample $'].append(sasell)
-                bundlr['MTN Sample Inv'].append(inv_item)
-            bundlr['Trigger'] = True
-    else:
-    
     # 2012 Data Match
         # Keyword + Product Match 95
-        if ((listinstring(bundlr['Keyword'], saname) and
-            fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
-            len(bundlr['Keyword']) > 0 and
-            (sasell <= bundsell) and (lssku in sasku)) or
+    if ((listinstring(bundlr['Keyword'], saname) and
+        fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
+        len(bundlr['Keyword']) > 0 and
+        (sasell <= bundsell) and (lssku in sasku)) or
 
-            # OR Product Match 100
-            (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 100 and
-            (sasell <= bundsell) and (lssku in sasku))):
-            if r['Item Revenue Recognition'] == 'SWLIC':
-                bundlr['LIC Sample $'].append(sasell)
-                bundlr['LIC Sample Inv'].append(inv_item)
-            elif r['Item Revenue Recognition'] == 'SWMTN':
-                bundlr['MTN Sample $'].append(sasell)
-                bundlr['MTN Sample Inv'].append(inv_item)
-            bundlr['Trigger'] = True
+        # OR Product Match 100
+        (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 100 and
+        (sasell <= bundsell) and (lssku in sasku))):
+        if r['Item Revenue Recognition'] == 'SWLIC':
+            bundlr['LIC Sample $'].append(sasell)
+            bundlr['LIC Sample Inv'].append(inv_item)
+        elif r['Item Revenue Recognition'] == 'SWMTN':
+            bundlr['MTN Sample $'].append(sasell)
+            bundlr['MTN Sample Inv'].append(inv_item)
+        bundlr['Trigger'] = True
     return bundlr
 
 # Compares KeywordList to Item Description String
@@ -262,9 +249,7 @@ def main():
                 bndldict[r['Item Number']]['MTN Sample Pop'] = 0.
                 bndldict[r['Item Number']]['LIC Sample Pop'] = 0.
                 bndldict[r['Item Number']]['Trigger'] = False
-                if inv_item_key in hist_key:
-                    bndldict[r['Item Number']]['Keyword'] = (
-                    list(hist_key[inv_item_key]))        
+
                 keys = tuple(bndldict[r['Item Number']].keys())
             else:
                 ppn = r['Product Publisher Name']
@@ -316,3 +301,27 @@ def main():
     return 'Process completed! Duration:', t1-t0
 
 print main()
+
+
+# in def compare()
+"""
+
+    # 2011 Data Match
+    if inv_item_key in hist_key:
+        if listinstring(bundlr['Keyword'], saname):
+            if r['Item Revenue Recognition'] == 'SWLIC':
+                bundlr['LIC Sample $'].append(sasell)
+                bundlr['LIC Sample Inv'].append(inv_item)
+            elif r['Item Revenue Recognition'] == 'SWMTN':
+                bundlr['MTN Sample $'].append(sasell)
+                bundlr['MTN Sample Inv'].append(inv_item)
+            bundlr['Trigger'] = True
+    else:
+"""
+
+# in def main()
+"""
+                if inv_item_key in hist_key:
+                    bndldict[r['Item Number']]['Keyword'] = (
+                    list(hist_key[inv_item_key]))        
+"""
