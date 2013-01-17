@@ -9,8 +9,7 @@ from collections import defaultdict
 
 output = 'o\\15-Jan-12 - 2012-2013 VSOE Analysis.csv'
 input0 = 'i\\VSOE\\Old_VSOE_Key.csv'
-input1 = 'i\\VSOE\\VSOE 2012-2013 swbndl.csv'
-input2 = 'i\\VSOE\\VSOE 2012-2013 swlic-swmtn.csv'
+input1 = 'i\\VSOE\\VSOE 2012-2013 swbndl-swlic-swmtn.csv'
 f = open("C:/Portable Python 2.7/App/Scripts/o/15-Jan-13 - 2011-2012 VSOE Analysis.txt", "w")
 
 #################################################################################
@@ -100,15 +99,28 @@ def compare(bundlr, r):
                        r['Item Prodtype Venprogram'],
                        r['Item Category'],
                        r['Product Publisher Name']]).upper()
-    lsproddesc = ' '.join([bundlr['Product Title & Description'],
-                           bundlr['Product Title']]).upper()
     saproddesc = ' '.join([r['Product Title & Description'],
                            r['Product Title']]).upper()  
+    sasell = float(r['Item Sell Price'])
     inv_item = '-'.join([r['Invoice Number'], r['Item Number'],
+                         r['Item MFG sku'],
                          r['Product Title & Description'], 
                          r['Item Sell Price']])
+    lsproddesc = ' '.join([bundlr['Product Title & Description'],
+                           bundlr['Product Title']]).upper()
     bundsell = float(bundlr['Item Sell Price'])
-    sasell = float(r['Item Sell Price'])
+    if bundlr['Product Publisher Name'] == 'MICROSOFT':
+        if ' ' in bundlr['Item MFG sku']:
+            lssku = bundlr['Item MFG sku'][-6:]
+            sasku = r['Item MFG sku']
+        else:
+            lssku = ''
+            sasku = ''
+    else:
+        lssku = ''
+        sasku = ''
+
+        
     inv_item_key = bundlr['Invoice Number'] + bundlr['Item Number']
 
     # 2011 Data Match
@@ -128,11 +140,11 @@ def compare(bundlr, r):
         if ((listinstring(bundlr['Keyword'], saname) and
             fuzz.token_set_ratio(lsproddesc, saproddesc) >= 95 and
             len(bundlr['Keyword']) > 0 and
-            (sasell <= bundsell)) or
+            (sasell <= bundsell) and (lssku in sasku)) or
 
             # OR Product Match 100
             (fuzz.token_set_ratio(lsproddesc, saproddesc) >= 100 and
-            (sasell <= bundsell))):
+            (sasell <= bundsell) and (lssku in sasku))):
             if r['Item Revenue Recognition'] == 'SWLIC':
                 bundlr['LIC Sample $'].append(sasell)
                 bundlr['LIC Sample Inv'].append(inv_item)
@@ -150,9 +162,11 @@ def listinstring(list, string):
 
 # Writes Sample Bundle/Mtn/Lic Sample to Text
 def totext(r):
-    item = (r['Invoice Number'] + '-' + r['Item Number'] + '-' +
-            r['Product Title & Description'] + '\n')
-    f.write(item)
+    item = '-'.join([r['Invoice Number'], 
+                     r['Item Number'],
+                     r['Item MFG sku'],
+                     r['Product Title & Description']])
+    f.write(item + '\n')
     for x in r['LIC Sample Inv']:
         f.write('LIC: ' + x + '\n')
     for y in r['MTN Sample Inv']:
@@ -195,17 +209,15 @@ def medianloop(samplelist):
     ub = 1.15*samplemedian
     count = 0.
     for x in samplelist:
-        if lb <= x <= ub:
-            count += 1.
+        if lb <= x <= ub: count += 1.
     return float(count) / float(len(samplelist))
 
 def acceptsample(r):
-    if r['Invoice date (SC FY)'] == '2012': limit = 0.7
+    if r['Invoice date (SC FY)'] == '2012': limit = 0.8
     else: limit = 0.8
     if r['Trigger'] == False: return False
     else:
-        if r['MTN Sample Pop'] == 'No Samples':
-            return False
+        if r['MTN Sample Pop'] == 'No Samples': return False
         elif r['LIC Sample Pop'] == 'No Samples':
             if r['MTN Sample Pop'] < limit: return False
             else: return True
@@ -238,33 +250,28 @@ def main():
     with open(input1) as i1:
         i1r = csv.DictReader(i1)
         for r in i1r:
-            inv_item_key = r['Invoice Number'] + r['Item Number']
-            bndldict[r['Item Number']] =r
-            bndldict[r['Item Number']]['Keyword'] = keyword(r)
-            bndldict[r['Item Number']]['LIC Sample $'] = []
-            bndldict[r['Item Number']]['LIC Sample Inv'] = []
-            bndldict[r['Item Number']]['MTN Sample $'] = []
-            bndldict[r['Item Number']]['MTN Sample Inv'] = []
-            bndldict[r['Item Number']]['Percentage'] = 0.
-            bndldict[r['Item Number']]['MTN Sample Pop'] = 0.
-            bndldict[r['Item Number']]['LIC Sample Pop'] = 0.
-            bndldict[r['Item Number']]['Trigger'] = False
-            if inv_item_key in hist_key:
-                bndldict[r['Item Number']]['Keyword'] = (
-                list(hist_key[inv_item_key]))
-        keys = tuple(bndldict[r['Item Number']].keys())
-    print 'SWBNDL Dictionary Built', time.clock()-t0
-
-    # Build STAND ALONE Dict
-    with open(input2) as i2:
-        i2r = csv.DictReader(i2)
-        for r in i2r:
-            ppn = r['Product Publisher Name']
-            id = r['Invoice Number'] + '-' + r['Item Number']
-            year = r['Invoice date (SC FY)']
-            sadict[year][ppn][id] = r
-
-    print 'STAND ALONE Dictionary Built', time.clock()-t0
+            if r['Item Revenue Recognition'] == 'SWBNDL':
+                inv_item_key = r['Invoice Number'] + r['Item Number']
+                bndldict[r['Item Number']] =r
+                bndldict[r['Item Number']]['Keyword'] = keyword(r)
+                bndldict[r['Item Number']]['LIC Sample $'] = []
+                bndldict[r['Item Number']]['LIC Sample Inv'] = []
+                bndldict[r['Item Number']]['MTN Sample $'] = []
+                bndldict[r['Item Number']]['MTN Sample Inv'] = []
+                bndldict[r['Item Number']]['Percentage'] = 0.
+                bndldict[r['Item Number']]['MTN Sample Pop'] = 0.
+                bndldict[r['Item Number']]['LIC Sample Pop'] = 0.
+                bndldict[r['Item Number']]['Trigger'] = False
+                if inv_item_key in hist_key:
+                    bndldict[r['Item Number']]['Keyword'] = (
+                    list(hist_key[inv_item_key]))        
+                keys = tuple(bndldict[r['Item Number']].keys())
+            else:
+                ppn = r['Product Publisher Name']
+                inv_item_key = r['Invoice Number'] + '-' + r['Item Number']
+                year = r['Invoice date (SC FY)']
+                sadict[year][ppn][inv_item_key] = r   
+    print 'SWBNDL, STAND ALONE Dictionary Built', time.clock()-t0
 
     with open(output, 'wb') as o:
         writer = csv.writer(o)
@@ -284,11 +291,13 @@ def main():
                     if (sasell < bundlsell) and (bundlname in saname):
                         bndldict[ls] = compare(bndldict[ls],
                                        sadict[year][bndlpublish][sa])
+
             except KeyboardInterrupt:
                 print 'Aborting!'
                 f.close()
                 sys.exit()
-            except:
+            except: 
+                print sys.exc_info()
                 print 'No Samples Found for', bndlpublish, year
                 continue
 
