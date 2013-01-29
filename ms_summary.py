@@ -1,17 +1,12 @@
 import csv
 import time
-
-# Converts CSV to dict
-def csv_dic(filename):
-    reader = csv.reader(open(filename, "rb"))
-    my_dict = dict((k, v) for k, v in reader)
-    return my_dict
+from aux_reader import *
 
 #################################################################################
 ## Function Definitions
-output = 'o\\31-Dec-12 - MS Summary.csv'
-input1 = 'i\\2011-2012 Yoy Raw Data - Referral - MS 31-Dec-12.csv'
-input2 = 'i\\2011-2012 Yoy Raw Data - Indirect - MS 31-Dec-12.csv'
+output = 'o\\29-Jan-13 - MS Summary.csv'
+input1 = 'i\\ms_summary\\2012-2013 Yoy Raw Data - Referrals - 29-Jan-13.csv'
+input2 = 'i\\ms_summary\\2012-2013 Yoy Raw Data - Sales - 29-Jan-13.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
 ref_agreementcat = csv_dic('auxiliary\\ref-agreementcategory.csv')
@@ -42,49 +37,67 @@ def refclean(row):
     row['Gross Revenue'] = row['GP']
     row['Custom Category'] = row['Referral Source']
     row['Custom Item Category'] = ''
-    csc = 'Custom Sub Category'
-    pibt = 'Product Item Bill Type'
-    rrt = 'Referral Rev Type'
-    cic = 'Custom Item Category'
-    pid = 'Product Item Desc'
 
     # ESA 3.0 Classification
     if row['Referral Source'] == 'ESA 3.0':
+        
+        # New Contracts VS Renewal Contracts
         if ref_agreementcat[row['Referral Number']] == 'New Contract':
-            row[csc] = 'New Contract'
+            row['Custom Sub Category'] = 'New Contract'
         else:
-            row[csc] = 'Renew Contract'
-        if row[rrt] == 'N': row[csc] = 'New Contract'
-        elif row[rrt] == 'RN': row[csc] = 'Renew Contract'
-        if row[rrt] in ref_revtype: row[cic] = ref_revtype[row[rrt]]
-        else: row[cic] = 'Other'
+            row['Custom Sub Category'] = 'Renew Contract'
+        if row['Referral Rev Type'] == 'N': 
+            row['Custom Sub Category'] = 'New Contract'
+        elif row['Referral Rev Type'] == 'RN': 
+            row['Custom Sub Category'] = 'Renew Contract'
+
+        # Major VS Corporate
+        if row['Referral Rev Type'] in ref_revtype: 
+            row['Custom Item Category'] = ref_revtype[row['Referral Rev Type']]
+        else: 
+            row['Custom Item Category'] = 'Other'
+
         if row['Customer Number'] in majoraccts:
             row['Custom Category'] = 'ESA 3.0 - MAJOR'
         else: row['Custom Category'] = 'ESA 3.0 - CORPORATE'
-        if (row[pid] == 'CORPORATE ACCOUNT' or
-            row[pid] == 'MAJOR ACCOUNT' or
-            row[pibt] in ['ADOT', 'TRUP']): pass
+
+        if (row['Product Item Desc'] == 'CORPORATE ACCOUNT' or
+            row['Product Item Desc'] == 'MAJOR ACCOUNT' or
+            row['Product Item Bill Type'] in ['ADOT', 'TRUP']): pass
         else: row['Imputed Revenue'] = 0
 
     # ESA 2.0 Classification
     elif row['Referral Source'] == 'ESA 2.0':
-        if row[pibt] == 'TRUP': row[csc] = 'EA True Up'
-        elif row[pibt] == 'ADOT': row[csc] = 'EA Add On'
-        elif row[pibt] == 'OAP2': row[csc] = 'Year 2'
-        elif row[pibt] == 'OAP3': row[csc] = 'Year 3'
-        elif row[pibt] == 'O':
-            if ('Y1' or 'YR1') in row[pid]: row[csc] = 'Year 1'
-            elif ('Y2' or 'YR2') in row[pid]: row[csc] = 'Year 2'
-            elif ('Y3' or 'YR3') in row[pid]: row[csc] = 'Year 3'
-            else: row[csc] = 'Other'
-        else: row[csc] = 'Year 1'
+        if row['Product Item Bill Type'] == 'TRUP':
+            row['Custom Sub Category'] = 'EA True Up'
+        elif row['Product Item Bill Type'] == 'ADOT': 
+            row['Custom Sub Category'] = 'EA Add On'
+        elif row['Product Item Bill Type'] == 'OAP2': 
+            row['Custom Sub Category'] = 'Year 2'
+        elif row['Product Item Bill Type'] == 'OAP3': 
+            row['Custom Sub Category'] = 'Year 3'
+        elif row['Product Item Bill Type'] == 'O':
+            if ('Y1' or 'YR1') in row['Product Item Desc']: 
+                row['Custom Sub Category'] = 'Year 1'
+            elif ('Y2' or 'YR2') in row['Product Item Desc']: 
+                row['Custom Sub Category'] = 'Year 2'
+            elif ('Y3' or 'YR3') in row['Product Item Desc']: 
+                row['Custom Sub Category'] = 'Year 3'
+            else: 
+                row['Custom Sub Category'] = 'Other'
+        else: 
+            row['Custom Sub Category'] = 'Year 1'
 
     # MS SIP Classification
     elif row['Referral Source'] == 'MS SIP':
-        row[csc] = row[pid].title()
+        row['Custom Sub Category'] = row['Product Item Desc'].title()
+
+    # SPLA Classification
+    elif ('SPLA' and 'FENCED DEAL') in row['Referral Notes']:
+        row['Custom Sub Category'] = 'SPLA'
 
     # Other Classification
-    else: row[csc] = 'Other'
+    else: row['Custom Sub Category'] = 'Other'
 
     # Ref PO 'CR' = 0 Rule
     if row['Referral PO Reference'] == 'CR':
@@ -97,9 +110,8 @@ def salesclean(row):
     row['Revenue Type'] = 'Sales'
     row['Imputed Revenue'] = row['Gross Revenue']
     row['Custom Category'] = 'NON-EA DIRECT'
-    ipv = row['Item Prodtype Venprogram']
-    try: row['Custom Sub Category'] = venprogram[ipv]
-    except: row['Custom Sub Category'] = 'EA Indirect and Other'
+    row['Custom Sub Category'] = venprogram.get(row['Item Prodtype Venprogram'],
+                                                'EA Indirect and Other')
     return row
 
 # Virtual Adj
@@ -115,8 +127,7 @@ def virtadj(row):
 # Region Adjustment
 def region(row):
     divloc = str(row['Division']) + str(row['Divloc'])
-    try: row['Region'] = divregion[divloc]
-    except: row['Region'] = 'N/A'
+    row['Region'] = divregion.get(divloc, 'N/A')
     return row
 
 
