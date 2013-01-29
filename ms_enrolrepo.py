@@ -4,6 +4,7 @@ from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime, timedelta
 import dateutil.parser as dparser
+from aux_reader import *
 
 output = 'o\\04-Jan-13 Enrol Repo.csv'
 input1 = 'i\\enrol_repo\\04-jan-13 future billing.csv'
@@ -22,12 +23,6 @@ def header_add(header):
         'Estimated Monthly GP', 'Status', '2013 Rev Stream']
     for newfield in newfields: header.add(newfield)
     return header
-
-# Converts CSV to dict
-def csv_dic(filename):
-    reader = csv.reader(open(filename, "rb"))
-    my_dict = dict((k, v) for k, v in reader)
-    return my_dict
 
 # Declare Variables
 def fb_datascrape(r):
