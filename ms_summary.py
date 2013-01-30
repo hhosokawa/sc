@@ -18,6 +18,7 @@ majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
 otherdiv = {'200':'100', '100':'200'}
 venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 divregion = csv_dic('auxiliary\\div-region.csv')
+divdistrict = csv_dic('auxiliary\\div-district.csv')
 ref_revtype = csv_dic('auxiliary\\ref-revtype.csv')
 
 #################################################################################
@@ -124,10 +125,11 @@ def virtadj(row):
         row['Division'] = otherdiv[d]
     return row
 
-# Region Adjustment
-def region(row):
+# Region / District Adjustment
+def region_district(row):
     divloc = str(row['Division']) + str(row['Divloc'])
     row['Region'] = divregion.get(divloc, 'N/A')
+    row['District'] = divdistrict.get(divloc, 'N/A')
     return row
 
 
@@ -152,7 +154,7 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for row in i1r:
                 row = refclean(row)
-                row = region(row)
+                row = region_district(row)
                 ow.writerow(virtadj(row))
 
         with open(input2) as i2:
@@ -160,7 +162,7 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for row in i2r:
                 row = salesclean(row)
-                row = region(row)
+                row = region_district(row)
                 ow.writerow(virtadj(row))
 
     t1 = time.clock()
