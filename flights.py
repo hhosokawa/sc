@@ -238,9 +238,14 @@ def find_all_paths(graph, start, end, path=[]):
 def find_best_flights(flights, origin, destination):
     G, simpleG = makeGraph(flights)
     allpaths =  find_all_paths(simpleG, origin, destination)
+    best = tree()
     if not allpaths: return None
+
+    # paths
     for path in allpaths:
         for x in range(len(path)):
+
+            # start, end
             start = path[x]
             try: end = path[x+1]
             except IndexError: break
@@ -248,6 +253,8 @@ def find_best_flights(flights, origin, destination):
             print start, end
             for flightid in pathid:
                 print pathid[flightid]
+                
+                
         print '\n'
 
                         
