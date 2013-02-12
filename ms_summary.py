@@ -36,31 +36,31 @@ def refclean(row):
     row['Quarter'] = 'Q' + str(row['Quarter'])
     row['Revenue Type'] = 'Referrals'
     row['Gross Revenue'] = row['GP']
-    row['Custom Category'] = row['Referral Source']
-    row['Custom Item Category'] = ''
+    row['Custom Category A'] = row['Referral Source']
+    row['Custom Category C'] = ''
 
     # ESA 3.0 Classification
     if row['Referral Source'] == 'ESA 3.0':
         
         # New Contracts VS Renewal Contracts
         if ref_agreementcat[row['Referral Number']] == 'New Contract':
-            row['Custom Sub Category'] = 'New Contract'
+            row['Custom Category B'] = 'New Contract'
         else:
-            row['Custom Sub Category'] = 'Renew Contract'
+            row['Custom Category B'] = 'Renew Contract'
         if row['Referral Rev Type'] == 'N': 
-            row['Custom Sub Category'] = 'New Contract'
+            row['Custom Category B'] = 'New Contract'
         elif row['Referral Rev Type'] == 'RN': 
-            row['Custom Sub Category'] = 'Renew Contract'
+            row['Custom Category B'] = 'Renew Contract'
 
         # Major VS Corporate
         if row['Referral Rev Type'] in ref_revtype: 
-            row['Custom Item Category'] = ref_revtype[row['Referral Rev Type']]
+            row['Custom Category C'] = ref_revtype[row['Referral Rev Type']]
         else: 
-            row['Custom Item Category'] = 'Other'
+            row['Custom Category C'] = 'Other'
 
         if row['Customer Number'] in majoraccts:
-            row['Custom Category'] = 'ESA 3.0 - MAJOR'
-        else: row['Custom Category'] = 'ESA 3.0 - CORPORATE'
+            row['Custom Category A'] = 'ESA 3.0 - MAJOR'
+        else: row['Custom Category A'] = 'ESA 3.0 - CORPORATE'
 
         if (row['Product Item Desc'] == 'CORPORATE ACCOUNT' or
             row['Product Item Desc'] == 'MAJOR ACCOUNT' or
@@ -70,35 +70,35 @@ def refclean(row):
     # ESA 2.0 Classification
     elif row['Referral Source'] == 'ESA 2.0':
         if row['Product Item Bill Type'] == 'TRUP':
-            row['Custom Sub Category'] = 'EA True Up'
+            row['Custom Category B'] = 'EA True Up'
         elif row['Product Item Bill Type'] == 'ADOT': 
-            row['Custom Sub Category'] = 'EA Add On'
+            row['Custom Category B'] = 'EA Add On'
         elif row['Product Item Bill Type'] == 'OAP2': 
-            row['Custom Sub Category'] = 'Year 2'
+            row['Custom Category B'] = 'Year 2'
         elif row['Product Item Bill Type'] == 'OAP3': 
-            row['Custom Sub Category'] = 'Year 3'
+            row['Custom Category B'] = 'Year 3'
         elif row['Product Item Bill Type'] == 'O':
             if ('Y1' or 'YR1') in row['Product Item Desc']: 
-                row['Custom Sub Category'] = 'Year 1'
+                row['Custom Category B'] = 'Year 1'
             elif ('Y2' or 'YR2') in row['Product Item Desc']: 
-                row['Custom Sub Category'] = 'Year 2'
+                row['Custom Category B'] = 'Year 2'
             elif ('Y3' or 'YR3') in row['Product Item Desc']: 
-                row['Custom Sub Category'] = 'Year 3'
+                row['Custom Category B'] = 'Year 3'
             else: 
-                row['Custom Sub Category'] = 'Other'
+                row['Custom Category B'] = 'Other'
         else: 
-            row['Custom Sub Category'] = 'Year 1'
+            row['Custom Category B'] = 'Year 1'
 
     # MS SIP Classification
     elif row['Referral Source'] == 'MS SIP':
-        row['Custom Sub Category'] = row['Product Item Desc'].title()
+        row['Custom Category B'] = row['Product Item Desc'].title()
 
     # SPLA Classification
     elif ('SPLA' and 'FENCED DEAL') in row['Referral Notes']:
-        row['Custom Sub Category'] = 'SPLA'
+        row['Custom Category B'] = 'SPLA'
 
     # Other Classification
-    else: row['Custom Sub Category'] = 'Other'
+    else: row['Custom Category B'] = 'Other'
 
     # Ref PO 'CR' = 0 Rule
     if row['Referral PO Reference'] == 'CR':
@@ -110,8 +110,8 @@ def refclean(row):
 def salesclean(row):
     row['Revenue Type'] = 'Sales'
     row['Imputed Revenue'] = row['Gross Revenue']
-    row['Custom Category'] = 'NON-EA DIRECT'
-    row['Custom Sub Category'] = venprogram.get(row['Item Prodtype Venprogram'],
+    row['Custom Category A'] = 'NON-EA DIRECT'
+    row['Custom Category B'] = venprogram.get(row['Item Prodtype Venprogram'],
                                                 'EA Indirect and Other')
     return row
 
