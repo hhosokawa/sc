@@ -5,6 +5,8 @@ from aux_reader import *
 #################################################################################
 ## Function Definitions
 output = 'o\\29-Jan-13 - MS Summary.csv'
+
+# Header Rename
 input1 = 'i\\ms_summary\\2012-2013 Yoy Raw Data - Referrals - 29-Jan-13.csv'
 input2 = 'i\\ms_summary\\2012-2013 Yoy Raw Data - Sales - 29-Jan-13.csv'
 
@@ -19,7 +21,8 @@ otherdiv = {'200':'100', '100':'200'}
 venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 divregion = csv_dic('auxiliary\\div-region.csv')
 divdistrict = csv_dic('auxiliary\\div-district.csv')
-ref_revtype = csv_dic('auxiliary\\ref-revtype.csv')
+ref_revtype = {'AO': 'EA Add-On', 'N': 'EA New', 'RC': 'EA Recurring',
+               'RN': 'EA Renewal', 'TU': 'EA True-Up'}
 
 #################################################################################
 ## Function Definitions
