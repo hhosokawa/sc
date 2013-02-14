@@ -24,28 +24,35 @@ custclass = csv_dic('auxiliary\\cust-class.csv')
 
 # Determines if row is an annual bill
 def annualbill(r):
-    if ((r['Product Item Bill Type'] in ['OAP2', 'OAP3']) or
-        (r['Product Item Number'] in ['KM6165', 'KM6166'])): return True
-    return False
+    if ((r['Product Item Bill Type'] in ['OAP2', 'OAP3']) 
+    or (r['Product Item Number'] in ['KM6165', 'KM6166'])): 
+        return True
+    else:
+        return False
 
 # EA Growth - Datascrape: Referrals -> EA Growth Data
 def growth_scrape(r):
     enrol = r['Contract Enrollment']
     startdate = dparser.parse(r['Enrollment Start Date']).date()
+    enddate = dparser.parse(r['Enrollment End Date']).date()
     if (enrol not in growth and startdate >= currentyear 
     and r['Agreement Category'] == 'New Contract'):
-        growth[enrol]['Cust Name'] = r['SoftChoice Customer Name']
-        growth[enrol]['Cust Class'] = custclass.get(r['SoftChoice Customer Number'], '')
-        growth[enrol]['Start Date'] = r['Enrollment Start Date']
-        growth[enrol]['Start Month'] = int(startdate.strftime("%m"))
+        x = growth[enrol] # id reference
+        x['Enrol #'] = enrol
+        x['Cust Name'] = r['SoftChoice Customer Name']
+        x['Cust Class'] = custclass.get(r['SoftChoice Customer Number'], '')
+        x['Start Date'] = startdate.strftime("%Y-%m")
+        x['Period'] = int(startdate.strftime("%m"))
+        x['End Date'] = enddate.strftime("%Y-%m")
         divloc = r['Referral Division'] + r['Referral Divloc Number']
-        growth[enrol]['Region'] = divregion.get(divloc, '')
-        growth[enrol]['District'] = divdistrict.get(divloc, '')        
+        x['Region'] = divregion.get(divloc, '')
+        x['District'] = divdistrict.get(divloc, '')
+        x['Report Type'] = 'Growth EA'
         if (r['Contract Type'] 
         in ['MS ECI Enrollment', 'MS EAP Enrollment', 'MS Enterprise Enrollment']):
-            growth[enrol]['Contract Type'] = r['Contract Type']
+            x['Custom Category A'] = r['Contract Type']
         else:
-            growth[enrol]['Contract Type'] = 'Other'
+            x['Custom Category A'] = 'Other'
 
     # Absorb Enrol:GP Dict
     if annualbill(r) and d(r['Referral Net Expected Fee Total']) > 0:
@@ -56,19 +63,26 @@ def growth_scrape(r):
 # Renewal Analysis - Datascrape: Contract Repo -> Renewal Analysis
 def renew_scrape(r):
     enrol = r['Contract Number']
+    startdate = dparser.parse(r['Contract Start Date']).date()
     enddate = dparser.parse(r['Contract End Date']).date()
-    if enrol not in renew and currentyear <= enddate <= currentyearend:
-        renew[enrol]['End Date'] = enddate.strftime("%Y-%m")
-        renew[enrol]['Program Name'] = r['Contract Program Name']
-        renew[enrol]['Level'] = r['Contract Level']
+    if enrol not in renew and currentyear <= enddate < currentyearend:
+        x = renew[enrol] # id reference
+        x['Enrol #'] = enrol
+        x['Cust Name'] = r['Master Name']
+        x['Cust Class'] = r['Contract Level']
+        x['Start Date'] = startdate.strftime("%Y-%m")
+        x['End Date'] = enddate.strftime("%Y-%m")
+        x['Period'] = int(enddate.strftime("%m"))
         divloc = r['Master Division'] + r['Master Divloc']
-        renew[enrol]['Region'] = divregion.get(divloc, '')
-        renew[enrol]['District'] = divdistrict.get(divloc, '')
+        x['GP'] = enrolgp.get(r['Renewed to Vendor Contract ID'], 0)
+        x['Region'] = divregion.get(divloc, '')
+        x['District'] = divdistrict.get(divloc, '')
+        x['Report Type'] = 'Renewal Analysis'
         renewid = r['Renewed to Vendor Contract ID']
         if renewid == '': 
-            renew[enrol]['Renew'] = ''
+            x['Custom Category A'] = 'Not Renewed'
         else: 
-            renew[enrol]['Renew'] = 'True'
+            x['Custom Category A'] = 'Renewed'
     return
         
 #################################################################################
@@ -78,33 +92,29 @@ def main():
     t0 = time.clock()
 
     # Create Headers
-    header = ('Enrol #', 'Period', 'Contract Type', 'Cust Name', 
-              'Cust Class', 'Region', 'District')
+    header = ('Enrol #', 'Cust Name', 'Cust Class', 'Region', 
+              'District', 'Start Date', 'End Date', 'Period', 
+              'Level', 'GP', 'Custom Category A', 'Report Type')
 
     # Referral Datascrape -> EA Growth Analysis
     with open(input1) as i1:
         for r in csv.DictReader(i1): growth_scrape(r)
-
-    print len(enrolgp)
-    raw_input('...')
+        print 'EA Growth Analysis Complete.', time.clock()-t0
 
     # Contract Repo Datascrape -> Renewal Analysis
     with open(input2) as i2:
         for r in csv.DictReader(i2): renew_scrape(r)
+        print 'Renewal Analysis Complete.', time.clock()-t0
 
-    for x in renew:
-        if renew[x]['Renew'] == 'True':  print x
+    # Write to Output
+    with open(output, 'wb') as o:
+        writer = csv.writer(o)
+        ow = csv.DictWriter(o, fieldnames=header)
+        writer.writerows([header])
+        for enr in growth: ow.writerow(growth[enr])
+        for enr in renew: ow.writerow(renew[enr])
 
     t1 = time.clock()
     return 'Process completed! Duration:', t1-t0
 
 print main()
-
-"""
-    # Output Writer
-    with open(output, 'wb') as o:
-        writer = csv.writer(o)
-        ow = csv.DictWriter(o, fieldnames=header)
-        writer.writerows([header])
-"""
-
