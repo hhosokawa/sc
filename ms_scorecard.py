@@ -8,8 +8,8 @@ from aux_reader import *
 output = 'o\\04-Jan-13 Enrol Repo.csv'
 input1 = 'i\\ms_scorecard\\referrals.csv'
 input2 = 'i\\ms_scorecard\\contract repo.csv'
-currentyear = datetime(2013, 1, 1).date()
-currentyearend = datetime(2014, 1, 1).date()
+currentyear = datetime(2012, 1, 1).date()
+currentyearend = datetime(2013, 1, 1).date()
 
 d = Decimal
 growth = tree()
