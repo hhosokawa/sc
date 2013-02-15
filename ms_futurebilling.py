@@ -216,6 +216,7 @@ def refclean(r):
         r['District'] = 'N/A'
         r['Rep'] = 'N/A'
     sbm = dparser.parse(r['Scheduled Bill Date']).date()
+    sbm += timedelta(days=1)
     r['Scheduled Bill Month'] = sbm.strftime("%Y-%m")
     sbqmonth = sbm.strftime("%m")
     r['Scheduled Bill Quarter'] = sbm.strftime("%Y-") + quarterperiod[sbqmonth]
@@ -491,7 +492,7 @@ def main():
                         else:
                             ow.writerow(helpdesk(esa3dict[month_esa3]))
                         billdate = billdate + relativedelta(months=+1)
-                        esa3dict[month_esa3]['Scheduled Bill Date'] = billdate.date()
+                        esa3dict[month_esa3]['Scheduled Bill Date'] = billdate.date() 
                         sbm = esa3dict[month_esa3]['Scheduled Bill Date'].strftime("%Y-%m")
                         esa3dict[month_esa3]['Scheduled Bill Month'] = sbm
                         sbqmonth = esa3dict[month_esa3]['Scheduled Bill Date'].strftime("%m")
