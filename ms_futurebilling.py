@@ -1,21 +1,21 @@
-from aux_reader import *
 import csv
 import time
-import dateutil.parser as dparser
-from dateutil.relativedelta import relativedelta
 import collections
-from datetime import datetime, timedelta
+from aux_reader import *
 from decimal import Decimal
+import dateutil.parser as dparser
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 #################################################################################
 ## Update Item Inputs
 
-output = 'o\\09-Jan-13 future billing.csv'
+output = 'o\\future billing - 2013-03-01.csv'
 missing_enrol_output = 'C:/Portable Python 2.7/App/Scripts/o/missing_enrol.txt'
-input1 = 'i\\future_billing\\SB - future billings jan.csv'  # Reminder: Manually do Renewal * 90%
-input2 = 'i\\future_billing\\SB - contract repo - 09-Jan-13.csv' # Reminder: delete Duplicates
-enrollhistory = csv_dic('auxiliary\\MS Future Billing - Enroll History.csv', 6)
-indirectpo = csv_dic('auxiliary\\MS PO ItemNumber Sell Price.csv') # Left 9
+input1 = 'i\\future_billing\\future billing - 2013-03-01.csv'  # Reminder: Manually do Renewal * 90%
+input2 = 'i\\future_billing\\contract repo - 2013-03-01.csv' # Reminder: delete Duplicates
+enrollhistory = csv_dic('i\\future_billing\\enrol history - 2013-03-01.csv', 6)
+indirectpo = csv_dic('i\\future_billing\\po itemnumber - sell price - 2013-03-01.csv', '2b') # Left 9, Space
 
 #################################################################################
 ## Dictionary Pictionary Jars
@@ -32,7 +32,7 @@ quarterperiod = {'01': 'Q1', '02': 'Q1', '03': 'Q1', '04': 'Q2', '05': 'Q2',
                  '11': 'Q4', '12': 'Q4'}
 # Absorb Div, Category, Major/Corp, Region, District, Rep from Contract Repo
 enrolinfo = collections.namedtuple(
-'enrolinfo', 'div, category, major, region, district, rep')
+            'enrolinfo', 'div, category, major, region, district, rep')
 
 #################################################################################
 ## Function Definitions - Future Billings File
@@ -102,10 +102,10 @@ def gpcalc(r):
     if r[adc] == '': r[adc] = 0
     if r['Custom Category A'] == 'ESA 2.0':
         if (((int(r[adc]) < 750) and (r['Level'] == 'A'))
-              or r['Level'] == 'A1'):
+        or r['Level'] == 'A1'):
             return Decimal(0.03)
         elif (((int(r[adc]) > 750) and (r['Level'] == 'A'))
-                or r['Level'] == 'A2'):
+        or r['Level'] == 'A2'):
             return Decimal(0.0275)
         elif r['Level'] == 'B':
             return Decimal(0.025)
@@ -115,16 +115,16 @@ def gpcalc(r):
         return Decimal(0.02)
     return
 
-# Calculates Item Notes
+# Generates Item Notes
 def notescalcESA2(r):                             
     adc = 'Agreement Desktop Count'
     if r[adc] == '': r[adc] = 0
     if r['Custom Category A'] == 'ESA 2.0':
         if (((int(r[adc]) < 750) and (r['Level'] == 'A'))
-              or r['Level'] == 'A1'):
+        or r['Level'] == 'A1'):
             return 'Level A1 SAM Service Req, 90%+ Activated'
         elif (((int(r[adc]) > 750) and (r['Level'] == 'A'))
-                or r['Level'] == 'A2'):
+        or r['Level'] == 'A2'):
             return 'Level A2 SAM Service Req, 90%+ Activated'
         elif r['Level'] == 'B':
             return 'Level B SAM Service Reqs, 90%+ Activated'
@@ -158,8 +158,10 @@ def refclean(r):
     else:
         if esa2date > podate:                   
             r['Custom Category A'] = 'ESA 2.0'
-            agreementyear = (int(r['Scheduled Bill Date'][-4:]) -
-                             int(r['Purchase Order Date'][-4:]) + 1)
+            sbd = dparser.parse(r['Scheduled Bill Date'])
+            pod = dparser.parse(r['Purchase Order Date'])
+            agreementyear = (int(sbd.strftime("%Y")) - 
+                             int(pod.strftime("%Y")) + 1)
             r['Custom Category B'] = 'Year ' + str(agreementyear)
             r['Custom Category C'] = notescalcESA2(r)
             r['Custom Category D'] = ''
@@ -507,9 +509,9 @@ def main():
             for oldr in i2r:
 
 				# Adds New Headers
-                if (oldr['Contract Number'] in enrollhistory and
-                    oldr['Contract Number'] not in fb_enrol_set and
-                    oldr['Contract Status'] == 'Active'):
+                if (oldr['Contract Number'] in enrollhistory 
+                and oldr['Contract Number'] not in fb_enrol_set 
+                and oldr['Contract Status'] == 'Active'):
                     r = dict.fromkeys(header)
                     ehdata = enrollhistory[oldr['Contract Number']]
                     historydataparse(r, oldr, ehdata, o, writer, ow)

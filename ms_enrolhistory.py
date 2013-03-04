@@ -6,7 +6,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 output = 'o\\04-Jan-13 - enrol history.csv'
-input1 = 'i\\2010-2012 - Enrollment PAST.csv'
+input1 = 'i\\ms_enrol_history\\2010-2014 - Enrollment history.csv'
 refset = set()
 enroldict = defaultdict(str)
 
@@ -14,8 +14,9 @@ enroldict = defaultdict(str)
 ## Function Definitions
 
 def annualbill(r):
-    if ((r['Product Item Bill Type'] in ['BDEA', 'OAP2', 'OAP3']) or
-        (r['Product Item Number'] in ['KM6165', 'KM6166'])): return True
+    if ((r['Product Item Bill Type'] in ['BDEA', 'OAP2', 'OAP3']) 
+    or (r['Product Item Number'] in ['KM6165', 'KM6166'])): 
+        return True
     return False
 
 def enrol_analysis(r):

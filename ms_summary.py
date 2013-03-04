@@ -4,23 +4,21 @@ from aux_reader import *
 
 #################################################################################
 ## Function Definitions
-output = 'o\\29-Jan-13 - MS Summary.csv'
-
-# Header Rename
-input1 = 'i\\ms_summary\\2012-2013 Yoy Raw Data - Referrals - 29-Jan-13.csv'
-input2 = 'i\\ms_summary\\2012-2013 Yoy Raw Data - Sales - 29-Jan-13.csv'
+output = 'o\\MS Summary - 2013-03-04.csv'
+input1 = 'i\\ms_summary\\referrals - 2013-03-04.csv'
+input2 = 'i\\ms_summary\\sales - 2013-03-04.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
-ref_agreementcat = csv_dic('auxiliary\\ref-agreementcategory.csv')
+majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
+ref_agreementcat = csv_dic('auxiliary\\ref-agreementcategory.csv', '3b')
 
 #################################################################################
 ##  Dictionary Pictionary Jars
 
-majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
 otherdiv = {'200':'100', '100':'200'}
-venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 divregion = csv_dic('auxiliary\\div-region.csv')
 divdistrict = csv_dic('auxiliary\\div-district.csv')
+venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 ref_revtype = {'AO': 'EA Add-On', 'N': 'EA New', 'RC': 'EA Recurring',
                'RN': 'EA Renewal', 'TU': 'EA True-Up'}
 
@@ -61,7 +59,9 @@ def refclean(row):
         else: 
             row['Custom Category C'] = 'Other'
 
-        if row['Customer Number'] in majoraccts:
+        if (row['Customer Number'] in majoraccts
+        or 'MAJOR' in row['Referral Notes']
+        or row['Product Item Desc'] == 'HELP DESK INCENTIVE'):
             row['Custom Category A'] = 'ESA 3.0 - MAJOR'
         else: row['Custom Category A'] = 'ESA 3.0 - CORPORATE'
 

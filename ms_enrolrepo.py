@@ -1,28 +1,17 @@
 import csv
 import time
-from collections import defaultdict
-from decimal import Decimal
-from datetime import datetime, timedelta
-import dateutil.parser as dparser
 from aux_reader import *
+from decimal import Decimal
+import dateutil.parser as dparser
+from collections import defaultdict
+from datetime import datetime, timedelta
 
-output = 'o\\04-Jan-13 Enrol Repo.csv'
-input1 = 'i\\enrol_repo\\04-jan-13 future billing.csv'
-input2 = 'i\\enrol_repo\\SB - contract repo - 04-Jan-13.csv'
+output = 'o\\Enrol Repo - 2013-03-04.csv'
+input1 = 'i\\enrol_repo\\future billing - 2013-03-01.csv'
+input2 = 'i\\enrol_repo\\contract repo - 2013-03-01.csv'
 
 #################################################################################
 ## Function Definitions
-
-# Adds New Headers
-def header_add(header):
-    newfields = ['Enrol #', 'Enrol Start Date', 'Enrol End Date',
-        'Corporate / Major', 'ESA 2.0 / 3.0 / NON-EA', 'EA Program Type',
-        'New / Renewal', 'Level','Desktop Count', 'SCC Master #',
-        'Primary Customer Name', 'Div', 'Region', 'Divloc Des', 'Sales Rep',
-        'Period','Estimated Annual Rev', 'Estimated Trans GP',
-        'Estimated Monthly GP', 'Status', '2013 Rev Stream']
-    for newfield in newfields: header.add(newfield)
-    return header
 
 # Declare Variables
 def fb_datascrape(r):
@@ -142,10 +131,12 @@ divregion = csv_dic('auxiliary\\div-region.csv')
 def main():
     t0 = time.clock()
 
-    # Obtain Correct Headers
-    header = set()
-    header = header_add(header)
-    header = tuple(header)
+    header = ('Enrol #', 'Enrol Start Date', 'Enrol End Date',
+              'Corporate / Major', 'ESA 2.0 / 3.0 / NON-EA', 'EA Program Type',
+              'New / Renewal', 'Level','Desktop Count', 'SCC Master #',
+              'Primary Customer Name', 'Div', 'Region', 'Divloc Des', 'Sales Rep',
+              'Period','Estimated Annual Rev', 'Estimated Trans GP',
+              'Estimated Monthly GP', 'Status', '2013 Rev Stream')
 
     # Future Billing Data Scrape
     with open(input1) as i1:
