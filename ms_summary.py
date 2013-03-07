@@ -4,9 +4,9 @@ from aux_reader import *
 
 #################################################################################
 ## Function Definitions
-output = 'o\\MS Summary - 2013-03-04.csv'
-input1 = 'i\\ms_summary\\referrals - 2013-03-04.csv'
-input2 = 'i\\ms_summary\\sales - 2013-03-04.csv'
+output = 'o\\MS Summary 2011-2013.csv'
+input1 = 'i\\ms_summary\\ref - 2011-2013.csv'
+input2 = 'i\\ms_summary\\sales - 2011-2013.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
