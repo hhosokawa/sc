@@ -62,7 +62,7 @@ def refclean(r):
 
     # BLANK REFERRAL SOURCE
     else: 
-        x['Category A'] == 'OTHER'
+        x['Category A'] = 'OTHER'
         x['Category B'] = 'Other'
     return
 
