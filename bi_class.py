@@ -32,7 +32,6 @@ def refclean(r):
 
     # ESA 2.0
     elif x['Category A'] == 'ESA 2.0':
-
         if r['Product Item Bill Type'] in ref_revtype2:
             x['Category B'] = ref_revtype2[r['Product Item Bill Type']]
         else:
@@ -48,19 +47,13 @@ def refclean(r):
             else:
                 x['Category B'] = 'Other'
 
-    # MS SIP
+    # MS SIP / SPLA / OTHER / BLANK REFERRAL SOURCE
     elif x['Category A'] == 'MS SIP':
         x['Category B'] = r['Product Item Desc'].title()
-
-    # SPLA
     elif ('SPLA' and 'FENCED DEAL') in r['Referral Notes']:
         x['Category B'] = 'SPLA'        
-
-    # OTHER
     elif x['Category A'] == 'OTHER':
         x['Category B'] = 'Other'
-
-    # BLANK REFERRAL SOURCE
     else: 
         x['Category A'] = 'OTHER'
         x['Category B'] = 'Other'
@@ -79,11 +72,11 @@ def salesclean(r):
 def main():
     t0 = time.clock()    
 
-    # Referral #: Custom Category A-C
+    # Referral #: Custom Category A-B
     with open(refinput) as i1:
         for r in csv.DictReader(i1): refclean(r)
                 
-    # Sales #: Custom Category A-C
+    # Sales #: Custom Category A-B
     with open(salesinput) as i2:
         for r in csv.DictReader(i2): salesclean(r)
 
