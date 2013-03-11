@@ -5,9 +5,10 @@ from datetime import datetime, timedelta
 import dateutil.parser as dparser
 from aux_reader import *
 
-output = 'o\\20-Feb-13 Enrol Repo.csv'
+output = 'o\\2013-03-08 MS Scorecard.csv'
 input1 = 'i\\ms_scorecard\\referrals.csv'
 input2 = 'i\\ms_scorecard\\contract repo.csv'
+input3 = 'i\\ms_scorecard\\explore - zero.csv'
 currentyear = datetime(2013, 1, 1).date()
 currentyearend = datetime(2014, 1, 1).date()
 
@@ -15,6 +16,7 @@ growth = tree()
 renew = tree()
 trueup = tree()
 enroltu = set()
+zerotu = set()
 enrolgp = tree()
 divregion = csv_dic('auxiliary\\div-region.csv')
 divdistrict = csv_dic('auxiliary\\div-district.csv')
@@ -69,8 +71,8 @@ def growth_scrape(r):
         enrolgp[enrol] = gp
 
     # Absorb Enrol:True-Up Dict
-    if (trueupcheck(r) 
-    and int(r['Referral Fiscal Year']) == int(currentyear.strftime("%Y"))-1):
+    yearprior = int(r['Referral Fiscal Year'])-2
+    if (trueupcheck(r) and yearprior == int(currentyear.strftime("%Y"))-1):
         enroltu.add(enrol)
     return
 
@@ -94,7 +96,7 @@ def remap(r, style):
         x = trueup[enrol]
         reporttype = 'True-Up Analysis'
         x['Period'] = int(startdate.strftime("%m"))
-        if enrol in enroltu:
+        if (enrol in enroltu) or (enrol in zerotu):
             x['Custom Category A'] = 'A) Executed'
         else:
             x['Custom Category A'] = 'B) Not Executed'
@@ -122,6 +124,12 @@ def renew_scrape(r):
     and enddate >= currentyearend): 
         remap(r, 'trueup')
     return
+
+# Datascrape: Explore.ms Purchase Order - Zero Usage -> Set()
+def zero_scrape(r):
+    if r['Agreement Number'] not in zerotu:
+        zerotu.add(r['Agreement Number'])
+    return
       
 #################################################################################
 ## Main
@@ -133,6 +141,11 @@ def main():
     header = ('Enrol #', 'Cust Name', 'Cust Class', 'Region', 
               'District', 'Start Date', 'End Date', 'Period', 
               'Level', 'GP', 'Custom Category A', 'Report Type')
+
+    # Zero True-Up Transactions -> Set()
+    with open(input3) as i3:
+        for r in csv.DictReader(i3): zero_scrape(r)
+        print 'Zero True-up Anaylsis Complete.', time.clock()-t0
 
     # Referral Datascrape -> EA Growth Analysis
     with open(input1) as i1:
