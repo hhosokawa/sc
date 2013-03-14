@@ -1,20 +1,17 @@
 import csv
 import time
+from aux_reader import *
 from collections import defaultdict
 
-output = 'o/2013 Feb 15 - NNEA COCP Summary.csv'
-input1 = 'i/ms_cocp/COCP Summary to Feb 15 2013.csv'
-input2 = 'i/ms_cocp/NNEA Summary to Feb 15 2013.csv'
+output = 'o/2013 Feb 28 - NNEA COCP Summary.csv'
+input1 = 'i/ms_cocp/COCP Summary to Feb 28 2013.csv'
+input2 = 'i/ms_cocp/NNEA Summary to Feb 28 2013.csv'
+
+emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
+enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
 
 #################################################################################
 ## Function Definition
-
-def csv_dic(filename, style=1):     # Converts CSV to dict
-    reader = csv.reader(open(filename, "rb"))
-    if style == 1: my_dict = dict((k, v) for k, v in reader)
-    elif style == 3:
-        my_dict = dict((k, (v1, v2, v3)) for k, v1, v2, v3 in reader)
-    return my_dict
 
 def header_add(header):             # Adds New Headers
     newfields = ['NNEA', 'Renewal', 'COCP Win',
@@ -49,13 +46,6 @@ def clean(r, datatype):
     try: r['Branch'] = emp_stb[r['OB Rep']][0]
     except KeyError: r['Branch'] = 'N/A'
     return r
-
-"""
-#################################################################################
-## Requires Updating
-"""
-emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
-enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
 
 # Pictionary Jars
 divregion = csv_dic('auxiliary\\div-region.csv')
