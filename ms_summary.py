@@ -4,9 +4,9 @@ from aux_reader import *
 
 #################################################################################
 ## Function Definitions
-output = 'o\\MS Summary 2011-2013.csv'
-input1 = 'i\\ms_summary\\ref - 2011-2013.csv'
-input2 = 'i\\ms_summary\\sales - 2011-2013.csv'
+output = 'o\\MS Summary 2010-2011.csv'
+input1 = 'i\\ms_summary\\ref - 2010-2011.csv'
+input2 = 'i\\ms_summary\\sales - 2010-2011.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
@@ -115,7 +115,7 @@ def salesclean(row):
     row['Imputed Revenue'] = row['Gross Revenue']
     row['Custom Category A'] = 'NON-EA DIRECT'
     row['Custom Category B'] = venprogram.get(row['Item Prodtype Venprogram'],
-                                                'EA Indirect and Other')
+                                              'EA Indirect and Other')
     return row
 
 # Virtual Adj
@@ -157,16 +157,18 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for row in i1r:
                 row = refclean(row)
+                row = virtadj(row)
                 row = region_district(row)
-                ow.writerow(virtadj(row))
+                ow.writerow(row)
 
         with open(input2) as i2:
             i2r = csv.DictReader(i2)
             ow = csv.DictWriter(o, fieldnames=header)
             for row in i2r:
                 row = salesclean(row)
+                row = virtadj(row)
                 row = region_district(row)
-                ow.writerow(virtadj(row))
+                ow.writerow(row)
 
     t1 = time.clock()
     return 'Process completed! Duration:', t1-t0
