@@ -157,7 +157,7 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for row in i1r:
                 row = refclean(row)
-                row = virtadj(row)
+                row = virtadj(row)g
                 row = region_district(row)
                 ow.writerow(row)
 
