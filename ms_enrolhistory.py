@@ -1,11 +1,11 @@
 import csv
 import time
-import dateutil.parser as dparser
-from datetime import datetime, timedelta
-from collections import defaultdict
 from decimal import Decimal
+import dateutil.parser as dparser
+from collections import defaultdict
+from datetime import datetime, timedelta
 
-output = 'o\\04-Jan-13 - enrol history.csv'
+output = 'o\\2013-04-01 - enrol history.csv'
 input1 = 'i\\ms_enrol_history\\2010-2014 - Enrollment history.csv'
 refset = set()
 enroldict = defaultdict(str)

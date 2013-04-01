@@ -6,9 +6,9 @@ import dateutil.parser as dparser
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-output = 'o\\Enrol Repo - 2013-03-04.csv'
-input1 = 'i\\enrol_repo\\future billing - 2013-03-01.csv'
-input2 = 'i\\enrol_repo\\contract repo - 2013-03-01.csv'
+output = 'o\\Enrol Repo - 2013-04-01.csv'
+input1 = 'i\\enrol_repo\\future billing - 2013-04-01.csv'
+input2 = 'i\\enrol_repo\\contract repo - 2013-04-01.csv'
 
 #################################################################################
 ## Function Definitions

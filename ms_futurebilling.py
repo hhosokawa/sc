@@ -4,7 +4,7 @@ import collections
 from aux_reader import *
 from decimal import Decimal
 import dateutil.parser as dparser
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 
 #################################################################################
@@ -12,10 +12,13 @@ from dateutil.relativedelta import relativedelta
 
 output = 'o\\future billing - 2013-03-01.csv'
 missing_enrol_output = 'C:/Portable Python 2.7/App/Scripts/o/missing_enrol.txt'
-input1 = 'i\\future_billing\\future billing - 2013-03-01.csv'  # Reminder: Manually do Renewal * 90%
-input2 = 'i\\future_billing\\contract repo - 2013-03-01.csv' # Reminder: delete Duplicates
-enrollhistory = csv_dic('i\\future_billing\\enrol history - 2013-03-01.csv', 6)
-indirectpo = csv_dic('i\\future_billing\\po itemnumber - sell price - 2013-03-01.csv', '2b') # Left 9, Space
+year_end = date(2014, 1, 1)
+
+input0 = 'i\\future_billing\\future billing - explore ms - 2013-04-01.csv'
+input1 = 'i\\future_billing\\future billing - 2013-04-01.csv' 
+input2 = 'i\\future_billing\\contract repo - 2013-04-01.csv' # Reminder: delete Duplicates
+enrollhistory = csv_dic('i\\future_billing\\enrol history - 2013-04-01.csv', 6)
+indirectpo = csv_dic('i\\future_billing\\po itemnumber - sell price - 2013-04-01.csv', '2b') # Left 9, Space
 
 #################################################################################
 ## Dictionary Pictionary Jars
@@ -27,9 +30,10 @@ esa3dict = tree()
 enroltree = tree()
 fb_enrol_set = set()
 missing_enrol = set()
-quarterperiod = {'01': 'Q1', '02': 'Q1', '03': 'Q1', '04': 'Q2', '05': 'Q2',
-                 '06': 'Q2', '07': 'Q3', '08': 'Q3', '09': 'Q3', '10': 'Q4',
-                 '11': 'Q4', '12': 'Q4'}
+quarterperiod = {'01': 'Q1', '02': 'Q1', '03': 'Q1', 
+                 '04': 'Q2', '05': 'Q2', '06': 'Q2', 
+                 '07': 'Q3', '08': 'Q3', '09': 'Q3', 
+                 '10': 'Q4', '11': 'Q4', '12': 'Q4'}
 # Absorb Div, Category, Major/Corp, Region, District, Rep from Contract Repo
 enrolinfo = collections.namedtuple(
             'enrolinfo', 'div, category, major, region, district, rep')
@@ -419,9 +423,36 @@ def main():
 
 	# Get all input headers -> output header	
     header = set()                  
-    with open(input1) as i1: header.update(csv.DictReader(i1).fieldnames)
+    with open(input0) as i0: header.update(csv.DictReader(i0).fieldnames)
     header = header_add(header)
     header = tuple(header)
+
+    # Re-Write original Future Billings - Explore MS with 90% Renewals (xlsx - csv)
+    with open(input1, 'wb') as o:
+        writer = csv.writer(o)
+        writer.writerows([header])
+        ow = csv.DictWriter(o, fieldnames=header)
+        with open(input0) as i0:
+            for r in csv.DictReader(i0):
+                ow.writerow(r)
+
+                # If expiring, renew at 90%
+                if (dparser.parse(r['Agreement End Date']).date() < year_end
+                and r['Ordered Under Purchase Order Number'] not in indirectpo):
+                    endyear = (dparser.parse(r['Agreement End Date']).date() 
+                                + relativedelta(years=+1))
+                    startyear = r['Agreement End Date']
+                    r['Scheduled Bill Date'] = startyear
+                    r['Price'] = 0.9 * float(r['Price'])
+                    r['Extended Amount'] = 0.9 * float(r['Extended Amount'])
+                    r['Coverage Start Date'] = startyear
+                    r['Coverage End Date'] = endyear
+                    r['Agreement End Date'] = endyear
+                    r['Agreement Start Date'] = startyear
+                    r['Last License Coverage Date'] = endyear
+                    r['Purchase Order Date'] = startyear
+                    r['Agreement Status'] = 'Renewal Assumption - Annual Bill * 90%'
+                    ow.writerow(r)
 
 	# Absorb Div, Category, Major/Corp, Region, District, Rep from Contract Repo
     with open(input2) as i2:

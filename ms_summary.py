@@ -4,23 +4,26 @@ from aux_reader import *
 
 #################################################################################
 ## Function Definitions
-output = 'o\\MS Summary 2010-2011.csv'
-input1 = 'i\\ms_summary\\ref - 2010-2011.csv'
-input2 = 'i\\ms_summary\\sales - 2010-2011.csv'
+output = 'o\\MS Summary 2011-2013.csv'
+input1 = 'i\\ms_summary\\ref - 2011-2013.csv'
+input2 = 'i\\ms_summary\\sales - 2011-2013.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
 ref_agreementcat = csv_dic('auxiliary\\ref-agreementcategory.csv', '3b')
 
 #################################################################################
-##  Dictionary Pictionary Jars
+## Dictionary Pictionary Jars
 
 otherdiv = {'200':'100', '100':'200'}
 divregion = csv_dic('auxiliary\\div-region.csv')
 divdistrict = csv_dic('auxiliary\\div-district.csv')
 venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
-ref_revtype = {'AO': 'EA Add-On', 'N': 'EA New', 'RC': 'EA Recurring',
-               'RN': 'EA Renewal', 'TU': 'EA True-Up'}
+ref_revtype = {'AO': 'EA Add-On', 
+               'N': 'EA New', 
+               'RC': 'EA Recurring',
+               'RN': 'EA Renewal', 
+               'TU': 'EA True-Up'}
 
 #################################################################################
 ## Function Definitions
@@ -157,7 +160,7 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for row in i1r:
                 row = refclean(row)
-                row = virtadj(row)g
+                row = virtadj(row)
                 row = region_district(row)
                 ow.writerow(row)
 
