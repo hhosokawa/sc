@@ -1,21 +1,31 @@
 import csv
 import time
 from aux_reader import *
+import dateutil.parser as dparser
+from datetime import datetime, timedelta, date
 from collections import defaultdict
 
-output = 'o/2013 Feb 28 - NNEA COCP Summary.csv'
-input1 = 'i/ms_cocp/COCP Summary to Feb 28 2013.csv'
-input2 = 'i/ms_cocp/NNEA Summary to Feb 28 2013.csv'
-
-emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
+output = 'o/NNEA COCP Summary - 2013-04-02.csv'
+input1 = 'i/ms_cocp/COCP Summary to 2013-04-02.csv'
+input2 = 'i/ms_cocp/NNEA Summary to 2013-04-02.csv'
 enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
+emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
+
+# Pictionary Jars
+divregion = csv_dic('auxiliary\\div-region.csv')
+titleOBTSR = csv_dic('auxiliary\\title-OB_TSR.csv')
+enrolset, accttypeset, masterset = set(), set(), set()
+month_num = {'Jan': '01', 'Feb': '02', 'Mar': '03',
+             'Apr': '04', 'May': '05', 'Jun': '06',
+             'Jul': '07', 'Aug': '08', 'Sep': '09',
+             'Oct': '10', 'Nov': '11', 'Dec': '12'}
 
 #################################################################################
 ## Function Definition
 
 def header_add(header):             # Adds New Headers
     newfields = ['NNEA', 'Renewal', 'COCP Win',
-                 'COCP Loss', 'Rep Type', 'Acct Type']
+                 'COCP Loss', 'Rep Type', 'Acct Type', 'Notif Month']
     for newfield in newfields: header.add(newfield)
     return header
 
@@ -23,20 +33,24 @@ def clean(r, datatype):
     if datatype == 'COCPEnrol':
         r['Acct Type'] = 'Enrollment'
         r['Contract Program Name'] = enrolprogram.get(r['Enrollment #'], '')
+        r['Notif Month'] = '-'.join([r['Notif Year'], month_num[r['Notification Month']]])
         if r['Type'] == 'Win': r['COCP Win'] = r['Enrollment #']
         else: r['COCP Loss'] = r['Enrollment #']
     elif datatype == 'COCPAcct':
         r['Contract Program Name'] = ''
         r['Acct Type'] = 'Acct'
+        r['Notif Month'] = '-'.join([r['Notif Year'], month_num[r['Notification Month']]])
         if r['Type'] == 'Win': r['COCP Win'] = r['Master #']
         else: r['COCP Loss'] = r['Master #']
     elif datatype == 'NNEAEnrol':
         r['Acct Type'] = 'Enrollment'
+        r['Notif Month'] = dparser.parse(r['Contract Create Date']).date().strftime("%Y-%m")
         if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Contract Number']
         else: r['Renewal'] = r['Contract Number']
     elif datatype == 'NNEAAcct':
         r['Acct Type'] = 'Acct'
         r['Contract Program Name'] = ''
+        r['Notif Month'] = dparser.parse(r['Contract Create Date']).date().strftime("%Y-%m")
         if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Master Number']
         else: r['Renewal'] = r['Master Number']
     r['OB Rep'] = r['OB Rep'].strip()
@@ -47,10 +61,7 @@ def clean(r, datatype):
     except KeyError: r['Branch'] = 'N/A'
     return r
 
-# Pictionary Jars
-divregion = csv_dic('auxiliary\\div-region.csv')
-titleOBTSR = csv_dic('auxiliary\\title-OB_TSR.csv')
-enrolset, accttypeset, masterset = set(), set(), set()
+
 
 #################################################################################
 ## Main
