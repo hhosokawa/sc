@@ -3,9 +3,12 @@ Archive/*
 auxiliary/*
 i/*
 o/*
+htmlcov/*
+archive_py/*
 *.exe
 *.manifest
 *.lnk
 *script.py
 runxlrd.py
 watchmedo-script.py
+.coverage
