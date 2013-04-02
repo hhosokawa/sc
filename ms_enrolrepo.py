@@ -49,13 +49,9 @@ def fb_datascrape(r):
         tgp = gp
 
     if ankey not in enroldict:
-        try:
-            enroldict[ankey] = [an, ir, tgp, mgp, asd, aed, sbd, region,
-                                level, div, program, cata, catb, adc, cust,
-                                renewal]
-        except:
-            print ankey
-            raw_input('Error Push any key to continue...')   
+        enroldict[ankey] = [an, ir, tgp, mgp, asd, aed, sbd, region,
+                            level, div, program, cata, catb, adc, cust,
+                            renewal]
     else:
         enroldict[ankey][1] += ir
         enroldict[ankey][2] += tgp

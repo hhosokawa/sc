@@ -5,10 +5,11 @@ from datetime import datetime, timedelta
 import dateutil.parser as dparser
 from aux_reader import *
 
-output = 'o\\2013-03-08 MS Scorecard.csv'
+output = 'o\\MS Scorecard - 2013-04-02.csv'
 input1 = 'i\\ms_scorecard\\referrals.csv'
 input2 = 'i\\ms_scorecard\\contract repo.csv'
 input3 = 'i\\ms_scorecard\\explore - zero.csv'
+custclass = csv_dic('i\\ms_scorecard\\cust-class.csv')
 currentyear = datetime(2013, 1, 1).date()
 currentyearend = datetime(2014, 1, 1).date()
 
@@ -20,7 +21,6 @@ zerotu = set()
 enrolgp = tree()
 divregion = csv_dic('auxiliary\\div-region.csv')
 divdistrict = csv_dic('auxiliary\\div-district.csv')
-custclass = csv_dic('auxiliary\\cust-class.csv')
 
 #################################################################################
 ## Function Definitions

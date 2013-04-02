@@ -117,7 +117,6 @@ def gpcalc(r):
             return Decimal(0.0325)
     else:
         return Decimal(0.02)
-    return
 
 # Generates Item Notes
 def notescalcESA2(r):                             
@@ -137,7 +136,6 @@ def notescalcESA2(r):
         elif r['Level'] == 'D':
             return 'Level D 90%+'
         else: return 'Level E 90%+'
-    return
 
 # Clean MS Future Billings Data
 def refclean(r):                               
@@ -195,6 +193,7 @@ def refclean(r):
                 r['GP'] = Decimal(r['Extended Amount']) * gpcalc(r)
                 r['Gross Rev'] = r['GP']
             else:
+
                 r['Custom Category A'] = 'ESA 3.0 - CORPORATE'
                 r['Custom Category D'] = 'Transact Fee'
                 r['Imputed Rev'] = Decimal(r['Extended Amount'])
