@@ -68,8 +68,8 @@ def cleanr(oldr, r):
     if oldr['Contract Number'] in revenroldict:
         enr = revenroldict[oldr['Contract Number']]
         r['Enrol #'] = enr[0]
-        r['Enrol Start Date'] = enr[4]
-        r['Enrol End Date'] = enr[5]
+        r['Enrol Start Date'] = oldr['Contract Start Date']
+        r['Enrol End Date'] = oldr['Contract End Date']
         r['EA Program Type'] = oldr['Contract Program Name']
         r['Level'] = enr[8]
         r['Desktop Count'] = enr[13]

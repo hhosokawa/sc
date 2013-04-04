@@ -4,9 +4,9 @@ from aux_reader import *
 
 #################################################################################
 ## Function Definitions
-output = 'o\\MS Summary 2011-2013.csv'
-input1 = 'i\\ms_summary\\ref - 2011-2013.csv'
-input2 = 'i\\ms_summary\\sales - 2011-2013.csv'
+output = 'o\\MS Summary 2007-2013.csv'
+input1 = 'i\\ms_summary\\ref - 2007-2013.csv'
+input2 = 'i\\ms_summary\\sales - 2007-2013.csv'
 
 FX = csv_dic('auxiliary\\dictFX.csv')
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
@@ -15,6 +15,7 @@ ref_agreementcat = csv_dic('auxiliary\\ref-agreementcategory.csv', '3b')
 #################################################################################
 ## Dictionary Pictionary Jars
 
+imputedclear = set()
 otherdiv = {'200':'100', '100':'200'}
 divregion = csv_dic('auxiliary\\div-region.csv')
 divdistrict = csv_dic('auxiliary\\div-district.csv')
@@ -47,10 +48,10 @@ def refclean(row):
     if row['Referral Source'] == 'ESA 3.0':
         
         # New Contracts VS Renewal Contracts
-        if ref_agreementcat[row['Referral Number']] == 'New Contract':
-            row['Custom Category B'] = 'New Contract'
-        else:
-            row['Custom Category B'] = 'Renew Contract'
+        row['Custom Category B'] = ref_agreementcat.get(
+                                   row['Referral Number'], 'Renew Contract')
+        if row['Custom Category B'] == 'New Contract': pass
+        else: row['Custom Category B'] = 'Renew Contract'
         if row['Referral Rev Type'] == 'N': 
             row['Custom Category B'] = 'New Contract'
         elif row['Referral Rev Type'] == 'RN': 
@@ -61,18 +62,18 @@ def refclean(row):
             row['Custom Category C'] = ref_revtype[row['Referral Rev Type']]
         else: 
             row['Custom Category C'] = 'Other'
-
         if (row['Customer Number'] in majoraccts
         or 'MAJOR' in row['Referral Notes']
         or row['Product Item Desc'] == 'HELP DESK INCENTIVE'):
             row['Custom Category A'] = 'ESA 3.0 - MAJOR'
         else: row['Custom Category A'] = 'ESA 3.0 - CORPORATE'
 
+        # Correct Imputed Revenue for ESA 3.0
         if (row['Product Item Desc'] == 'CORPORATE ACCOUNT' or
             row['Product Item Desc'] == 'MAJOR ACCOUNT' or
             row['Product Item Bill Type'] in ['ADOT', 'TRUP']): pass
         else: row['Imputed Revenue'] = 0
-
+        
     # ESA 2.0 Classification
     elif row['Referral Source'] == 'ESA 2.0':
         if row['Product Item Bill Type'] == 'TRUP':
@@ -101,7 +102,8 @@ def refclean(row):
 
     # SPLA Classification
     elif ('SPLA' and 'FENCED DEAL') in row['Referral Notes']:
-        row['Custom Category B'] = 'SPLA'
+        row['Custom Category A'] = 'SPLA'
+        row['Custom Category A'] = 'Referrals'        
 
     # Other Classification
     else: row['Custom Category B'] = 'Other'
@@ -119,13 +121,17 @@ def salesclean(row):
     row['Custom Category A'] = 'NON-EA DIRECT'
     row['Custom Category B'] = venprogram.get(row['Item Prodtype Venprogram'],
                                               'EA Indirect and Other')
+    if row['Custom Category B'] == 'SPLA':
+        row['Custom Category B'] = 'Sales'
+        row['Custom Category A'] = 'SPLA'        
     return row
 
 # Virtual Adj
 def virtadj(row):
     if row['Divloc'] == '99':
         d, p, y = row['Division'], row['Period'], row['Year']
-        row['GP'] = float((row['GP'])) * adjFX(d, p, y)
+        if row['GP']: row['GP'] = float((row['GP'])) * adjFX(d, p, y)
+        else: row['GP'] = 0
         row['Gross Revenue'] = float(row['Gross Revenue']) * adjFX(d, p, y)
         row['Imputed Revenue'] = float(row['Imputed Revenue']) * adjFX(d, p, y)
         row['Division'] = otherdiv[d]
