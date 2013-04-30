@@ -5,7 +5,7 @@ import dateutil.parser as dparser
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-output = 'o\\2013-04-01 - enrol history.csv'
+output = 'o\\2013-04-30 - enrol history.csv'
 input1 = 'i\\ms_enrol_history\\2010-2014 - Enrollment history.csv'
 refset = set()
 enroldict = defaultdict(str)
@@ -14,8 +14,8 @@ enroldict = defaultdict(str)
 ## Function Definitions
 
 def annualbill(r):
-    if ((r['Product Item Bill Type'] in ['BDEA', 'OAP2', 'OAP3']) 
-    or (r['Product Item Number'] in ['KM6165', 'KM6166'])): 
+    if ((r['Product Item Bill Type'] in ['BDEA', 'OAP2', 'OAP3'])
+    or (r['Product Item Number'] in ['KM6165', 'KM6166'])):
         return True
     return False
 
@@ -28,7 +28,8 @@ def enrol_analysis(r):
     try: rts = Decimal(r['Referral Total Sum'])
     except: rts = 0
     refdate = dparser.parse(r['Referral Date (DD-MMM-YYYY)']).date()
-# [Latest Annual Bill Date, Annual Billing $, True-Up $, Add-On $, Ref Source, Bill Type]
+
+    # [Latest Annual Bill Date, Annual Billing $, True-Up $, Add-On $, Ref Source, Bill Type]
     if (annualbill(r)) and (ce in enroldict) and (rts > 0):
         if refdate > enroldict[ce][0]:
             enroldict[ce] = [refdate, rts, 0 ,0, rs, pibt]

@@ -10,15 +10,15 @@ from dateutil.relativedelta import relativedelta
 #################################################################################
 ## Update Item Inputs
 
-output = 'o\\future billing - 2013-03-01.csv'
+output = 'o\\future billing - 2013-04-30.csv'
 missing_enrol_output = 'C:/Portable Python 2.7/App/Scripts/o/missing_enrol.txt'
 year_end = date(2014, 1, 1)
 
-input0 = 'i\\future_billing\\future billing - explore ms - 2013-04-01.csv'
-input1 = 'i\\future_billing\\future billing - 2013-04-01.csv' 
-input2 = 'i\\future_billing\\contract repo - 2013-04-01.csv' # Reminder: delete Duplicates
-enrollhistory = csv_dic('i\\future_billing\\enrol history - 2013-04-01.csv', 6)
-indirectpo = csv_dic('i\\future_billing\\po itemnumber - sell price - 2013-04-01.csv', '2b') # Left 9, Space
+input0 = 'i\\future_billing\\future billing - explore ms - 2013-04-30.csv'
+input1 = 'i\\future_billing\\future billing - 2013-04-30.csv'   # Automatically Generated 90% Renewal
+input2 = 'i\\future_billing\\contract repo - 2013-04-30.csv'    # Reminder: delete Duplicates
+enrollhistory = csv_dic('i\\future_billing\\enrol history - 2013-04-30.csv', 6)
+indirectpo = csv_dic('i\\future_billing\\po itemnumber - sell price - 2013-04-30.csv', '2b') # Left 9, Space
 
 #################################################################################
 ## Dictionary Pictionary Jars
@@ -30,10 +30,11 @@ esa3dict = tree()
 enroltree = tree()
 fb_enrol_set = set()
 missing_enrol = set()
-quarterperiod = {'01': 'Q1', '02': 'Q1', '03': 'Q1', 
-                 '04': 'Q2', '05': 'Q2', '06': 'Q2', 
-                 '07': 'Q3', '08': 'Q3', '09': 'Q3', 
-                 '10': 'Q4', '11': 'Q4', '12': 'Q4'}
+quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
+                 4: 'Q2', 5: 'Q2', 6: 'Q2',
+                 7: 'Q3', 8: 'Q3', 9: 'Q3',
+                 10:'Q4',11: 'Q4',12: 'Q4'}
+
 # Absorb Div, Category, Major/Corp, Region, District, Rep from Contract Repo
 enrolinfo = collections.namedtuple(
             'enrolinfo', 'div, category, major, region, district, rep')
@@ -42,11 +43,12 @@ enrolinfo = collections.namedtuple(
 ## Function Definitions - Future Billings File
 
 # Adds New Headers
-def header_add(header):             
+def header_add(header):
     newfields = ['Custom Category A', 'Custom Category B', 'GP', 'Rep',
                  'Imputed Rev', 'Gross Rev', 'Custom Category C',
                  'Custom Category D', 'Div', 'Region', 'District',
-                 'Scheduled Bill Month', 'Scheduled Bill Quarter']
+                 'Scheduled Bill Month', 'Scheduled Bill Quarter',
+                 'Scheduled Bill Year']
     for newfield in newfields: header.add(newfield)
     return header
 
@@ -100,7 +102,7 @@ def helpdesk(r):
     return r
 
 # Calculates GP
-def gpcalc(r):                                
+def gpcalc(r):
     adc = 'Agreement Desktop Count'
     ir = 'Imputed Rev'
     if r[adc] == '': r[adc] = 0
@@ -119,7 +121,7 @@ def gpcalc(r):
         return Decimal(0.02)
 
 # Generates Item Notes
-def notescalcESA2(r):                             
+def notescalcESA2(r):
     adc = 'Agreement Desktop Count'
     if r[adc] == '': r[adc] = 0
     if r['Custom Category A'] == 'ESA 2.0':
@@ -138,7 +140,7 @@ def notescalcESA2(r):
         else: return 'Level E 90%+'
 
 # Clean MS Future Billings Data
-def refclean(r):                               
+def refclean(r):
     fb_enrol_set.add(r['Agreement Number'])
     esa2date = dparser.parse('10/30/2011')
     podate = dparser.parse(r['Purchase Order Date'])
@@ -147,7 +149,7 @@ def refclean(r):
     r['Anniversary Year'] = r['Scheduled Bill Date'][-4:]
 
     # Non-EA Indirect
-    if (pocheck in indirectpo):                 
+    if (pocheck in indirectpo):
         r['Custom Category A'] = 'NON-EA DIRECT'
         r['Custom Category B'] = r['Program']
         r['Custom Category C'] = ''
@@ -158,11 +160,11 @@ def refclean(r):
 
     # ESA 2.0
     else:
-        if esa2date > podate:                   
+        if esa2date > podate:
             r['Custom Category A'] = 'ESA 2.0'
             sbd = dparser.parse(r['Scheduled Bill Date'])
             pod = dparser.parse(r['Purchase Order Date'])
-            agreementyear = (int(sbd.strftime("%Y")) - 
+            agreementyear = (int(sbd.strftime("%Y")) -
                              int(pod.strftime("%Y")) + 1)
             r['Custom Category B'] = 'Year ' + str(agreementyear)
             r['Custom Category C'] = notescalcESA2(r)
@@ -170,9 +172,9 @@ def refclean(r):
             r['Imputed Rev'] = Decimal(r['Extended Amount'])
             r['GP'] = Decimal(r['Extended Amount']) * gpcalc(r)
             r['Gross Rev'] = r['GP']
-        else:                                   
-                                                
-            # ESA 3.0 - MAJOR / CORPORATE            
+        else:
+
+            # ESA 3.0 - MAJOR / CORPORATE
             # Custom Category B/C ID
             try:
                 if (enroltree[r['Agreement Number']].category == 'Renew Contract' or
@@ -199,7 +201,7 @@ def refclean(r):
                 r['Imputed Rev'] = Decimal(r['Extended Amount'])
                 r['GP'] = Decimal(r['Extended Amount']) * gpcalc(r)
                 r['Gross Rev'] = r['GP']
-                                                
+
             # Absorb ESA 3.0 #'s
             esa3key = r['Agreement Number'] + ' - ' + r['Scheduled Bill Date']
             if esa3key in esa3dict:
@@ -222,9 +224,10 @@ def refclean(r):
         r['Rep'] = 'N/A'
     sbm = dparser.parse(r['Scheduled Bill Date']).date()
     sbm += timedelta(days=1)
-    r['Scheduled Bill Month'] = sbm.strftime("%Y-%m")
-    sbqmonth = sbm.strftime("%m")
-    r['Scheduled Bill Quarter'] = sbm.strftime("%Y-") + quarterperiod[sbqmonth]
+    r['Scheduled Bill Month'] = int(sbm.strftime("%m"))
+    r['Scheduled Bill Quarter'] = quarterperiod[r['Scheduled Bill Month']]
+    r['Scheduled Bill Year'] = int(sbm.strftime("%Y"))
+
     return r
 
 #################################################################################
@@ -248,10 +251,10 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
     r['Agreement End Date'] = dp(oldr['Contract End Date']).date()
     r['Agreement Desktop Count'] = oldr['Contract Units']
     r['Scheduled Bill Date'] = dp(eh_date).date()
-    r['Scheduled Bill Month'] = r['Scheduled Bill Date'].strftime("%Y-%m")
-    sbqmonth = r['Scheduled Bill Date'].strftime("%m")
-    r['Scheduled Bill Quarter'] = (r['Scheduled Bill Date'].strftime("%Y-") +
-                                   quarterperiod[sbqmonth])
+    r['Scheduled Bill Month'] = int(r['Scheduled Bill Date'].strftime("%m"))
+    r['Scheduled Bill Quarter'] = quarterperiod[r['Scheduled Bill Month']]
+    r['Scheduled Bill Year'] = int(r['Scheduled Bill Date'].strftime("%Y"))
+
     r['Primary Customer Name'] = oldr['Master Name'].title()
     r['Primary Public Customer Number'] = oldr['Master Number']
     r['Level'] = oldr['Contract Level']
@@ -274,7 +277,7 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         r['Rep'] = 'N/A'
 
     # ESA 2.0 Analysis
-    if eh_refsource == 'ESA 2.0':           
+    if eh_refsource == 'ESA 2.0':
         r['Custom Category A'] = 'ESA 2.0'
         if eh_billtype == 'OAP3':
             r['Custom Category B'] = 'Year 3'
@@ -293,7 +296,7 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         ow.writerow(r)
 
     # ESA 3.0 CORP/MAJOR Analysis
-    elif eh_refsource == 'ESA 3.0':         
+    elif eh_refsource == 'ESA 3.0':
         try:
             if enroltree[r['Agreement Number']].category == 'Renew Contract':
                 r['Custom Category B'] = 'Renew Contract'
@@ -319,13 +322,13 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
         calcfees(r, o, writer, ow)
         extrayrs = (int(r['Agreement End Date'].strftime("%Y")) -
                     int(r['Scheduled Bill Date'].strftime("%Y"))) - 1
-                                        
+
     # Calculate Timing of Enrollment Cycle, Enrollment Up for Renewal
-    if extrayrs == 0:                   
+    if extrayrs == 0:
         addrenewal(r, o, writer, ow)
 
     # Enrollment has X years remaining (Max 2)
-    else:                               
+    else:
         for yr in range(extrayrs):
             if yr > 1: break
             if r['Custom Category A'] == 'ESA 2.0':
@@ -333,10 +336,9 @@ def historydataparse(r, oldr, ehdata, o, writer, ow):
                            str(int(r['Custom Category B'][-1:]) + 1))
                 r['Custom Category B'] = newcatb
             r['Scheduled Bill Date'] = r['Scheduled Bill Date'] + relativedelta(years=+1)
-            r['Scheduled Bill Month'] = r['Scheduled Bill Date'].strftime("%Y-%m")
-            sbqmonth = r['Scheduled Bill Date'].strftime("%m")
-            r['Scheduled Bill Quarter'] = (r['Scheduled Bill Date'].strftime("%Y-") +
-                                           quarterperiod[sbqmonth])
+            r['Scheduled Bill Month'] = int(r['Scheduled Bill Date'].strftime("%m"))
+            r['Scheduled Bill Quarter'] = quarterperiod[r['Scheduled Bill Month']]
+            r['Scheduled Bill Year'] = int(r['Scheduled Bill Date'].strftime("%Y"))
             r['Ordered Under Purchase Order Number'] = yr
             ow.writerow(r)
             calcfees(r, o, writer, ow)
@@ -348,10 +350,9 @@ def addrenewal(r, o, writer, ow):
     r['Agreement Start Date'] = r['Agreement End Date']
     r['Purchase Order Date'] = r['Agreement End Date']
     r['Scheduled Bill Date'] = r['Agreement End Date']
-    r['Scheduled Bill Month'] = r['Scheduled Bill Date'].strftime("%Y-%m")
-    sbqmonth = r['Scheduled Bill Date'].strftime("%m")
-    r['Scheduled Bill Quarter'] = (r['Scheduled Bill Date'].strftime("%Y-") +
-                                   quarterperiod[sbqmonth])
+    r['Scheduled Bill Month'] = int(r['Scheduled Bill Date'].strftime("%m"))
+    r['Scheduled Bill Quarter'] = quarterperiod[r['Scheduled Bill Month']]
+    r['Scheduled Bill Year'] = int(r['Scheduled Bill Date'].strftime("%Y"))
     r['Agreement End Date'] = r['Agreement End Date'] + relativedelta(years=+1)
     r['Imputed Rev'] = r['Imputed Rev'] * Decimal(0.9)
     r['Extended Amount'] = r['Imputed Rev']
@@ -385,6 +386,7 @@ def calcfees(r, o, writer, ow):
     originalsbd = r['Scheduled Bill Date']
     originalsbm = r['Scheduled Bill Month']
     originalsbq = r['Scheduled Bill Quarter']
+    originalsby = r['Scheduled Bill Year']
     for x in range(12):
         if r['Custom Category A'] == 'ESA 3.0 - CORPORATE':
             ow.writerow(manage(r))
@@ -392,16 +394,16 @@ def calcfees(r, o, writer, ow):
         elif r['Custom Category A'] == 'ESA 3.0 - MAJOR':
             ow.writerow(helpdesk(r))
         r['Scheduled Bill Date'] = r['Scheduled Bill Date'] + relativedelta(months=+1)
-        r['Scheduled Bill Month'] = r['Scheduled Bill Date'].strftime("%Y-%m")
-        sbqmonth = r['Scheduled Bill Date'].strftime("%m")
-        r['Scheduled Bill Quarter'] = (r['Scheduled Bill Date'].strftime("%Y-") +
-                                       quarterperiod[sbqmonth])
+        r['Scheduled Bill Month'] = int(r['Scheduled Bill Date'].strftime("%m"))
+        r['Scheduled Bill Quarter'] = quarterperiod[r['Scheduled Bill Month']]
+        r['Scheduled Bill Year'] = int(r['Scheduled Bill Date'].strftime("%Y"))
     r['Imputed Rev'] = r['Extended Amount']
     r['Custom Category D'] = originalcat
     r['Custom Category C'] = originalcatc
     r['Scheduled Bill Date'] = originalsbd
     r['Scheduled Bill Month'] = originalsbm
     r['Scheduled Bill Quarter'] = originalsbq
+    r['Scheduled Bill Year'] = originalsby
     return
 
 def ontimerenewal(r):
@@ -420,8 +422,8 @@ def ontimerenewal(r):
 def main():
     t0 = time.clock()
 
-	# Get all input headers -> output header	
-    header = set()                  
+	# Get all input headers -> output header
+    header = set()
     with open(input0) as i0: header.update(csv.DictReader(i0).fieldnames)
     header = header_add(header)
     header = tuple(header)
@@ -438,7 +440,7 @@ def main():
                 # If expiring, renew at 90%
                 if (dparser.parse(r['Agreement End Date']).date() < year_end
                 and r['Ordered Under Purchase Order Number'] not in indirectpo):
-                    endyear = (dparser.parse(r['Agreement End Date']).date() 
+                    endyear = (dparser.parse(r['Agreement End Date']).date()
                                 + relativedelta(years=+1))
                     startyear = r['Agreement End Date']
                     r['Scheduled Bill Date'] = startyear
@@ -463,7 +465,7 @@ def main():
             except KeyError:
                 temp_region = 'N/A'
                 temp_district = 'N/A'
-            if (r['MS Major Acct (Y/N)'] == 'Y' and 
+            if (r['MS Major Acct (Y/N)'] == 'Y' and
                 r['Master Number'] not in majoraccts):
                 majoraccts.add(r['Master Number'])
             enroltree[r['Contract Number']] = enrolinfo(
@@ -483,7 +485,7 @@ def main():
             ow = csv.DictWriter(o, fieldnames=header)
             for r in i1r:
                 ow.writerow(refclean(r))
-				
+
                 # On-Time Renewal
                 if (r['Custom Category A'] == 'ESA 3.0 - CORPORATE' and
                     r['Custom Category B'] == 'Renew Contract' and
@@ -524,12 +526,11 @@ def main():
                         else:
                             ow.writerow(helpdesk(esa3dict[month_esa3]))
                         billdate = billdate + relativedelta(months=+1)
-                        esa3dict[month_esa3]['Scheduled Bill Date'] = billdate.date() 
-                        sbm = esa3dict[month_esa3]['Scheduled Bill Date'].strftime("%Y-%m")
+                        esa3dict[month_esa3]['Scheduled Bill Date'] = billdate.date()
+                        sbm = int(esa3dict[month_esa3]['Scheduled Bill Date'].strftime("%m"))
                         esa3dict[month_esa3]['Scheduled Bill Month'] = sbm
-                        sbqmonth = esa3dict[month_esa3]['Scheduled Bill Date'].strftime("%m")
-                        r['Scheduled Bill Quarter'] = (billdate.strftime("%Y-") +
-                                                       quarterperiod[sbqmonth])
+                        r['Scheduled Bill Quarter'] = quarterperiod[sbm]
+                        r['Scheduled Bill Year'] = int(esa3dict[month_esa3]['Scheduled Bill Date'].strftime("%Y"))
 
 		# Get all input headers -> output header
 		# Analyze Input 2: Contract Repository -> Output
@@ -539,14 +540,14 @@ def main():
             for oldr in i2r:
 
 				# Adds New Headers
-                if (oldr['Contract Number'] in enrollhistory 
-                and oldr['Contract Number'] not in fb_enrol_set 
+                if (oldr['Contract Number'] in enrollhistory
+                and oldr['Contract Number'] not in fb_enrol_set
                 and oldr['Contract Status'] == 'Active'):
                     r = dict.fromkeys(header)
                     ehdata = enrollhistory[oldr['Contract Number']]
                     historydataparse(r, oldr, ehdata, o, writer, ow)
         t1 = time.clock()
-        
+
         # Write missing enrollments to txt
         f = open(missing_enrol_output, 'w')
         for enrol in missing_enrol:
