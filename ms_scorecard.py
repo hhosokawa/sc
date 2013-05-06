@@ -27,15 +27,15 @@ divdistrict = csv_dic('auxiliary\\div-district.csv')
 
 # Determines if row is an annual bill
 def annualbill(r):
-    if ((r['Product Item Bill Type'] in ['OAP2', 'OAP3']) 
-    or (r['Product Item Number'] in ['KM6165', 'KM6166'])): 
+    if ((r['Product Item Bill Type'] in ['OAP2', 'OAP3'])
+    or (r['Product Item Number'] in ['KM6165', 'KM6166'])):
         return True
     else:
         return False
 
 # Determines if row is a True-Up
 def trueupcheck(r):
-    if (r['Referral Rev Type'] == 'TU' 
+    if (r['Referral Rev Type'] == 'TU'
     or r['Product Item Bill Type'] == 'TRUP'):
         return True
     else:
@@ -46,7 +46,7 @@ def growth_scrape(r):
     enrol = r['Contract Enrollment']
     startdate = dparser.parse(r['Enrollment Start Date']).date()
     enddate = dparser.parse(r['Enrollment End Date']).date()
-    if (enrol not in growth and startdate >= currentyear 
+    if (enrol not in growth and startdate >= currentyear
     and r['Agreement Category'] == 'New Contract'):
         x = growth[enrol] # id reference
         x['Enrol #'] = enrol
@@ -59,7 +59,7 @@ def growth_scrape(r):
         x['Region'] = divregion.get(divloc, '')
         x['District'] = divdistrict.get(divloc, '')
         x['Report Type'] = 'Growth EA'
-        if (r['Contract Type'] 
+        if (r['Contract Type']
         in ['MS ECI Enrollment', 'MS EAP Enrollment', 'MS Enterprise Enrollment']):
             x['Custom Category A'] = r['Contract Type']
         else:
@@ -81,16 +81,16 @@ def remap(r, style):
     enrol = r['Contract Number']
     startdate = dparser.parse(r['Contract Start Date']).date()
     enddate = dparser.parse(r['Contract End Date']).date()
-    
+
     # Identify Renewal / True-Up Executed
-    if style == 'renew': 
+    if style == 'renew':
         x = renew[enrol]
         reporttype = 'Renewal Analysis'
         x['Period'] = int(enddate.strftime("%m"))
-        if r['Renewed to Vendor Contract ID'] <> '': 
+        if r['Renewed to Vendor Contract ID'] <> '':
             x['Custom Category A'] = 'A) Renewed'
             x['GP'] = enrolgp.get(r['Renewed to Vendor Contract ID'], 0)
-        else: 
+        else:
             x['Custom Category A'] = 'B) Not Renewed'
     elif style == 'trueup':
         x = trueup[enrol]
@@ -110,18 +110,18 @@ def remap(r, style):
     x['Region'] = divregion.get(divloc, '')
     x['District'] = divdistrict.get(divloc, '')
     x['Report Type'] = reporttype
-    return 
+    return
 
 # Datascrape: Contract Repo -> Renewal/True-Up Analysis
 def renew_scrape(r):
     enrol = r['Contract Number']
     enddate = dparser.parse(r['Contract End Date']).date()
 
-    if (enrol not in renew 
-    and currentyear <= enddate < currentyearend): 
+    if (enrol not in renew
+    and currentyear <= enddate < currentyearend):
         remap(r, 'renew')
-    if (enrol not in trueup 
-    and enddate >= currentyearend): 
+    if (enrol not in trueup
+    and enddate >= currentyearend):
         remap(r, 'trueup')
     return
 
@@ -130,7 +130,7 @@ def zero_scrape(r):
     if r['Agreement Number'] not in zerotu:
         zerotu.add(r['Agreement Number'])
     return
-      
+
 #################################################################################
 ## Main
 
@@ -138,8 +138,8 @@ def main():
     t0 = time.clock()
 
     # Create Headers
-    header = ('Enrol #', 'Cust Name', 'Cust Class', 'Region', 
-              'District', 'Start Date', 'End Date', 'Period', 
+    header = ('Enrol #', 'Cust Name', 'Cust Class', 'Region',
+              'District', 'Start Date', 'End Date', 'Period',
               'Level', 'GP', 'Custom Category A', 'Report Type')
 
     # Zero True-Up Transactions -> Set()

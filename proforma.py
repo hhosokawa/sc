@@ -2,22 +2,22 @@ import csv
 import time
 from aux_reader import *
 
-#################################################################################
+###############################################################################
 ## IO
 output = 'o\\proforma.csv'
 input1 = 'i\\proforma\\gl.csv'
 
-years = ['2007', '2008', '2009']
-div = '"*"'
+years = ['2012']
+divs = ['"*"', '"100"', '"200"']
 
 gl = tree()
 cat = tree()
-quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1', 
-                 4: 'Q2', 5: 'Q2', 6: 'Q2', 
-                 7: 'Q3', 8: 'Q3', 9: 'Q3', 
+quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
+                 4: 'Q2', 5: 'Q2', 6: 'Q2',
+                 7: 'Q3', 8: 'Q3', 9: 'Q3',
                  10:'Q4', 11:'Q4', 12:'Q4'}
 
-#################################################################################
+###############################################################################
 ## Function Definitions
 
 # Collect all Valid GLs
@@ -43,51 +43,74 @@ def scan_gl(r):
         # 6 Digit Identification
         if len(str(cell)) == 6 and cell.isdigit():
             glacct = cell
-            desc = r[r.index(cell)+1] 
+            desc = r[r.index(cell)+1]
             if cat['report'] == 'IS': # IS
                 gl[glacct] = (desc, cat['report'], cat['a'], cat['b'], desc)
             else: # BS
                 gl[glacct] = (desc, cat['report'], cat['a'], cat['b'], cat['c'])
     return
 
+# Make Spreadsheet Server Formula
+def makeformula(minus, currency, book, year, per_ltd, month, div, acct):
+    return ('='+ minus +'GXL("A","","TRANSLATED="&"E"&";"&"CURRENCY="&' +
+             currency + '&";"&"BOOK="&' + # Currency
+             book + '&";",' +             # Book
+             year + ',' +                 # Year
+             per_ltd + ',' +              # PER or LTD
+             str(month) + ',' +           # Period
+             div + ',"*","*",' +          # Div
+             acct + ',"*","*")')          # GL Acct
+
 # GL Account -> Write Row for Year, IS, BS
 def mapper(o, acct, desc, report, a, b, c):
 
-    # Cycles # Of Years
+    # Years
     for year in years:
 
-        if report == 'IS': # IS
-            # Writes X 12 for # of Months
-            for month in range(1,13):
-                qtr = quarterperiod[month]
-                formula = ('=-GXL("A","","TRANSLATED="&"E"&";"&"CURRENCY="&"USD"&";"&"BOOK="&"SC Consol - US"&";",' + 
-                           year + ',"PER",' +   # Year
-                           str(month) + ',' +   # Period
-                           div + ',"*","*",' +  # Div
-                           acct + ',"*","*")')  # GL Acct
+        # Division & Currency
+        for div in divs:
+            if div == '"100"':
+                currency = '"CAD"'
+                book = '"SC Canada"'
+            elif div == '"200"':
+                currency = '"USD"'
+                book = '"SC United States"'
+            else:
+                currency = '"USD"'
+                book = '"SC Consol - US"'
 
-                o.writerow([acct, desc, report, a, b, c, div, month, qtr, year, str(formula)])
+            if report == 'IS': # IS
+                # Writes X 12 for # of Months
+                for month in range(1,13):
+                    qtr = quarterperiod[month]
+                    minus = '-'
+                    per_ltd = '"PER"'
+                    formula = makeformula(minus, currency, book, year,
+                                          per_ltd, str(month), div, acct)
 
-        else: # BS
-            # Writes X 4 for # of Quarters
-            for month in [3, 6, 9, 12]:
-                qtr = quarterperiod[month]
-                formula = ('=GXL("A","","TRANSLATED="&"E"&";"&"CURRENCY="&"USD"&";"&"BOOK="&"SC Consol - US"&";",' + 
-                           year + ',"LTD",' +   # Year 
-                           str(month) + ',' +   # Period / Quarter
-                           div + ',"*","*",' +  # Div
-                           acct + ',"*","*")')  # GL Acct
+                    o.writerow([acct, desc, report, a, b, c,
+                                div, month, qtr, year, str(formula)])
 
-                # "Due to Parent Company" ->  "Long Term Assets"
-                if c == 'Due to Parent Company':
-                    a = '10000 Assets'
-                    b = 'Long Term Assets'
+            else: # BS
+                # Writes X 4 for # of Quarters
+                for month in [3, 6, 9, 12]:
+                    qtr = quarterperiod[month]
+                    minus = ''
+                    per_ltd = '"LTD"'
+                    formula = makeformula(minus, currency, book, year,
+                                          per_ltd, str(month), div, acct)
 
-                o.writerow([acct, desc, report, a, b, c, div, month, qtr, year, str(formula)])
-                  
+                    # "Due to Parent Company" ->  "Long Term Assets"
+                    if c == 'Due to Parent Company':
+                        a = '10000 Assets'
+                        b = 'Long Term Assets'
+
+                    o.writerow([acct, desc, report, a, b, c,
+                                div, month, qtr, year, str(formula)])
+
     return
 
-#################################################################################
+###############################################################################
 ## Main Program
 
 def main():
@@ -98,7 +121,7 @@ def main():
         i1r = csv.reader(i1)
         for r in i1r: r = scan_gl(r)
 
-    headers = ['GL', 'GL Desc', 'Report Type', 'Cat A', 'Cat B', 'Cat C', 
+    headers = ['GL', 'GL Desc', 'Report Type', 'Cat A', 'Cat B', 'Cat C',
                'Div', 'Period', 'Quarter', 'Year', 'Amount']
 
     with open(output, 'wb') as o1:
