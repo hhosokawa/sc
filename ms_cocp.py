@@ -5,9 +5,9 @@ import dateutil.parser as dparser
 from datetime import datetime, timedelta, date
 from collections import defaultdict
 
-output = 'o/NNEA COCP Summary - 2013-04-02.csv'
-input1 = 'i/ms_cocp/COCP Summary to 2013-04-02.csv'
-input2 = 'i/ms_cocp/NNEA Summary to 2013-04-02.csv'
+output = 'o/NNEA COCP Summary - 2013-04-30.csv'
+input1 = 'i/ms_cocp/COCP Summary to 2013-05-07.csv'
+input2 = 'i/ms_cocp/NNEA Summary to 2013-04-30.csv'
 enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
 emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
 
@@ -69,29 +69,29 @@ def main():
     t0 = time.clock()
 
     # All input headers -> output header
-    header = set()                  
+    header = set()
     with open(input1) as i1: header.update(csv.DictReader(i1).fieldnames)
     with open(input2) as i2: header.update(csv.DictReader(i2).fieldnames)
     header = header_add(header)
     header = tuple(header)
 
     # Analyze Input 1-2 -> Output
-    with open(output, 'wb') as o:   
+    with open(output, 'wb') as o:
         writer = csv.writer(o)
         ow = csv.DictWriter(o, fieldnames=header)
         writer.writerows([header])
         with open(input1) as i1:
             i1r = csv.DictReader(i1)
-            
+
             # COCP Enrollment Cleaning
-            for r in i1r:           
+            for r in i1r:
                 enrolset.add(r['Enrollment #'])
                 r = clean(r, 'COCPEnrol')
                 if 'Region' in r['Region']:
                     r['Region'] = r['Region'].replace('Region', '')
                     r['Region'] = r['Region'].strip()
                 ow.writerow(r)
-                                    
+
                 # COCP Acct Cleaning
                 r['COCP Loss'], r['COCP Win'] = '', ''
                 acctid = r['Master #'] + r['Type']
@@ -104,7 +104,7 @@ def main():
             i2r = csv.DictReader(i2)
 
             # NNEA Enrollment Cleaning
-            for r in i2r:           
+            for r in i2r:
                 r['OB Rep'] = r['Master OB Rep Name']
                 r['Master #'] = r['Master Number']
                 r['Customer'] = r['Master Name']
@@ -116,12 +116,12 @@ def main():
                 if 'Region' in r['Region']:
                     r['Region'] = r['Region'].replace('Region', '')
                     r['Region'] = r['Region'].strip()
-            
+
                 if r['Contract Number'] not in enrolset:
                     enrolset.add(r['Contract Number'])
                     r = clean(r, 'NNEAEnrol')
                     ow.writerow(r)
-                                    
+
                 # NNEA Acct Cleaning
                 r['NNEA'], r['Renewal'] = '', ''
                 if r['Master Number'] not in masterset:

@@ -7,8 +7,8 @@ from aux_reader import *
 output = 'o\\proforma.csv'
 input1 = 'i\\proforma\\gl.csv'
 
-years = ['2012']
-divs = ['"*"', '"100"', '"200"']
+years = ['2012', '2011', '2010']
+divs = ['"*"']
 
 gl = tree()
 cat = tree()
@@ -127,6 +127,8 @@ def main():
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
         o1w.writerow(headers)
+
+        # Map every GL
         for acct in gl:
             desc, report, a, b, c = gl[acct]
             mapper(o1w, acct, desc, report, a, b, c)
