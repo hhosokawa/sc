@@ -7,7 +7,7 @@ from aux_reader import *
 output = 'o\\proforma.csv'
 input1 = 'i\\proforma\\gl.csv'
 
-years = ['2012', '2011', '2010']
+years = ['2013']
 divs = ['"*"']
 
 gl = tree()
