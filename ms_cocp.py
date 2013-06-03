@@ -5,9 +5,9 @@ import dateutil.parser as dparser
 from datetime import datetime, timedelta, date
 from collections import defaultdict
 
-output = 'o/NNEA COCP Summary - 2013-04-30.csv'
-input1 = 'i/ms_cocp/COCP Summary to 2013-05-07.csv'
-input2 = 'i/ms_cocp/NNEA Summary to 2013-04-30.csv'
+output = 'o/NNEA COCP Summary - 2013-06-03.csv'
+input1 = 'i/ms_cocp/COCP Summary to 2013-05-15.csv'
+input2 = 'i/ms_cocp/NNEA Summary to 2013-06-03.csv'
 enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
 emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
 
@@ -23,20 +23,24 @@ month_num = {'Jan': '01', 'Feb': '02', 'Mar': '03',
 #################################################################################
 ## Function Definition
 
-def header_add(header):             # Adds New Headers
+# Adds New Headers
+def header_add(header):
     newfields = ['NNEA', 'Renewal', 'COCP Win',
                  'COCP Loss', 'Rep Type', 'Acct Type', 'Notif Month']
     for newfield in newfields: header.add(newfield)
     return header
 
 def clean(r, datatype):
+
     if datatype == 'COCPEnrol':
+        r['Notification Month'] = r['Notification Month'].strip()
         r['Acct Type'] = 'Enrollment'
         r['Contract Program Name'] = enrolprogram.get(r['Enrollment #'], '')
         r['Notif Month'] = '-'.join([r['Notif Year'], month_num[r['Notification Month']]])
         if r['Type'] == 'Win': r['COCP Win'] = r['Enrollment #']
         else: r['COCP Loss'] = r['Enrollment #']
     elif datatype == 'COCPAcct':
+        r['Notification Month'] = r['Notification Month'].strip()
         r['Contract Program Name'] = ''
         r['Acct Type'] = 'Acct'
         r['Notif Month'] = '-'.join([r['Notif Year'], month_num[r['Notification Month']]])
@@ -55,10 +59,21 @@ def clean(r, datatype):
         else: r['Renewal'] = r['Master Number']
     r['OB Rep'] = r['OB Rep'].strip()
     r['Customer'] = r['Customer'].upper()
-    try: r['Rep Type'] = titleOBTSR[emp_stb[r['OB Rep']][1]]
-    except KeyError: r['Rep Type'] = 'N/A'
-    try: r['Branch'] = emp_stb[r['OB Rep']][0]
-    except KeyError: r['Branch'] = 'N/A'
+
+    # Correct Rep Type / Branch
+    try:
+        r['Rep Type'] = titleOBTSR[emp_stb[r['OB Rep']][1]]
+    except KeyError:
+        if 'Coverage' in r:
+            r['Rep Type'] = r['Coverage']
+
+        if r['Rep Type'] == 'TB':
+            r['Rep Type'] = 'TSR'
+    try:
+        r['Branch'] = emp_stb[r['OB Rep']][0]
+    except KeyError:
+        pass
+
     return r
 
 
