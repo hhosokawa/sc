@@ -73,10 +73,7 @@ def clean(r, datatype):
         r['Branch'] = emp_stb[r['OB Rep']][0]
     except KeyError:
         pass
-
     return r
-
-
 
 #################################################################################
 ## Main
