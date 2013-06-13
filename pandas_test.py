@@ -1,43 +1,45 @@
 import pandas as pd
 import numpy as np
 
-data = pd.read_csv('c:/users/hhos/Downloads/fortune1000.csv')
-famous = {'3Com': 'Cool'}
+# Input
+data = pd.read_csv('C:/sc/i/database/2012-sales.csv')
+output = 'C:/sc/o/outputtest.csv'
 
-def revenuecheck(revenue):
-    if 0 < revenue < 1000:
-        return 'A'
-    elif 1001 < revenue < 2000:
-        return 'B'
-    elif 2001 < revenue < 3000:
-        return 'C'
-    else:
-        return 'Tosin Abasi'
+# Select Columns
+headers =   ['Bill to Master NAICS Description',
+            'Softchoice DivLoc Des',
+            'Invoice date (SC FM)',
+            'Total Sale price']
 
-def revenuecheck2(rev):
-    if 0 < rev < 2000:
-        return 'Super 1'
-    elif 2001 < rev < 3000:
-        return 'Super 2'
-    elif 3001 < rev < 4000:
-        return 'Mega 3'
-    else:
-        return 'Mega Tosin Abasi'
+# Pivot: Val, Rows, Cols
+pivot_val  =    'Total Sale price'
+pivot_rows =    ['Bill to Master NAICS Description',
+                'Softchoice DivLoc Des']
+pivot_cols =    ['Invoice date (SC FM)']
 
 def main():
-    print data.head(), '\n'
-    data['category'] = data['revenue'].map(revenuecheck)
-    data['category 2'] = data['revenue'].map(revenuecheck2)
+    # Select Columns
+    filterdata = data.ix[:, headers]
 
-    print 'Edit 1'
-    print data.head(), '\n'
+    # Select Pivot Rows / Columns
+    pivotdata = pd.pivot_table(filterdata,
+                        values = pivot_val,
+                        rows = pivot_rows,
+                        cols = pivot_cols,
+                        aggfunc = np.sum)
 
-    grouped = data.groupby(['category', 'category 2'])
-    pivot = grouped.sum()
-    print pivot.head()
-
-
-
+    # Output to CSV
+    pivotdata.to_csv(output)
+    return
 
 if __name__ == '__main__':
     main()
+
+
+"""
+    grouped = filterdata.groupby([
+        'Bill to Master NAICS Description',
+        'Softchoice DivLoc Des'])
+
+    print grouped.sum()[:10]
+"""
