@@ -4,6 +4,7 @@ from aux_reader import *
 
 #################################################################################
 ## io
+
 output = 'o\\ms summary - 2012-2013 Q2.csv'
 input1 = 'i\\ms_summary\\ref.csv'
 input2 = 'i\\ms_summary\\sales.csv'
@@ -11,6 +12,7 @@ input3 = 'i\\ms_summary\\bi.csv'
 
 #################################################################################
 ## Dictionary Pictionary Jars
+
 order = {}
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
 venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
@@ -22,6 +24,7 @@ ref_revtype = {'AO': 'EA Add-On',
 
 #################################################################################
 ## Function Definitions
+
 # Clean Referrals Data
 def refclean(row):
     catA = row['Referral Source']
@@ -49,10 +52,8 @@ def refclean(row):
             if ('Y1' or 'YR1') in row['Product Item Desc']:   catB = 'Year 1'
             elif ('Y2' or 'YR2') in row['Product Item Desc']: catB = 'Year 2'
             elif ('Y3' or 'YR3') in row['Product Item Desc']: catB = 'Year 3'
-            else:
-                catB = 'Other'
-        else:
-            catB = 'Year 1'
+            else: catB = 'Other'
+        else: catB = 'Year 1'
 
     # MS SIP Classification
     elif row['Referral Source'] == 'MS SIP':
@@ -64,8 +65,7 @@ def refclean(row):
         catB = 'Referrals'
 
     # Other Classification
-    else:
-        catB = 'Other'
+    else: catB = 'Other'
 
     # Absorb into Dictionary
     order[row['Referral Number']] = (catA, catB)
