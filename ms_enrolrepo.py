@@ -18,10 +18,8 @@ def region(series):
 
 def OB_TSR(series):
     rep = str(int(series['Master OB Rep']))
-    if rep in tsr_dict:
-        return 'TSR'
-    else:
-        return 'OB'
+    if rep in tsr_dict: return 'TSR'
+    else: return 'OB'
 
 #################################################################################
 ## Main
