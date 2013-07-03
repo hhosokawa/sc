@@ -20,10 +20,8 @@ def region(series):
               str(int(series['Softchoice DivLoc'])))
     return divregion.get(divloc, '')
 
-def ref_clean(df):
-    # All Referrals are Recurring Revenue
-    df['Sales Type'] = 'Recurring Revenue'
 
+def ref_clean(df):
     # fillna - Referal Fee Received Total & Master Master Number
     df['Referral Fee Received Total'].fillna(
         df['Referral Net Expected Fee Total'], inplace = True)
