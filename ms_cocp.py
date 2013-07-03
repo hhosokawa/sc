@@ -5,9 +5,9 @@ import dateutil.parser as dparser
 from datetime import datetime, timedelta, date
 from collections import defaultdict
 
-output = 'o/NNEA COCP Summary - 2013-06-03.csv'
-input1 = 'i/ms_cocp/COCP Summary to 2013-05-30.csv'
-input2 = 'i/ms_cocp/NNEA Summary to 2013-06-03.csv'
+output = 'o/NNEA COCP Summary - 2013-07-03.csv'
+input1 = 'i/ms_cocp/COCP Summary to 2013-07-03.csv'
+input2 = 'i/ms_cocp/NNEA Summary to 2013-07-03.csv'
 enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
 emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
 
@@ -66,9 +66,8 @@ def clean(r, datatype):
     except KeyError:
         if 'Coverage' in r:
             r['Rep Type'] = r['Coverage']
-
-        if r['Rep Type'] == 'TB':
-            r['Rep Type'] = 'TSR'
+            if r['Rep Type'] == 'TB':
+                r['Rep Type'] = 'TSR'
     try:
         r['Branch'] = emp_stb[r['OB Rep']][0]
     except KeyError:
