@@ -26,8 +26,10 @@ def text_scrape(tweet):
 
 # Counts # of Words
 def word_count(word_list, date):
-    for tweet in word_list:
-        print tweet
+    print 'EDIT:'
+    for word in word_list:
+        print word
+    print '\n'
     return
 
 #################################################################################
@@ -50,8 +52,9 @@ def main():
 
         for tweet in user_timeline:
             tweet_text = text_scrape(tweet)
+            tweet_date = tweet['created_at']
             print 'ORIGINAL:', tweet['text']
-            word_count(tweet_text, tweet['created_at'])
+            word_count(tweet_text, tweet_date)
             raw_input('...')
             maxID = tweet['id']
 
@@ -66,6 +69,3 @@ def main():
 main()
 
 
-"""
-
-"""

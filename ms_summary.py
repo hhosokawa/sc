@@ -76,7 +76,7 @@ def salesclean(row):
     catA = 'NON-EA DIRECT'
     catB = venprogram.get(row['Item Prodtype Venprogram'],
                           'EA Indirect and Other')
-    if catA == 'SPLA':
+    if catB == 'SPLA':
         catB = 'Sales'
         catA = 'SPLA'
 

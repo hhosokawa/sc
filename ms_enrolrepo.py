@@ -2,8 +2,8 @@ import time
 import pandas as pd
 from aux_reader import *
 
-output    = 'o\\Enrol Repo - 2013-06-13.csv'
-repo_df   = pd.read_csv('i\\enrol_repo\\contract repo.csv')
+output    = 'o\\Enrol Repo - 2013-07-04.csv'
+repo_df   = pd.read_csv('i\\enrol_repo\\contract_repo.csv')
 tsr_dict  = csv_dic('i\\enrol_repo\\tsr reps.csv')
 
 divregion = csv_dic('auxiliary\\div-region.csv')

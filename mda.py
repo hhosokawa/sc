@@ -34,7 +34,8 @@ def master_id_scrape(r):
 
 def customer_class(series):
     # Assigns Customer Class
-    id = int(series['Master ID'])
+    try: id = int(series['Master ID'])
+    except ValueError: id = 0
     return masterid.get(id, 'SMB')
     
 #################################################################################
