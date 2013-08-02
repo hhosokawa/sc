@@ -5,7 +5,7 @@ from aux_reader import *
 #################################################################################
 ## io
 
-output = 'o\\ms summary - 2012-2013 Q2.csv'
+output = 'o\\ms summary - 2012-2013 Q3.csv'
 input1 = 'i\\ms_summary\\ref.csv'
 input2 = 'i\\ms_summary\\sales.csv'
 input3 = 'i\\ms_summary\\bi.csv'
