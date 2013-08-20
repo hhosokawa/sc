@@ -33,17 +33,17 @@ def header_add(header):
 def clean(r, datatype):
 
     if datatype == 'COCPEnrol':
-        r['Notification Month'] = r['Notification Month'].strip()
+        r['Effective Month'] = r['Effective Month'].strip()
         r['Acct Type'] = 'Enrollment'
         r['Contract Program Name'] = enrolprogram.get(r['Enrollment #'], '')
-        r['Notif Month'] = '-'.join([r['Notif Year'], month_num[r['Notification Month']]])
+        r['Notif Month'] = '-'.join([r['Effective Year'], month_num[r['Effective Month']]])
         if r['Type'] == 'Win': r['COCP Win'] = r['Enrollment #']
         else: r['COCP Loss'] = r['Enrollment #']
     elif datatype == 'COCPAcct':
-        r['Notification Month'] = r['Notification Month'].strip()
+        r['Effective Month'] = r['Effective Month'].strip()
         r['Contract Program Name'] = ''
         r['Acct Type'] = 'Acct'
-        r['Notif Month'] = '-'.join([r['Notif Year'], month_num[r['Notification Month']]])
+        r['Notif Month'] = '-'.join([r['Effective Year'], month_num[r['Effective Month']]])
         if r['Type'] == 'Win': r['COCP Win'] = r['Master #']
         else: r['COCP Loss'] = r['Master #']
     elif datatype == 'NNEAEnrol':
