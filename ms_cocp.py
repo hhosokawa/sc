@@ -2,12 +2,12 @@ import csv
 import time
 from aux_reader import *
 import dateutil.parser as dparser
-from datetime import datetime, timedelta, date
 from collections import defaultdict
+from datetime import datetime, timedelta, date
 
-output = 'o/NNEA COCP Summary - 2013-08-08.csv'
-input1 = 'i/ms_cocp/COCP Summary to 2013-08-08.csv'
-input2 = 'i/ms_cocp/NNEA Summary to 2013-08-08.csv'
+output = 'o/NNEA COCP Summary - 2013-09-03.csv'
+input1 = 'i/ms_cocp/COCP.csv'
+input2 = 'i/ms_cocp/NNEA.csv'
 enrolprogram = csv_dic('auxiliary\\enrol-program.csv')
 emp_stb = csv_dic('auxiliary\\employee-super_title_branch.csv', 3)
 
