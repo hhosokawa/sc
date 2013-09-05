@@ -4,7 +4,7 @@ import time
 from aux_reader import *
 
 output = 'o/rec_rev.csv'
-bi = 'i/rec_rev/2013 ytd.csv'
+bi = 'i/rec_rev/2013 ytd net.csv'
 lic_valid_per_items = csv_dic('i/rec_rev/lic_valid_period_items.csv', 2)
 
 ############### Utils ###############
@@ -19,23 +19,15 @@ def write_headers(o, headers):
     writer = csv.writer(o)
     writer.writerows([headers])
 
-def str_float(s):
-    s = s.replace('$', '')
-    s = s.replace(',', '')
-    if '(' in s:
-        s = s.replace('(' , '-')
-        s = s.replace(')', '')
-    return float(s)
-
 def loop_row(i1, ow):
     i1r = csv.DictReader(i1)
     for r in i1r:
-        gp = str_float(r['Virtually Adjusted GP'])
-        rev = str_float(r['Virtually Adjusted Revenue'])
+        gp = float(r['GP (includes Freight)'])
+        rev = float(r['Net Revenue'])
 
         if (r['Item Number'] in lic_valid_per_items or
             r['Sale or Referral'] == 'Referral' or
-            r['Solution Group'] == 'SERVICES'):
+            r['Super Category @ Order Date'] == 'Managed Services'):
             r['Item Class'] = 'Recurring Revenue'
         elif (gp > 1000 and rev > 10000):
             r['Item Class'] = 'Project'
