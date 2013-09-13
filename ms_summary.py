@@ -2,19 +2,16 @@ import csv
 import time
 from aux_reader import *
 
-#################################################################################
-## io
+############### io ###############
 
-output = 'o\\ms summary - 2012-2013 YTD.csv'
+output = 'o\\ms summary.csv'
 input1 = 'i\\ms_summary\\ref.csv'
 input2 = 'i\\ms_summary\\sales.csv'
 input3 = 'i\\ms_summary\\bi.csv'
 
-#################################################################################
-## Dictionary Pictionary Jars
+############### pictionary ###############
 
 order = {}
-majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
 venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 ref_revtype = {'AO': 'EA Add-On',
                'N': 'EA New',
@@ -22,11 +19,24 @@ ref_revtype = {'AO': 'EA Add-On',
                'RN': 'EA Renewal',
                'TU': 'EA True-Up'}
 
-#################################################################################
-## Function Definitions
+############### utils ###############
 
-# Clean Referrals Data
-def refclean(row):
+# Obtain Headers
+def get_header():
+    header = set()
+    with open(input3) as i3: header.update(csv.DictReader(i3).fieldnames)
+    new_fields = set(['Category A', 'Category B', 'Category C'])
+    header = new_fields | header
+    header = tuple(sorted(header, key=lambda item: item[0]))
+    return header
+
+# Referral Clean
+def scan_referrals():
+    with open(input1) as i1:
+        for r in csv.DictReader(i1): refclean(r)
+
+def refclean(r):
+    # Category A Classification
     catA = row['Referral Source']
 
     # ESA 3.0 Classification
@@ -71,17 +81,25 @@ def refclean(row):
     order[row['Referral Number']] = (catA, catB)
     return
 
-# Cleans Sales Data
-def salesclean(row):
-    catA = 'NON-EA DIRECT'
-    catB = venprogram.get(row['Item Prodtype Venprogram'],
-                          'EA Indirect and Other')
-    if catB == 'SPLA':
-        catB = 'Sales'
-        catA = 'SPLA'
+# Sales Clean
+def scan_sales():
+    with open(input2) as i2:
+        for r in csv.DictReader(i2): 
+            salesclean(r)
+
+def salesclean(r):
+    ven = venprogram.get(r['Item Prodtype Venprogram'],
+                         'EA Indirect and Other')
+    if ven in ['SPLA', 'Open', 'Select']:
+        catA = ven
+        catB, catC = '', ''
+    elif ven == 'EA Indirect and Other':
+        catA = 'EA'
+        catB = ven
+        catC = ''
 
     # Absorb into Dictionary
-    order[row['Order Number']] = (catA, catB)
+    order[r['Order Number']] = (catA, catB, catC)
     return
 
 # Insert Category for Order
@@ -89,29 +107,22 @@ def add_cat(r):
     if r['Order Number'] in order:
         r['Category A'] = order[r['Order Number']][0]
         r['Category B'] = order[r['Order Number']][1]
+        r['Category C'] = order[r['Order Number']][2]
     else:
         r['Category A'] = 'N/A'
         r['Category B'] = 'N/A'
+        r['Category C'] = 'N/A'
     return r
 
+############### main ###############
 
-#################################################################################
-## Main Program
 def main():
     t0 = time.clock()
-
-    # Header
-    header = set()
-    with open(input3) as i3: header.update(csv.DictReader(i3).fieldnames)
-    new_fields = set(['Category A', 'Category B'])
-    header = new_fields | header
-    header = tuple(sorted(header, key=lambda item: item[0]))
+    header = get_header()
 
     # Scan Sales / Referral Data -> Dictionary
-    with open(input1) as i1:
-        for r in csv.DictReader(i1): refclean(r)
-    with open(input2) as i2:
-        for r in csv.DictReader(i2): salesclean(r)
+    scan_referrals()
+    scan_sales()
 
     # Output Writer
     with open(output, 'wb') as o:
@@ -126,6 +137,10 @@ def main():
                 ow.writerow(r)
 
     t1 = time.clock()
-    return 'Process completed! Duration:', t1-t0
+    print 'Process completed! Duration:', t1-t0
+    return
 
-print main()
+if __name__ == '__main__':
+    main()
+
+
