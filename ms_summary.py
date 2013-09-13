@@ -36,49 +36,52 @@ def scan_referrals():
         for r in csv.DictReader(i1): refclean(r)
 
 def refclean(r):
-    # Category A Classification
-    catA = row['Referral Source']
+    # Category B Classification
+    catB = r['Referral Source']
+    catC = ''
 
     # ESA 3.0 Classification
-    if row['Referral Source'] == 'ESA 3.0':
+    if r['Referral Source'] == 'ESA 3.0':
 
         # Major VS Corporate
-        catB = ref_revtype.get(row['Referral Rev Type'], 'Other')
+        catA = 'EA'
+        catC = ref_revtype.get(r['Referral Rev Type'], 'Other')
 
-        if (row['SoftChoice Customer Number'] in majoraccts
-        or 'MAJOR' in row['Referral Notes']
-        or row['Product Item Desc'] == 'HELP DESK INCENTIVE'):
-            catA = 'ESA 3.0 - MAJOR'
+        if ('MAJOR' in r['Referral Notes']
+        or r['Product Item Desc'] == 'HELP DESK INCENTIVE'):
+            catB = 'ESA 3.0 - MAJOR'
         else:
-            catA = 'ESA 3.0 - CORPORATE'
+            catB = 'ESA 3.0 - CORPORATE'
 
     # ESA 2.0 Classification
-    elif row['Referral Source'] == 'ESA 2.0':
-        if row['Product Item Bill Type'] == 'TRUP':   catB = 'EA True Up'
-        elif row['Product Item Bill Type'] == 'ADOT': catB = 'EA Add On'
-        elif row['Product Item Bill Type'] == 'OAP2': catB = 'Year 2'
-        elif row['Product Item Bill Type'] == 'OAP3': catB = 'Year 3'
-        elif row['Product Item Bill Type'] == 'O':
-            if ('Y1' or 'YR1') in row['Product Item Desc']:   catB = 'Year 1'
-            elif ('Y2' or 'YR2') in row['Product Item Desc']: catB = 'Year 2'
-            elif ('Y3' or 'YR3') in row['Product Item Desc']: catB = 'Year 3'
-            else: catB = 'Other'
-        else: catB = 'Year 1'
+    elif r['Referral Source'] == 'ESA 2.0':
+        catA = 'EA'
+        if r['Product Item Bill Type'] == 'TRUP':   catC = 'EA True Up'
+        elif r['Product Item Bill Type'] == 'ADOT': catC = 'EA Add On'
+        elif r['Product Item Bill Type'] == 'OAP2': catC = 'Year 2'
+        elif r['Product Item Bill Type'] == 'OAP3': catC = 'Year 3'
+        elif r['Product Item Bill Type'] == 'O':
+            if ('Y1' or 'YR1') in r['Product Item Desc']:   catC = 'Year 1'
+            elif ('Y2' or 'YR2') in r['Product Item Desc']: catC = 'Year 2'
+            elif ('Y3' or 'YR3') in r['Product Item Desc']: catC = 'Year 3'
+            else: catC = 'Other'
+        else: catC = 'Year 1'
 
     # MS SIP Classification
-    elif row['Referral Source'] == 'MS SIP':
-        catB = row['Product Item Desc'].title()
+    elif r['Referral Source'] == 'MS SIP':
+        catA = 'EA'
+        catC = r['Product Item Desc'].title()
 
     # SPLA Classification
-    elif ('SPLA' and 'FENCED DEAL') in row['Referral Notes']:
+    elif ('SPLA' and 'FENCED DEAL') in r['Referral Notes']:
         catA = 'SPLA'
         catB = 'Referrals'
 
     # Other Classification
-    else: catB = 'Other'
+    else: catA = 'Other'
 
     # Absorb into Dictionary
-    order[row['Referral Number']] = (catA, catB)
+    order[r['Referral Number']] = (catA, catB, catC)
     return
 
 # Sales Clean
@@ -90,13 +93,15 @@ def scan_sales():
 def salesclean(r):
     ven = venprogram.get(r['Item Prodtype Venprogram'],
                          'EA Indirect and Other')
-    if ven in ['SPLA', 'Open', 'Select']:
+    if ven in ['Open', 'Select']:
         catA = ven
         catB, catC = '', ''
+    elif ven == 'SPLA':
+        catA = ven
+        catB, catC = 'Sales', ''
     elif ven == 'EA Indirect and Other':
         catA = 'EA'
-        catB = ven
-        catC = ''
+        catB, catC = ven, ''
 
     # Absorb into Dictionary
     order[r['Order Number']] = (catA, catB, catC)
