@@ -84,6 +84,7 @@ def refclean(r):
     order[r['Referral Number']] = (catA, catB, catC)
     return
 
+
 # Sales Clean
 def scan_sales():
     with open(input2) as i2:
