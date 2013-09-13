@@ -12,6 +12,7 @@ input3 = 'i\\ms_summary\\bi.csv'
 ############### pictionary ###############
 
 order = {}
+majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
 venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 ref_revtype = {'AO': 'EA Add-On',
                'N': 'EA New',
@@ -47,7 +48,8 @@ def refclean(r):
         catA = 'EA'
         catC = ref_revtype.get(r['Referral Rev Type'], 'Other')
 
-        if ('MAJOR' in r['Referral Notes']
+        if (r['SoftChoice Customer Number'] in majoraccts
+        or 'MAJOR' in r['Referral Notes']
         or r['Product Item Desc'] == 'HELP DESK INCENTIVE'):
             catB = 'ESA 3.0 - MAJOR'
         else:
