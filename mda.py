@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 
-input1 = 'i/mda/mda 2012-2013-ytd.csv'
+input1 = 'i/mda/2012-2013-ytd.csv'
 input2 = 'i/mda/master_id-type.csv'
 output = 'o/2012-2013 Q3 MDA.csv'
 
@@ -30,7 +30,6 @@ def master_id_scrape(r):
             masterid[id] = 'ENTERPRISE'
         else:
             masterid[id] = 'SMB'
-    print 'master_id_scrape() Completed.'
 
 def customer_class(series):
     # Assigns Customer Class
@@ -39,23 +38,24 @@ def customer_class(series):
     return masterid.get(id, 'N/A')
 
 def solution_group(series):
-    # Assigns Solution Group
-    if series['Promys / SC'] == 'Promys': # Promys
-        if ['Super Category @ Order Date'] == 'ESSN':
+    if series['Calendar Year'] == 2013:
+        if series['Solution Type @ Order Date'] == 'Product Only': 
             return 'PRODUCT'
+        elif series['Solution Type @ Order Date'] ==  'Legacy Cloud':
+            return 'LEGACY CLOUD'
+        elif series['Solution Type @ Order Date'] ==  'Cloud':
+            return 'CLOUD'            
         else: 
             return 'SERVICES'
-    else: # SC
-        if series['Calendar Year'] == 2013:
-            if series['Solution Type'] == 'Product Only': 
-                return 'PRODUCT'
-            else: 
-                return 'SERVICES'
-        elif series['Calendar Year'] == 2012:
-            if 'Services' in series['Super Category @ Order Date']:
-                return 'SERVICES'
-            else:
-                return 'PRODUCT'
+    elif series['Calendar Year'] == 2012:
+        if 'Services' in series['Super Category @ Order Date']:
+            return 'SERVICES'
+        elif series['Solution Type @ Order Date'] ==  'Legacy Cloud':
+            return 'LEGACY CLOUD'
+        elif series['Solution Type @ Order Date'] ==  'Cloud':
+            return 'CLOUD'            
+        else:
+            return 'PRODUCT'
             
 
 ############### Main ###############   
