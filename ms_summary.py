@@ -124,7 +124,7 @@ def add_cat(r):
 
 ############### main ###############
 
-def main():
+def ms_summary_main():
     t0 = time.clock()
     header = get_header()
 
@@ -145,10 +145,10 @@ def main():
                 ow.writerow(r)
 
     t1 = time.clock()
-    print 'Process completed! Duration:', t1-t0
+    print 'ms_summary_main() completed! Duration:', t1-t0
     return
 
 if __name__ == '__main__':
-    main()
+    ms_summary_main()
 
 
