@@ -28,6 +28,8 @@ def get_header():
     with open(input3) as i3: header.update(csv.DictReader(i3).fieldnames)
     new_fields = set(['Category A', 'Category B', 'Category C'])
     header = new_fields | header
+    try: header.remove('')
+    except KeyError: pass
     header = tuple(sorted(header, key=lambda item: item[0]))
     return header
 
