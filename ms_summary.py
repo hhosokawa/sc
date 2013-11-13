@@ -71,6 +71,12 @@ def refclean(r):
             else: catC = 'Other'
         else: catC = 'Year 1'
 
+    # ESA 4.0 / MS OSA Classification
+    elif r['Referral Source'] in ['ESA 4.0', 'MS OSA']:
+        catA = 'EA'
+        catB = r['Referral Source']
+        catC = ref_revtype.get(r['Referral Rev Type'], 'Other')
+
     # MS SIP Classification
     elif r['Referral Source'] == 'MS SIP':
         catA = 'EA'
