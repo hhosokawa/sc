@@ -83,7 +83,8 @@ def refclean(r):
         catC = r['Product Item Desc'].title()
 
     # SPLA Classification
-    elif ('SPLA' and 'FENCED DEAL') in r['Referral Notes']:
+    elif ('SPLA' in r['Referral Notes'] and
+         'FENCED DEAL' in r['Referral Notes']):
         catA = 'SPLA'
         catB = 'Referrals'
 
