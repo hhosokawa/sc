@@ -4,10 +4,11 @@ import time
 from aux_reader import *
 
 output = 'o/rec_rev.csv'
-bi = 'i/rec_rev/rec_rev_bestq1-3.csv'
+
+bi = 'i/rec_rev/rec_rev_best_p10.csv'
 lic_valid_per_items = csv_dic('i/rec_rev/lic_valid_period_items.csv', 2)
-rev_rec_flag = ['SWBNDL', 'HWMTN', 'SWMTN', 'CLOUDN', 
-                'SWSUB', 'CLOUD', 'TRAIN']
+rev_rec_flag = ['SWBNDL', 'HWMTN', 'SWMTN', 'CLOUDN', 'SWSUB', 'CLOUD', 
+                'TRAIN']
 
 ############### Utils ###############
 
@@ -36,7 +37,7 @@ def loop_row(i1, ow):
             r['Item Class'] = 'Project'
         else:
             r['Item Class'] = 'Run Rate'
-   
+
         ow.writerow(r)
 
 ############### Main ###############
