@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 
-input1 = 'i/mda/2012-2013-ytd.csv'
+input1 = 'i/mda/bi.csv'
 input2 = 'i/mda/master_id-type.csv'
 output = 'o/2012-2013 Q3 MDA.csv'
 
