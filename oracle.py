@@ -1,24 +1,25 @@
 import csv
 import time
 from aux_reader import *
+from itertools import product
 
-############### io ###############
+""" io """
+
 output = 'o\\oracle.csv'
 input1 = 'i\\oracle\\gl.csv'
 
 years = ['2013']
-divs = ['"*"']
+divs = ['"*"', '"100"', '"200"', '"300"', '"310"', '"320"']
 
-gl = tree()
-cat = tree()
+gl = {}
+cat = {}
+rows = []
 quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
                  4: 'Q2', 5: 'Q2', 6: 'Q2',
                  7: 'Q3', 8: 'Q3', 9: 'Q3',
                  10:'Q4', 11:'Q4', 12:'Q4'}
 
-############### utils ###############
-
-
+############### aux ###############
 
 # Make Spreadsheet Server Formula
 def makeformula(minus, currency, book, year, per_ltd, month, div, acct):
@@ -31,111 +32,115 @@ def makeformula(minus, currency, book, year, per_ltd, month, div, acct):
              div + ',"*","*",' +          # Div
              acct + ',"*","*")')          # GL Acct
 
-# GL Account -> Write Row for Year, IS, BS
-def mapper(o, acct, desc, report, a, b, c):
+# Determines correct Hierarchy for each GL
+def scan_row(r):
+    # Determines Report Type
+    if r[2].strip() in ['Total assets',
+                        'Total Liabilities',
+                        'Total Equity']:
+        cat['report'] = 'BS'
+    elif r[2].strip() in ['Net sales', 'Cost of Sales',
+                          'Operating expenses',
+                          'Other expenses (income)',
+                          'Current income tax expense']:
+        cat['report'] = 'IS'
 
-    # Years
-    for year in years:
+    # Determines Category A, B, C
+    if r[0] == '' and r[1].isdigit() and int(r[1]) <= 10:
+        cat['a'] = ' ' .join([str(int(r[1])), r[2]])
+    elif r[1] == '' and r[2].isdigit() and len(str(int(r[2]))) == 2:
+        cat['b'] = ' ' .join([str(int(r[2])), r[3]])
+    elif r[2] == '' and r[3].isdigit() and len(str(int(r[3]))) == 3:
+        cat['c'] = ' ' .join([str(int(r[3])), r[4]])
 
-        # Division & Currency
-        for div in divs:
-            if div == '"100"':
+    # Fixes Other exoenses (income) / Current income tax Expense Hierarchy
+    if cat.get('a'):
+        if ('Other expenses (income)' in cat['a']
+        or 'Current income tax expense' in cat['a']):
+            if r[1] == '' and r[2].isdigit() and len(str(int(r[2]))) == 3:
+                cat['b'] = ' ' .join([str(int(r[2])), r[3]])
+                cat['c'] = ' ' .join([str(int(r[2])), r[3]])
+
+    for cell in r:
+        # 6 Digit Identification
+        if cell.isdigit():
+            if len(str(int(cell))) == 6:
+                glacct = cell
+                desc = r[r.index(cell)+1]
+                gl[glacct] = (desc, cat['report'], cat['a'],
+                              cat['b'], cat['c'])
+
+############### utils ###############
+
+def extract_gl():
+    with open(input1) as i1:
+        i1r = csv.reader(i1)
+        for r in i1r:
+            scan_row(r)
+    print 'extract_gl() complete.'
+
+def generate_rows():
+    for acct in gl:
+        desc, report, a, b, c = gl[acct]
+        for year, div in product(years, divs):
+
+            # Division & Currency
+            if div in ['"100"', '"320"', '"310"']:
                 currency = '"CAD"'
                 book = '"SC Canada"'
-            elif div == '"200"':
+            elif div in ['"200"', '"320"']:
                 currency = '"USD"'
                 book = '"SC United States"'
             else:
                 currency = '"USD"'
                 book = '"SC Consol - US"'
 
-            if report == 'IS': # IS
-                # Writes X 12 for # of Months
+            if report == 'IS':
+                #Writes X 12 for # of Months
                 for month in range(1,13):
                     qtr = quarterperiod[month]
                     minus = '-'
                     per_ltd = '"PER"'
                     formula = makeformula(minus, currency, book, year,
                                           per_ltd, str(month), div, acct)
+                    row = (acct, desc, report, a, b, c, div, month,
+                           qtr, year, str(formula))
+                    rows.append(row)
 
-                    o.writerow([acct, desc, report, a, b, c,
-                                div, month, qtr, year, str(formula)])
-
-            else: # BS
-                # Writes X 4 for # of Quarters
+            elif report == 'BS':
+                # Writes X4 for # of Quarters
                 for month in [3, 6, 9, 12]:
                     qtr = quarterperiod[month]
                     minus = ''
                     per_ltd = '"LTD"'
                     formula = makeformula(minus, currency, book, year,
                                           per_ltd, str(month), div, acct)
+                    row = (acct, desc, report, a, b, c, div, month,
+                           qtr, year, str(formula))
+                    rows.append(row)
+    print 'generate_rows() complete.'
 
-                    # "Due to Parent Company" ->  "Long Term Assets"
-                    if c == 'Due to Parent Company':
-                        a = '10000 Assets'
-                        b = 'Long Term Assets'
+def write_csv():
+    headers = ['GL', 'GL Desc', 'Report Type', 'Cat A', 'Cat B', 'Cat C',
+               'Div', 'Period', 'Quarter', 'Year', 'Amount']
 
-                    o.writerow([acct, desc, report, a, b, c,
-                                div, month, qtr, year, str(formula)])
-
-    return
-
-def extract_gl():
-    with open(input1) as i1:
-        i1r = csv.reader(i1)
-        for r in i1r:
-            print r
-            raw_input('...')
-
-
-def scan_gl(r):
-    # Determines Report Type
-    if r[2] in ['Assets', 'Liabilities', 'Equity']:
-        cat['report'] = 'BS'
-    elif r[2] in ['Revenue', 'Cost of Sales', 'Expenses']:
-        cat['report'] = 'IS'
-    # Determines Category A,  B
-    if r[1] != '' and r[1].isdigit() and len(str(r[1])) == 5:
-        cat['a'] = ' ' .join([r[1], r[2]])
-    elif r[2] != '' and r[2].isdigit() and len(str(r[2])) == 5:
-        cat['b'] = r[3]
-    # Determines Category C
-    if r[3] != '' and r[3].isdigit() and len(str(r[3])) == 5:
-        cat['c'] = r[4]
-    for cell in r:
-        # 6 Digit Identification
-        if len(str(cell)) == 6 and cell.isdigit():
-            glacct = cell
-            desc = r[r.index(cell)+1]
-            if cat['report'] == 'IS': # IS
-                gl[glacct] = (desc, cat['report'], cat['a'], cat['b'], desc)
-            else: # BS
-                gl[glacct] = (desc, cat['report'], cat['a'], cat['b'], cat['c'])
-    return
+    with open(output, 'wb') as o1:
+        o1w = csv.writer(o1)
+        o1w.writerow(headers)
+    
+        for row in rows:
+            o1w.writerow(row)
+    print 'write_csv() complete.'
 
 ############## oracle_main() ###############
 
 def oracle_main():
     t0 = time.clock()
     extract_gl()
-#    with open(input1) as i1:
-#        i1r = csv.reader(i1)
-#        for r in i1r: r = scan_gl(r)
-
-#    headers = ['GL', 'GL Desc', 'Report Type', 'Cat A', 'Cat B', 'Cat C',
-#               'Div', 'Period', 'Quarter', 'Year', 'Amount']
-
-#    with open(output, 'wb') as o1:
-#        o1w = csv.writer(o1)
-#        o1w.writerow(headers)
-
-        # Map every GL
-#        for acct in gl:
-#            desc, report, a, b, c = gl[acct]
-#            mapper(o1w, acct, desc, report, a, b, c)
-
+    generate_rows()
+    write_csv()
     t1 = time.clock()
-    return 'oracle_main() completed. Duration:', t1-t0
+    print 'oracle_main() completed. Duration:', t1-t0
 
 if __name__ == '__main__':
     oracle_main()
