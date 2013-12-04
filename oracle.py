@@ -3,8 +3,8 @@ import time
 from aux_reader import *
 
 ############### io ###############
-output = 'o\\proforma.csv'
-input1 = 'i\\proforma\\gl.csv'
+output = 'o\\oracle.csv'
+input1 = 'i\\oracle\\gl.csv'
 
 years = ['2013']
 divs = ['"*"']
