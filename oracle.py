@@ -9,7 +9,7 @@ output = 'o\\oracle.csv'
 input1 = 'i\\oracle\\gl.csv'
 
 years = ['2013']
-divs = ['"*"', '"100"', '"200"', '"300"', '"310"', '"320"']
+divs = ['"*"', '"100"', '"200"']
 
 gl = {}
 cat = {}
@@ -18,6 +18,9 @@ quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
                  4: 'Q2', 5: 'Q2', 6: 'Q2',
                  7: 'Q3', 8: 'Q3', 9: 'Q3',
                  10:'Q4', 11:'Q4', 12:'Q4'}
+
+div_book = {'"100"' : ('"USD"', '"SC Consol - US"'),
+            '"200"' : ('"USD"', '"SC Consol - US"')}
 
 ############### aux ###############
 
@@ -85,12 +88,9 @@ def generate_rows():
         for year, div in product(years, divs):
 
             # Division & Currency
-            if div in ['"100"', '"320"', '"310"']:
-                currency = '"CAD"'
-                book = '"SC Canada"'
-            elif div in ['"200"', '"320"']:
-                currency = '"USD"'
-                book = '"SC United States"'
+            if div in div_book:
+                currency = div_book[div][0]
+                book = div_book[div][1]
             else:
                 currency = '"USD"'
                 book = '"SC Consol - US"'
