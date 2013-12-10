@@ -9,7 +9,8 @@ output = 'o\\oracle.csv'
 input1 = 'i\\oracle\\gl.csv'
 
 years = ['2013']
-divs = ['"*"', '"100"', '"200"']
+divs = ['"*"', '"100"', '"200"', '"300"', '"101"', '"201"', '"325"',
+        '"310"', '"320"', '"099"', '"098"', '"315"']
 
 gl = {}
 cat = {}
@@ -19,8 +20,18 @@ quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
                  7: 'Q3', 8: 'Q3', 9: 'Q3',
                  10:'Q4', 11:'Q4', 12:'Q4'}
 
-div_book = {'"100"' : ('"USD"', '"SC Consol - US"'),
-            '"200"' : ('"USD"', '"SC Consol - US"')}
+div_book = {'"*"'   : ('"USD"', '"SC Consol - US"'),
+            '"098"' : ('"USD"', '"SC Consol - US"'),
+            '"099"' : ('"USD"', '"SC Consol - US"'),
+            '"100"' : ('"USD"', '"SC Consol - US"'),
+            '"101"' : ('"CAD"', '"SC Canada - Goliath"'),
+            '"200"' : ('"USD"', '"SC Consol - US"'),
+            '"201"' : ('"USD"', '"SC Consol - US - Goliath"'),
+            '"300"' : ('"USD"', '"SC Holdco US"'),
+            '"310"' : ('"USD"', '"SC Holdings II"'),
+            '"315"' : ('"USD"', '"Goliath Acquisition"'),
+            '"320"' : ('"USD"', '"Softchoice Holdings"'),
+            '"325"' : ('"USD"', '"ULC Holdco"')}
 
 ############### aux ###############
 
@@ -88,12 +99,8 @@ def generate_rows():
         for year, div in product(years, divs):
 
             # Division & Currency
-            if div in div_book:
-                currency = div_book[div][0]
-                book = div_book[div][1]
-            else:
-                currency = '"USD"'
-                book = '"SC Consol - US"'
+            currency = div_book[div][0]
+            book = div_book[div][1]
 
             if report == 'IS':
                 #Writes X 12 for # of Months
