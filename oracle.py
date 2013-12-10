@@ -9,8 +9,8 @@ output = 'o\\oracle.csv'
 input1 = 'i\\oracle\\gl.csv'
 
 years = ['2013']
-divs = ['"*"', '"100"', '"200"', '"300"', '"101"', '"201"', '"325"',
-        '"310"', '"320"', '"099"', '"098"', '"315"']
+divs = ['"*"', '"100"', '"200"', '"300"',
+        '"310"', '"320"', '"099"']
 
 gl = {}
 cat = {}
@@ -20,18 +20,19 @@ quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
                  7: 'Q3', 8: 'Q3', 9: 'Q3',
                  10:'Q4', 11:'Q4', 12:'Q4'}
 
-div_book = {'"*"'   : ('"USD"', '"SC Consol - US"'),
-            '"098"' : ('"USD"', '"SC Consol - US"'),
-            '"099"' : ('"USD"', '"SC Consol - US"'),
-            '"100"' : ('"USD"', '"SC Consol - US"'),
-            '"101"' : ('"CAD"', '"SC Canada - Goliath"'),
-            '"200"' : ('"USD"', '"SC Consol - US"'),
-            '"201"' : ('"USD"', '"SC Consol - US - Goliath"'),
-            '"300"' : ('"USD"', '"SC Holdco US"'),
-            '"310"' : ('"USD"', '"SC Holdings II"'),
-            '"315"' : ('"USD"', '"Goliath Acquisition"'),
-            '"320"' : ('"USD"', '"Softchoice Holdings"'),
-            '"325"' : ('"USD"', '"ULC Holdco"')}
+div_book = {
+    '"*"'   : ('"USD"', '"SC Consol - US"', '* - Consolidated'),
+    '"098"' : ('"USD"', '"SC Consol - US"', '098 - Elimination Canada'),
+    '"099"' : ('"USD"', '"SC Consol - US"', '099 - Elimination US'),
+    '"100"' : ('"USD"', '"SC Consol - US"', '100 - Canada'),
+    '"101"' : ('"CAD"', '"SC Canada - Goliath"', '101 - Canada Goliath'),
+    '"200"' : ('"USD"', '"SC Consol - US"', '200 - US'),
+    '"201"' : ('"USD"', '"SC Consol - US - Goliath"', '201 - US Goliath'),
+    '"300"' : ('"USD"', '"SC Holdco US"', '300 - Holdco US'),
+    '"310"' : ('"USD"', '"SC Holdings II"', '310 - Holding II'),
+    '"315"' : ('"USD"', '"Goliath Acquisition"', '315 - Goliath'),
+    '"320"' : ('"USD"', '"Softchoice Holdings"', '320 - Holding Cda'),
+    '"325"' : ('"USD"', '"ULC Holdco"', '325 - ULC Holdco')}
 
 ############### aux ###############
 
@@ -98,9 +99,10 @@ def generate_rows():
         desc, report, a, b, c = gl[acct]
         for year, div in product(years, divs):
 
-            # Division & Currency
+            # Division / Currency / Desc
             currency = div_book[div][0]
             book = div_book[div][1]
+            div_desc = div_book[div][2]
 
             if report == 'IS':
                 #Writes X 12 for # of Months
@@ -110,7 +112,7 @@ def generate_rows():
                     per_ltd = '"PER"'
                     formula = makeformula(minus, currency, book, year,
                                           per_ltd, str(month), div, acct)
-                    row = (acct, desc, report, a, b, c, div, month,
+                    row = (acct, desc, report, a, b, c, div_desc, month,
                            qtr, year, str(formula))
                     rows.append(row)
 
@@ -122,7 +124,7 @@ def generate_rows():
                     per_ltd = '"LTD"'
                     formula = makeformula(minus, currency, book, year,
                                           per_ltd, str(month), div, acct)
-                    row = (acct, desc, report, a, b, c, div, month,
+                    row = (acct, desc, report, a, b, c, div_desc, month,
                            qtr, year, str(formula))
                     rows.append(row)
     print 'generate_rows() complete.'
