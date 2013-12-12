@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, date
 
 """ io """
 
-output = 'o/NNEA COCP - 2013-09-18.csv'
+output = 'o/NNEA COCP.csv'
 COCP_path = 'i/ms_cocp/COCP.csv'
 NNEA_path = 'i/ms_cocp/NNEA.csv'
 emp_stb = csv_dic('i/ms_cocp/employee-super_title_branch.csv', 3)
@@ -75,7 +75,7 @@ def scan_NNEA(ow):
 
         # NNEA Enrollment Cleaning
         for r in i2r:
-            r['OB Rep'] = r['Master OB Rep Name']
+            r['Rep'] = r['Master OB Rep Name']
             r['Master #'] = r['Master Number']
             r['Customer'] = r['Master Name']
             masterdivloc = r['Master Division'] + r['Master Divloc']
@@ -129,19 +129,19 @@ def clean(r, datatype):
         r['Notif Month'] = dparser.parse(r['Contract Create Date']).date().strftime("%Y-%m")
         if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Master Number']
         else: r['Renewal'] = r['Master Number']
-    r['OB Rep'] = r['OB Rep'].strip()
+    r['Rep'] = r['Rep'].strip()
     r['Customer'] = r['Customer'].upper()
 
     # Correct Rep Type / Branch
     try:
-        r['Rep Type'] = titleOBTSR[emp_stb[r['OB Rep']][1]]
+        r['Rep Type'] = titleOBTSR[emp_stb[r['Rep']][1]]
     except KeyError:
         if 'Coverage' in r:
             r['Rep Type'] = r['Coverage']
             if r['Rep Type'] == 'TB':
                 r['Rep Type'] = 'TSR'
     try:
-        r['Branch'] = emp_stb[r['OB Rep']][0]
+        r['Branch'] = emp_stb[r['Rep']][0]
     except KeyError:
         pass
     return r

@@ -5,10 +5,10 @@ from itertools import product
 
 """ io """
 
-output = 'o\\oracle.csv'
+output = 'o\\oracle_sga.csv'
 input1 = 'i\\oracle\\gl.csv'
-district = csv_dic('i\\oracle\\district.csv', 3)
-territory = csv_dic('i\\oracle\\territory.csv', 3)
+departments = csv_dic('i\\oracle\\departments.csv', 3)
+territories = csv_dic('i\\oracle\\territories.csv', 3)
 
 years = ['2013']
 divs = ['"*"']
@@ -35,19 +35,20 @@ div_book = {
     '"320"' : ('"USD"', '"Softchoice Holdings"', '320 - Holding Cda'),
     '"325"' : ('"USD"', '"ULC Holdco"', '325 - ULC Holdco')}
 
-
-
 ############### aux ###############
 
 # Make Spreadsheet Server Formula
-def makeformula(minus, currency, book, year, per_ltd, month, div, acct):
+def makeformula(minus, currency, book, year, per_ltd, 
+                month, div, acct, dept):
     return ('='+ minus +'GXL("A","","TRANSLATED="&"E"&";"&"CURRENCY="&' +
              currency + '&";"&"BOOK="&' + # Currency
              book + '&";",' +             # Book
              year + ',' +                 # Year
              per_ltd + ',' +              # PER or LTD
              str(month) + ',' +           # Period
-             div + ',"*","*",' +          # Div
+             div + ',' +                  # Div
+             dept + ',' +                 # Dept
+             '"*"' + ',' +                # Territory
              acct + ',"*","*")')          # GL Acct
 
 # Determines correct Hierarchy for each GL
@@ -100,7 +101,11 @@ def extract_gl():
 def generate_rows():
     for acct in gl:
         desc, report, a, b, c = gl[acct]
-        for year, div in product(years, divs):
+        for year, div, dept in product(years, divs, departments):
+
+            # Department / Territory Class ABC
+            dept_c, dept_a, dept_b = departments[dept]
+            #terr_c, terr_a, terr_b = territories[terr]
 
             # Division / Currency / Desc
             currency = div_book[div][0]
@@ -109,21 +114,26 @@ def generate_rows():
 
             if report == 'IS':
                 #Writes X 12 for # of Months
-                for month in range(1,13):
+                for month in range(7,8):
                     qtr = quarterperiod[month]
                     minus = '-'
                     per_ltd = '"PER"'
+                    dept = '"' + dept + '"'
                     formula = makeformula(minus, currency, book, year,
-                                          per_ltd, str(month), div, acct)
+                                          per_ltd, str(month), div, acct,
+                                          dept)
                     row = (acct, desc, report, a, b, c, div_desc, month,
-                           qtr, year, str(formula))
+                           qtr, year, dept_a, dept_b, dept_c, '', '',
+                           '', str(formula))
                     rows.append(row)
 
     print 'generate_rows() complete.'
 
 def write_csv():
     headers = ['GL', 'GL Desc', 'Report Type', 'Cat A', 'Cat B', 'Cat C',
-               'Div', 'Period', 'Quarter', 'Year', 'Amount']
+               'Div', 'Period', 'Quarter', 'Year', 'Dept A', 'Dept B', 
+               'Dept C', 'Territory A', 'Territory B', 'Territory C',
+               'Amount']
 
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
@@ -138,10 +148,8 @@ def write_csv():
 def oracle_main():
     t0 = time.clock()
     extract_gl()
-    print district
-    print territory
-    #generate_rows()
-    #write_csv()
+    generate_rows()
+    write_csv()
     t1 = time.clock()
     print 'oracle_main() completed. Duration:', t1-t0
 
