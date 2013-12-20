@@ -43,14 +43,21 @@ def net_rev(series):
 
 def rebate(series):
     cat_C = series['Cat C']
-    if ('Vendor Rebate Revenue' in cat_C
-    or 'Co-op Marketing Revenue' in cat_C):
+    if 'Vendor Rebate Revenue' in cat_C:
+        return series['Amount']
+    else:
+        return 0
+
+def mdf(series):
+    cat_C = series['Cat C']
+    if 'Co-op Marketing Revenue' in cat_C:
         return series['Amount']
     else:
         return 0
 
 def oracle_clean():
     oracle_df['Imputed Rev'] = 0
+    oracle_df['MDF Rev'] = oracle_df.apply(mdf, axis = 1)
     oracle_df['FM'] = oracle_df.apply(field_margin, axis = 1)
     oracle_df['Net Rev'] = oracle_df.apply(net_rev, axis = 1)
     oracle_df['Rebate Rev'] = oracle_df.apply(rebate, axis = 1)
@@ -86,6 +93,7 @@ def bi_clean():
     imputed_df['FM'] = 0
     imputed_df['Amount'] = 0
     imputed_df['Net Rev'] = 0
+    imputed_df['MDF Rev'] = 0
     imputed_df['Rebate Rev'] = 0
     imputed_df['Fiscal Quarter'] = imputed_df.apply(add_q, axis = 1)
     imputed_df['Super Category @ Order Date'] = imputed_df.apply(
@@ -116,4 +124,6 @@ def forecast_main():
     print 'forecast_main() completed. Duration:', t1-t0
 
 if __name__ == '__main__':
-    forecast_main()
+    forecast_main()
+
+
