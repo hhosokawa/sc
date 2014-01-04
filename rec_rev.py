@@ -17,9 +17,13 @@ def get_headers():
     headers.append('Item Class')
     return sorted(headers)
 
-def write_headers(o, headers):
-    writer = csv.writer(o)
-    writer.writerows([headers])
+def write_csv():
+    with open(output, 'wb') as o:
+        ow = csv.DictWriter(o, fieldnames=headers)
+        writer = csv.writer(o)
+        writer.writerows([headers])
+        with open(input0, 'rb') as i0:
+            loop_row(i0, ow)
 
 def loop_row(i0, ow):
     i0r = csv.DictReader(i0)
@@ -43,12 +47,6 @@ def loop_row(i0, ow):
 if __name__ == '__main__':
     t0 = time.clock()
     headers = get_headers()
-
-    with open(output, 'wb') as o:
-        ow = csv.DictWriter(o, fieldnames=headers)
-        write_headers(o, headers)
-        with open(input0, 'rb') as i0:
-            loop_row(i0, ow)
-
+    write_csv()
     t1 = time.clock()
     print 'Process completed! Duration:', t1-t0
