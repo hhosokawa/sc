@@ -2,7 +2,7 @@ import csv
 import time
 from aux_reader import *
 
-output = 'o/rec_rev.csv'
+output = 'o/rec_rev_best.csv'
 input0 = 'i/rec_rev/bi.csv'
 
 rev_rec_flag = ['SWBNDL', 'HWMTN', 'SWMTN', 'CLOUDN', 
@@ -17,7 +17,7 @@ def get_headers():
     headers.append('Item Class')
     return sorted(headers)
 
-def write_csv():
+def write_csv(headers):
     with open(output, 'wb') as o:
         ow = csv.DictWriter(o, fieldnames=headers)
         writer = csv.writer(o)
@@ -28,8 +28,8 @@ def write_csv():
 def loop_row(i0, ow):
     i0r = csv.DictReader(i0)
     for r in i0r:
-        gp = float(r['GP (includes Freight)'])
         rev = float(r['Net Revenue'])
+        gp = float(r['GP (includes Freight)'])
 
         if (r['Sale or Referral'] == 'Referral' or
             r['Item Number'] in lic_valid_per_items or
@@ -40,6 +40,7 @@ def loop_row(i0, ow):
             r['Item Class'] = 'Project'
         else:
             r['Item Class'] = 'Run Rate'
+
         ow.writerow(r)
 
 ############### Main ###############
@@ -47,6 +48,6 @@ def loop_row(i0, ow):
 if __name__ == '__main__':
     t0 = time.clock()
     headers = get_headers()
-    write_csv()
+    write_csv(headers)
     t1 = time.clock()
     print 'Process completed! Duration:', t1-t0
