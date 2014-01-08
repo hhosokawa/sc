@@ -32,9 +32,11 @@ def loop_row(i0, ow):
         gp = float(r['GP (includes Freight)'])
 
         if (r['Sale or Referral'] == 'Referral' or
-            r['Revenue Recognition ID'] in rev_rec_flag or
+            r['Revenue Recognition ID'] == 'MSRV' or
             r['Super Category @ Order Date'] == 'Managed Services'):
             r['Item Class'] = 'Recurring Revenue'
+        elif r['Revenue Recognition ID'] in rev_rec_flag:
+            r['Item Class'] = 'Potentially Recurring Revenue'
         elif (gp > 1000 and rev > 10000):
             r['Item Class'] = 'Project'
         else:

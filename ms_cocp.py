@@ -148,7 +148,7 @@ def clean(r, datatype):
 
 ############### main ###############
 
-def main():
+if __name__ == '__main__':
     t0 = time.clock()
     header = get_header()
     split_enrolprogramdivloc()
@@ -164,8 +164,4 @@ def main():
 
     t1 = time.clock()
     print 'Process completed! Duration:', t1-t0
-    return
-
-if __name__ == '__main__':
-    main()
 

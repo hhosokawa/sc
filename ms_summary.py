@@ -155,7 +155,6 @@ def ms_summary_main():
 
     t1 = time.clock()
     print 'ms_summary_main() completed! Duration:', t1-t0
-    return
 
 if __name__ == '__main__':
     ms_summary_main()
