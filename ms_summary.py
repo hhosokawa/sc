@@ -131,17 +131,7 @@ def add_cat(r):
         r['Category C'] = 'N/A'
     return r
 
-############### main ###############
-
-def ms_summary_main():
-    t0 = time.clock()
-    header = get_header()
-
-    # Scan Sales / Referral Data -> Dictionary
-    scan_referrals()
-    scan_sales()
-
-    # Output Writer
+def write_csv():
     with open(output, 'wb') as o:
         writer = csv.writer(o)
         ow = csv.DictWriter(o, fieldnames=header)
@@ -153,10 +143,13 @@ def ms_summary_main():
                 add_cat(r)
                 ow.writerow(r)
 
-    t1 = time.clock()
-    print 'ms_summary_main() completed! Duration:', t1-t0
+############### main ###############
 
 if __name__ == '__main__':
-    ms_summary_main()
-
-
+    t0 = time.clock()
+    header = get_header()
+    scan_referrals()
+    scan_sales()
+    write_csv()
+    t1 = time.clock()
+    print 'ms_summary_main() completed! Duration:', t1-t0
