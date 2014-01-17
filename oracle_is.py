@@ -149,15 +149,10 @@ def write_csv():
 
 ############## oracle_main() ###############
 
-def oracle_main():
+if __name__ == '__main__':
     t0 = time.clock()
     extract_gl()
     generate_rows()
     write_csv()
     t1 = time.clock()
     print 'oracle_main() completed. Duration:', t1-t0
-
-if __name__ == '__main__':
-    oracle_main()
-
-

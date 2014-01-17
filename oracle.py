@@ -8,8 +8,8 @@ from itertools import product
 output = 'o\\oracle.csv'
 input1 = 'i\\oracle\\gl.csv'
 
-years = ['2013', '2012', '2011', '2010', '2009', '2008', '2007']
-divs = ['"*"', '"100"', '"200"', '"300"', '"310"', '"320"', '"099"']
+years = ['2013', '2012', '2011']
+divs = ['"*"', '"100"', '"200"']
 
 gl = {}
 cat = {}
@@ -126,6 +126,7 @@ def generate_rows():
                     row = (acct, desc, report, a, b, c, div_desc, month,
                            qtr, year, str(formula))
                     rows.append(row)
+
     print 'generate_rows() complete.'
 
 def write_csv():
@@ -135,20 +136,16 @@ def write_csv():
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
         o1w.writerow(headers)
-    
         for row in rows:
             o1w.writerow(row)
     print 'write_csv() complete.'
 
 ############## oracle_main() ###############
 
-def oracle_main():
+if __name__ == '__main__':
     t0 = time.clock()
     extract_gl()
     generate_rows()
     write_csv()
     t1 = time.clock()
     print 'oracle_main() completed. Duration:', t1-t0
-
-if __name__ == '__main__':
-    oracle_main()
