@@ -84,7 +84,8 @@ def refclean(r):
 
     # SPLA Classification
     elif ('SPLA' in r['Referral Notes'] and
-         'FENCED DEAL' in r['Referral Notes']):
+          'FENCED DEAL' in r['Referral Notes']) or 
+         (r['Referral Source'] == 'MS SPLA'):
         catA = 'SPLA'
         catB = 'Referrals'
 
