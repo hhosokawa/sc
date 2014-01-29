@@ -8,7 +8,7 @@ from itertools import product
 output = 'o\\oracle.csv'
 input1 = 'i\\oracle\\gl.csv'
 
-years = ['2013', '2012', '2011']
+years = ['2013', '2012']
 divs = ['"*"', '"100"', '"200"']
 
 gl = {}
