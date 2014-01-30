@@ -36,8 +36,6 @@ div_book = {
 
 ############### aux ###############
 
-
-
 # Make Spreadsheet Server Formula
 def makeformula(minus, currency, book, year, per_ltd,
                 month, div, acct, cat):
