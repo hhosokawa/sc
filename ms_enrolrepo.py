@@ -30,7 +30,7 @@ def OB_TSR(series):
 
 ############### enrol_repo_main() ###############
 
-def enrol_repo_main():
+if __name__ == '__main__':
     t0 = time.clock()
 
     # Fill Missing Values
@@ -54,8 +54,4 @@ def enrol_repo_main():
     repo_df.to_csv(output, index=False)
     t1 = time.clock()
     print 'enrol_repo_main() completed. Duration:', t1-t0
-    return
-
-if __name__ == '__main__':
-    enrol_repo_main()
 

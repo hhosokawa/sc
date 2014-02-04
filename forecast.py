@@ -10,19 +10,19 @@ output  =       'o\\forecast - %s.csv' % (time.strftime("%Y-%m-%d"))
 
 """ pictionary """
 oracle_bi_dic = {'Canada' : '100 - Canada',
-                 'United States' : '200 - US',
-                 'N/A' : 'Default',
-                 'Other' : 'Default',
-                 'Undefined' : 'Default',
-                 'Managed Services' : 'Services',
-                 'Professional Services (INACTIVE)' : 'Services'}
+    'United States' : '200 - US',
+    'N/A' : 'Default',
+    'Other' : 'Default',
+    'Undefined' : 'Default',
+    'Managed Services' : 'Services',
+    'Professional Services (INACTIVE)' : 'Services'}
 
 bi_oracle_header = {'Division' : 'Div',
-                    'Calendar Year' : 'Year',
-                    'Fiscal Period' : 'Period',
-                    'Fiscal Quarter' : 'Quarter',
-                    'Super Category @ Order Date' : 'Super Cat',
-                    'Imputed Revenue (includes Freight)' : 'Imputed Rev'}
+    'Calendar Year' : 'Year',
+    'Fiscal Period' : 'Period',
+    'Fiscal Quarter' : 'Quarter',
+    'Super Category @ Order Date' : 'Super Cat',
+    'Imputed Revenue (includes Freight)' : 'Imputed Rev'}
 
 ############### oracle ###############
 
@@ -112,7 +112,7 @@ def bi_duplicate_consol():
 
 ############### forecast_main() ###############
 
-def forecast_main():
+if __name__ == '__main__':
     t0 = time.clock()
     oracle_clean()
     bi_clean()
@@ -122,10 +122,3 @@ def forecast_main():
     concat_df.to_csv(output, index = False)
     t1 = time.clock()
     print 'forecast_main() completed. Duration:', t1-t0
-
-if __name__ == '__main__':
-    forecast_main()
-
-
-
-

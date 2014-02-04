@@ -47,6 +47,7 @@ def calc_gp(r):
     else:
         imputed_rev = 0
 
+    # Fee Matrix
     if 0 <= units <= 749:           percent = 0.15
     elif 750 <= units <= 2399:      percent = 0.12
     elif 2400 <= units <= 5999:     percent = 0.1
@@ -109,7 +110,7 @@ def write_csv():
         o0w.writerow(dict((fn, fn) for fn in headers))
         for contract in data:
             o0w.writerow(data[contract])
-    print 'write_csv() complete.'
+    print 'write_csv() completed.'
 
 ############## contract_repo_main() ###############
 

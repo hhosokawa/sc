@@ -83,9 +83,9 @@ def refclean(r):
         catC = r['Product Item Desc'].title()
 
     # SPLA Classification
-    elif ('SPLA' in r['Referral Notes'] and
-          'FENCED DEAL' in r['Referral Notes']) or 
-         (r['Referral Source'] == 'MS SPLA'):
+    elif (('SPLA' in r['Referral Notes']
+    and 'FENCED DEAL' in r['Referral Notes'])
+    or r['Referral Source'] == 'MS SPLA'):
         catA = 'SPLA'
         catB = 'Referrals'
 
@@ -100,7 +100,7 @@ def refclean(r):
 # Sales Clean
 def scan_sales():
     with open(input2) as i2:
-        for r in csv.DictReader(i2): 
+        for r in csv.DictReader(i2):
             salesclean(r)
 
 def salesclean(r):
