@@ -24,6 +24,7 @@ def scan_future_billing():
             contract = r['Agreement Number']
             sb_date = r['Scheduled Bill Date']
             imputed_rev = float(r['Extended Amount'])
+
             if contract not in fb_data:
                 fb_data[contract][sb_date] = imputed_rev
             elif contract in fb_data and sb_date not in fb_data[contract]:
@@ -66,11 +67,11 @@ def get_region_district(r):
 def scan_contract_repo():
     with open(input0) as i0:
         for r in csv.DictReader(i0):
-            contract = r['Contract Number']
             level = r['Contract Level']
-            start = dparser.parse('2014-01-01')
-            end = dparser.parse('2014-12-31')
             status = r['Contract Status']
+            contract = r['Contract Number']
+            end = dparser.parse('2014-12-31')
+            start = dparser.parse('2014-01-01')
             end_date = dparser.parse(r['Contract End Date'])
             pay_date = dparser.parse(r['Contract Payment Date'])
 
@@ -118,8 +119,8 @@ def write_csv():
                'True Up Date', 'Renewal Date']
 
     with open(output, 'wb') as o0:
-        o0w = csv.DictWriter(o0, delimiter=',', fieldnames=headers,
-                             extrasaction='ignore')
+        o0w = csv.DictWriter(o0, delimiter=',',
+                             fieldnames=headers, extrasaction='ignore')
         o0w.writerow(dict((fn, fn) for fn in headers))
         for contract in data:
             o0w.writerow(data[contract])
