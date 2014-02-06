@@ -4,13 +4,14 @@ import pprint
 from aux_reader import *
 import dateutil.parser as dparser
 from collections import OrderedDict
+from datetime import timedelta, date
 
 """ io """
 data = {}
 fb_data = tree()
-output = 'o/new_contract_repo.csv'
 input0 = 'i/contract_repo/contract_repo.csv'
 input1 = 'i/contract_repo/futurebillings.csv'
+output = 'o/sb-renewals - %s.csv' % (time.strftime("%Y-%m-%d"))
 
 divregion = csv_dic('auxiliary/div-region.csv')
 divdistrict = csv_dic('auxiliary/div-district.csv')
@@ -96,13 +97,25 @@ def scan_contract_repo():
                     data[contract] = r
     print 'scan_contract_repo() completed.'
 
+def add_renewal_trueup():
+    for contract in data:
+        sb_renewal = data[contract]['Type']
+        end_date = dparser.parse(data[contract]['Contract End Date']).date()
+        start_date = dparser.parse(data[contract]['Contract Start Date']).date()
+        true_up_date = start_date - timedelta(days=31)
+        data[contract]['True Up Date'] = true_up_date.strftime('%Y-%m-%d')
+
+        if sb_renewal == 'Renewal':
+            renewal_date = end_date + timedelta(days=1)
+            data[contract]['Renewal Date'] =renewal_date.strftime('%Y-%m-%d')
+
 def write_csv():
-    headers = ['Contract Number', 'Contract Signed Date',
+    headers = ['Contract Number', 'Contract Start Date',
                'Contract End Date','Contract Program Name',
-               'Contract Pool', 'Contract Units', 'Contract Level',
-               'Master Number', 'Master Name', 'Imputed Rev', 'GP',
-               'Region', 'District', 'Master OB Rep Name', 'Fiscal Year',
-               'Fiscal Month', 'Type']
+               'Contract Units', 'Contract Level', 'Master Number',
+               'Master Name', 'Imputed Rev', 'GP', 'Region', 'District',
+               'Master OB Rep Name', 'Fiscal Year', 'Fiscal Month', 'Type',
+               'True Up Date', 'Renewal Date']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',', fieldnames=headers,
@@ -118,6 +131,7 @@ if __name__ == '__main__':
     t0 = time.clock()
     scan_future_billing()
     scan_contract_repo()
+    add_renewal_trueup()
     write_csv()
     t1 = time.clock()
     print 'contract_repo_main() completed. Duration:', t1-t0
