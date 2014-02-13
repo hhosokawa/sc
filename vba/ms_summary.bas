@@ -21,7 +21,7 @@ End Sub
 
 ' Populate Pivot Table
 Private Sub populate_pivot_table()
-    ' Add Category A, B, C
+    ' y - Category A, B, C
     With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A")
         .Orientation = xlRowField
         .Position = 1
@@ -34,6 +34,9 @@ Private Sub populate_pivot_table()
         .Orientation = xlRowField
         .Position = 3
     End With
+    ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").ShowDetail = False
+    
+    ' x - Imputed Revenue, GP, GP %
     ActiveSheet.PivotTables("PivotTable1").AddDataField ActiveSheet.PivotTables( _
         "PivotTable1").PivotFields("Virtually Adjusted Imputed Revenue"), _
         "Imputed Revenue ", xlSum
@@ -44,31 +47,28 @@ Private Sub populate_pivot_table()
         .Orientation = xlColumnField
         .Position = 1
     End With
-
-    ' Number Format Imputed / GP
+    ActiveSheet.PivotTables("PivotTable1").CalculatedFields.Add "GP %", _
+        "=IFERROR('Virtually Adjusted GP' /'Virtually Adjusted Imputed Revenue',0)", _
+        True
+    
+    ' Number Format Imputed, GP, GP %
     Range(Selection, ActiveCell.SpecialCells(xlLastCell)).Select
     Selection.Style = "Comma"
     Selection.NumberFormat = "_(* #,##0.0_);_(* (#,##0.0);_(* ""-""??_);_(@_)"
     Selection.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""??_);_(@_)"
-    ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").ShowDetail = _
-        False
-    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Calendar Year")
-        .PivotItems("(blank)").Visible = False
-    End With
-    ActiveSheet.PivotTables("PivotTable1").RowGrand = False
-    
-    ' Add GP %
-    ActiveSheet.PivotTables("PivotTable1").CalculatedFields.Add "GP %", _
-        "=IFERROR('Virtually Adjusted GP' /'Virtually Adjusted Imputed Revenue',0)", _
-        True
     ActiveSheet.PivotTables("PivotTable1").AddDataField ActiveSheet.PivotTables( _
         "PivotTable1").PivotFields("GP %"), "GP % ", xlSum
     With ActiveSheet.PivotTables("PivotTable1").PivotFields("GP % ")
         .NumberFormat = "0.0%"
         .Orientation = xlDataField
     End With
+
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Calendar Year")
+        .PivotItems("(blank)").Visible = False
+    End With
+    ActiveSheet.PivotTables("PivotTable1").RowGrand = False
     
-    ' Keep Pivot Table Position Fixed / Remove Field List
+    ' Keep Pivot Table Position Fixed, Remove Field List
     ActiveSheet.PivotTables("PivotTable1").HasAutoFormat = False
     ActiveWorkbook.ShowPivotTableFieldList = False
 End Sub
@@ -116,3 +116,4 @@ Sub ms_summary_main()
     MsgBox "ms_summary_main() completed."
     Application.ScreenUpdating = True
 End Sub
+
