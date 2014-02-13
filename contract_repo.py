@@ -25,9 +25,8 @@ def scan_future_billing():
             sb_date = r['Scheduled Bill Date']
             imputed_rev = float(r['Extended Amount'])
 
-            if contract not in fb_data:
-                fb_data[contract][sb_date] = imputed_rev
-            elif contract in fb_data and sb_date not in fb_data[contract]:
+            if ((contract not in fb_data)
+            or (contract in fb_data and sb_date not in fb_data[contract])):
                 fb_data[contract][sb_date] = imputed_rev
             else:
                 fb_data[contract][sb_date] += imputed_rev

@@ -2,14 +2,12 @@ import csv
 import time
 from aux_reader import *
 
-############### io ###############
+""" io """
 
 output = 'o\\ms summary.csv'
 input1 = 'i\\ms_summary\\ref.csv'
 input2 = 'i\\ms_summary\\sales.csv'
 input3 = 'i\\ms_summary\\bi.csv'
-
-############### pictionary ###############
 
 order = {}
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')

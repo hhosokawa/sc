@@ -9,8 +9,8 @@ output = 'o\\oracle_is.csv'
 input1 = 'i\\oracle\\gl.csv'
 
 years = ['2013', '2012']
-divs = ['"*"', '"100"', '"200"']
-categories = csv_dic('i\\oracle\\categories.csv')
+divs = ['"*"', '"100"', '"200"', '"300"', '"310"', '"320"', '"098"',
+        '"099"', '"101"', '"201"', '"315"', '"098"']
 
 gl = {}
 cat = {}
@@ -116,26 +116,17 @@ def generate_rows():
                 qtr = quarterperiod[month]
                 minus = '-'
                 per_ltd = '"PER"'
-
-                # Iterate Categories - Sales / COGS Only
-                if 'Net sales' in a or 'Cost of Sales' in a:
-                    for cat in categories:
-                        super_cat = categories[cat]
-                        formula = makeformula(minus, currency, book,
-                                      year, per_ltd, str(month), div,
-                                      acct, cat)
-                        if ('MS Agency' in desc and
-                            super_cat == 'Microsoft'):
-                            super_cat = 'Microsoft Agency Fees'
-                        row = (acct, desc, report, a, b, c, div_desc,
-                               month, qtr, year, super_cat, str(formula))
-                        rows.append(row)
+                formula = makeformula(minus, currency, book, year,
+                                      per_ltd, str(month), div, acct, '"*"')
+                row = (acct, desc, report, a, b, c, div_desc, month,
+                       qtr, year, str(formula))
+                rows.append(row)
 
     print 'generate_rows() complete.'
 
 def write_csv():
     headers = ['GL', 'GL Desc', 'Report Type', 'Cat A', 'Cat B', 'Cat C',
-               'Div', 'Period', 'Quarter', 'Year', 'Super Cat', 'Amount']
+               'Div', 'Period', 'Quarter', 'Year', 'Amount']
 
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
