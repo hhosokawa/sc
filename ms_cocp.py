@@ -1,6 +1,7 @@
 import csv
 import time
 from aux_reader import *
+from pprint import pprint
 import dateutil.parser as dparser
 from collections import defaultdict
 from datetime import datetime, timedelta, date
@@ -44,7 +45,7 @@ def split_enrolprogramdivloc():
         enrolprogram[enrol] = prog
         if divloc:
             district = divdistrict.get(div+divloc, '')
-            enroldistrict[enrol] = district 
+            enroldistrict[enrol] = district
 
 # COCP Clean
 def scan_COCP(ow):
@@ -102,31 +103,39 @@ def scan_NNEA(ow):
 
 def clean(r, datatype):
     if datatype == 'COCPEnrol':
-        r['Effective Month'] = r['Effective Month'].strip()
         r['Acct Type'] = 'Enrollment'
-        r['Contract Program Name'] = enrolprogram.get(r['Enrollment #'], '')
-        r['Notif Month'] = '-'.join([r['Effective Year'], month_num[r['Effective Month']]])
+        temp_month = r['Effective Month'].strip()
+        r['Effective Month'] = month_num.get(temp_month, temp_month)
         r['District'] = enroldistrict.get(r['Enrollment #'], '')
+        r['Contract Program Name'] = enrolprogram.get(r['Enrollment #'], '')
         if r['Type'] == 'Win': r['COCP Win'] = r['Enrollment #']
         else: r['COCP Loss'] = r['Enrollment #']
     elif datatype == 'COCPAcct':
-        r['Effective Month'] = r['Effective Month'].strip()
-        r['Contract Program Name'] = ''
         r['Acct Type'] = 'Acct'
-        r['Notif Month'] = '-'.join([r['Effective Year'], month_num[r['Effective Month']]])
+        r['Contract Program Name'] = ''
+        temp_month = r['Effective Month'].strip()
+        r['Effective Month'] = month_num.get(temp_month, temp_month)
         r['District'] = enroldistrict.get(r['Enrollment #'], '')
         if r['Type'] == 'Win': r['COCP Win'] = r['Master #']
         else: r['COCP Loss'] = r['Master #']
 
     elif datatype == 'NNEAEnrol':
         r['Acct Type'] = 'Enrollment'
-        r['Notif Month'] = dparser.parse(r['Contract Create Date']).date().strftime("%Y-%m")
+        r['Effective Year'] = dparser.parse(
+            r['Contract Create Date']).date().strftime("%Y")
+        r['Effective Month'] = dparser.parse(
+            r['Contract Create Date']).date().strftime("%m")
+
         if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Contract Number']
         else: r['Renewal'] = r['Contract Number']
     elif datatype == 'NNEAAcct':
         r['Acct Type'] = 'Acct'
         r['Contract Program Name'] = ''
-        r['Notif Month'] = dparser.parse(r['Contract Create Date']).date().strftime("%Y-%m")
+        r['Effective Year'] = dparser.parse(
+            r['Contract Create Date']).date().strftime("%Y")
+        r['Effective Month'] = dparser.parse(
+            r['Contract Create Date']).date().strftime("%m")
+
         if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Master Number']
         else: r['Renewal'] = r['Master Number']
     r['Rep'] = r['Rep'].strip()
