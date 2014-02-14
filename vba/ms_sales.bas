@@ -98,14 +98,14 @@ Private Sub save_file()
     Dim todays_date
     todays_date = Format(Date$, "yyyy-mm-dd")
     ActiveWorkbook.SaveAs Filename:= _
-        "P:\_HHOS\MS Summary Report\MS Summary - " & todays_date & ".xlsx", FileFormat:= _
+        "P:\_HHOS\Microsoft\MS Sales - " & todays_date & ".xlsx", FileFormat:= _
         xlOpenXMLWorkbook, CreateBackup:=False
     Range("A1").Select
 End Sub
 
-'############### ms_summary_main() ###############
+'############### ms_sales_main() ###############
 
-Sub ms_summary_main()
+Sub ms_sales_main()
     Application.ScreenUpdating = False
     add_tabs
     create_pivot_table
@@ -113,7 +113,6 @@ Sub ms_summary_main()
     add_slicers
     save_file
   
-    MsgBox "ms_summary_main() completed."
+    MsgBox "ms_sales_main() completed."
     Application.ScreenUpdating = True
 End Sub
-
