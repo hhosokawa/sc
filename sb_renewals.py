@@ -9,9 +9,9 @@ from datetime import timedelta, date
 """ io """
 data = {}
 fb_data = tree()
-input0 = 'i/contract_repo/contract_repo.csv'
-input1 = 'i/contract_repo/futurebillings.csv'
-output = 'o/sb-renewals - %s.csv' % (time.strftime("%Y-%m-%d"))
+input0 = 'i/sb_renewals/contract_repo.csv'
+input1 = 'i/sb_renewals/futurebillings.csv'
+output = 'o/sb renewals - %s.csv' % (time.strftime("%Y-%m-%d"))
 
 divregion = csv_dic('auxiliary/div-region.csv')
 divdistrict = csv_dic('auxiliary/div-district.csv')
@@ -125,7 +125,7 @@ def write_csv():
             o0w.writerow(data[contract])
     print 'write_csv() completed.'
 
-############## contract_repo_main() ###############
+############## sb_renewals_main() ###############
 
 if __name__ == '__main__':
     t0 = time.clock()
@@ -134,4 +134,4 @@ if __name__ == '__main__':
     add_renewal_trueup()
     write_csv()
     t1 = time.clock()
-    print 'contract_repo_main() completed. Duration:', t1-t0
+    print 'sb_renewals_main() completed. Duration:', t1-t0

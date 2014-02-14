@@ -9,10 +9,10 @@ from datetime import datetime, timedelta, date
 """ io """
 
 output = 'o/NNEA COCP.csv'
-COCP_path = 'i/ms_cocp/COCP.csv'
-NNEA_path = 'i/ms_cocp/NNEA.csv'
-emp_stb = csv_dic('i/ms_cocp/employee-super_title_branch.csv', 3)
-enrolprogramdivloc = csv_dic('i/ms_cocp/enrol-program-divloc.csv', 4)
+COCP_path = 'i/ms_scorecard/COCP.csv'
+NNEA_path = 'i/ms_scorecard/NNEA.csv'
+emp_stb = csv_dic('i/ms_scorecard/employee-super_title_branch.csv', 3)
+enrolprogramdivloc = csv_dic('i/ms_scorecard/enrol-program-divloc.csv', 4)
 enrolprogram = {}
 enroldistrict = {}
 
@@ -25,7 +25,7 @@ month_num = {'Jan': '01', 'Feb': '02', 'Mar': '03',
              'Jul': '07', 'Aug': '08', 'Sep': '09',
              'Oct': '10', 'Nov': '11', 'Dec': '12'}
 
-############### Uitls ###############
+############### utils ###############
 
 # Headers
 def get_header():
@@ -126,8 +126,10 @@ def clean(r, datatype):
         r['Effective Month'] = dparser.parse(
             r['Contract Create Date']).date().strftime("%m")
 
-        if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Contract Number']
-        else: r['Renewal'] = r['Contract Number']
+        if r['Contract Category'] == 'New Contract': 
+            r['NNEA'] = r['Contract Number']
+        else: 
+            r['Renewal'] = r['Contract Number']
     elif datatype == 'NNEAAcct':
         r['Acct Type'] = 'Acct'
         r['Contract Program Name'] = ''
@@ -136,8 +138,10 @@ def clean(r, datatype):
         r['Effective Month'] = dparser.parse(
             r['Contract Create Date']).date().strftime("%m")
 
-        if r['Contract Category'] == 'New Contract': r['NNEA'] = r['Master Number']
-        else: r['Renewal'] = r['Master Number']
+        if r['Contract Category'] == 'New Contract': 
+            r['NNEA'] = r['Master Number']
+        else: 
+            r['Renewal'] = r['Master Number']
     r['Rep'] = r['Rep'].strip()
     r['Customer'] = r['Customer'].upper()
 
@@ -155,7 +159,7 @@ def clean(r, datatype):
         pass
     return r
 
-############### main ###############
+############### ms_scorecard_main() ###############
 
 if __name__ == '__main__':
     t0 = time.clock()

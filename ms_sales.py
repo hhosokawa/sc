@@ -4,10 +4,10 @@ from aux_reader import *
 
 """ io """
 
-output = 'o\\ms summary.csv'
-input1 = 'i\\ms_summary\\ref.csv'
-input2 = 'i\\ms_summary\\sales.csv'
-input3 = 'i\\ms_summary\\bi.csv'
+output = 'o\\ms sales.csv'
+input1 = 'i\\ms_sales\\ref.csv'
+input2 = 'i\\ms_sales\\sales.csv'
+input3 = 'i\\ms_sales\\bi.csv'
 
 order = {}
 majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
@@ -142,7 +142,7 @@ def write_csv():
                 add_cat(r)
                 ow.writerow(r)
 
-############### main ###############
+############### ms_sales_main() ###############
 
 if __name__ == '__main__':
     t0 = time.clock()
@@ -151,4 +151,4 @@ if __name__ == '__main__':
     scan_sales()
     write_csv()
     t1 = time.clock()
-    print 'ms_summary_main() completed! Duration:', t1-t0
+    print 'ms_sales_main() completed! Duration:', t1-t0
