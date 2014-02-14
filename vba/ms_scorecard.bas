@@ -102,7 +102,7 @@ Private Sub add_formulas()
         SkipBlanks:=False, Transpose:=False
     Application.CutCopyMode = False
 
-    Range("F1").Value = "NNEA + Renewal + COCP Win - COCP Loss"
+    Range("F1").Value = "Total"
     Range("F2").formula = "=IF(SUM(B2:D2)-E2=0, """" ,SUM(B2:D2)-E2)"
     Range("F2").Copy
     Range("F2:F100").PasteSpecial (xlPasteAll)
@@ -112,14 +112,14 @@ Private Sub save_file()
     Dim todays_date
     todays_date = Format(Date$, "yyyy-mm-dd")
     ActiveWorkbook.SaveAs Filename:= _
-        "P:\_HHOS\MS Summary Report\NNEA COCP - " & todays_date & ".xlsx", FileFormat:= _
+        "P:\_HHOS\Microsoft\MS Scorecard - " & todays_date & ".xlsx", FileFormat:= _
         xlOpenXMLWorkbook, CreateBackup:=False
     Range("A1").Select
 End Sub
 
-'############### ms_cocp_main() ###############
+'############### ms_scorecard_main() ###############
 
-Sub ms_cocp_main()
+Sub ms_scorecard_main()
     Application.ScreenUpdating = False
     add_tabs
     create_pivot_table
@@ -128,6 +128,6 @@ Sub ms_cocp_main()
     add_slicers
     save_file
   
-    MsgBox "ms_cocp_main() completed."
+    MsgBox "ms_scorecard_main() completed."
     Application.ScreenUpdating = True
 End Sub
