@@ -7,8 +7,8 @@ from itertools import product
 
 output = 'o/oracle_mc.csv'
 gls = csv_dic('i/oracle/gl_parent.csv')
-territories = csv_dic('i/oracle/territories.csv')
 categories = csv_dic('i/oracle/categories.csv')
+territories = csv_dic('i/oracle/territories.csv')
 
 rows = []
 years = ['2013', '2012', '2011']
@@ -31,18 +31,24 @@ def makeformula(year, month, ter, acct, cat):
             cat + ',"*")')                  # Category
 
 def generate_rows():
-    for acct, year, ter, cat in product(gls, years, territories, categories):
+    for acct, year, region, cat in product(gls, years, territories, categories):
         desc = gls[acct]
         cat_desc = categories[cat]
-        ter_desc = territories[ter]
-        formula = makeformula(year, 12, ter, acct, cat)
+        region_desc = territories[region]
+        formula = str(makeformula(year, 12, region, acct, cat))
 
-        r = (acct, desc, year, ter_desc, cat_desc, str(formula))
+        if desc == 'Net Sales':
+            rev_formula = formula
+        else:
+            rev_formula = 0
+
+        r = (acct, desc, year, region_desc, cat_desc, formula, rev_formula)
         rows.append(r)
     print 'generate_rows() complete.'
 
 def write_csv():
-    headers = ['GL', 'GL Desc', 'Year', 'Region', 'Super Category', 'Amount']
+    headers = ['GL', 'GL Desc', 'Year', 'Region',
+               'Super Category', 'FM', 'Rev']
 
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
