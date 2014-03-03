@@ -23,13 +23,14 @@ def scan_future_billing():
         for r in csv.DictReader(i1):
             contract = r['Agreement Number']
             sb_date = r['Scheduled Bill Date']
-            imputed_rev = float(r['Extended Amount'])
+            if r['Extended Amount']:
+                imputed_rev = float(r['Extended Amount'])
 
-            if ((contract not in fb_data)
-            or (contract in fb_data and sb_date not in fb_data[contract])):
-                fb_data[contract][sb_date] = imputed_rev
-            else:
-                fb_data[contract][sb_date] += imputed_rev
+                if ((contract not in fb_data)
+                or (contract in fb_data and sb_date not in fb_data[contract])):
+                    fb_data[contract][sb_date] = imputed_rev
+                else:
+                    fb_data[contract][sb_date] += imputed_rev
     print 'scan_future_billing() completed.'
 
 def calc_gp(r):

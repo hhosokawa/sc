@@ -58,11 +58,11 @@ def write_csv():
             o1w.writerow(row)
     print 'write_csv() complete.'
 
-############## oracle_main() ###############
+############## oracle_mc_main() ###############
 
 if __name__ == '__main__':
     t0 = time.clock()
     generate_rows()
     write_csv()
     t1 = time.clock()
-    print 'oracle_main() completed. Duration:', t1-t0
+    print 'oracle_mc_main() completed. Duration:', t1-t0
