@@ -42,4 +42,4 @@ if __name__ == '__main__':
     apply_new_fields()
     nnea_df.to_csv(output, index=False)
     t1 = time.clock()
-    print 'Process completed! Duration:', t1-t0
+    print 'nnea_main() complete. Duration:', t1-t0
