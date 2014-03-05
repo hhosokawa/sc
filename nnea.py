@@ -4,11 +4,14 @@ from aux_reader import *
 
 """ io """
 
-output =        'o/nnea.csv'
 nnea_df =       pd.read_csv('i/nnea/nnea.csv')
-
 tsr_reps =      csv_dic('i/nnea/tsr reps.csv')
+
+divregion =     csv_dic('auxiliary\\div-region.csv')
 divdistrict =   csv_dic('auxiliary\\div-district.csv')
+
+current_time =  time.strftime("%Y-%m-%d")
+output =        'P:/_HHOS/Microsoft/NNEA Summary - %s.csv' % (current_time)
 
 ############### utils ###############
 
@@ -17,14 +20,20 @@ def ob_tsr(series):
     if rep in tsr_reps: return 'TSR'
     else: return 'OB'
 
+def region(series):
+    divloc = (str(int(series['Master Division'])) +
+              str(int(series['Master Divloc'])))
+    return divregion.get(divloc, '')
+
 def district(series):
     divloc = (str(int(series['Master Division'])) +
               str(int(series['Master Divloc'])))
     return divdistrict.get(divloc, '')
 
 def apply_new_fields():
-    nnea_df['District'] = nnea_df.apply(district, axis = 1)
     nnea_df['OB / TSR'] = nnea_df.apply(ob_tsr, axis = 1)
+    nnea_df['Region'] = nnea_df.apply(district, axis = 1)
+    nnea_df['District'] = nnea_df.apply(district, axis = 1)
 
 ############### nnea_main() ###############
 
