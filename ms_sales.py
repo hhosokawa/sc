@@ -8,10 +8,10 @@ output = 'o\\ms sales.csv'
 input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
+venprogram = csv_dic('i\\ms_sales\\dictvenprograms.csv')
+majoraccts = csv_dic('i\\ms_sales\\enrol - major customers.csv')
 
 order = {}
-majoraccts = csv_dic('auxiliary\\enrol - major customers.csv')
-venprogram = csv_dic('auxiliary\\dictvenprograms.csv')
 ref_revtype = {'AO': 'EA Add-On',
                'N': 'EA New',
                'RC': 'EA Recurring',
