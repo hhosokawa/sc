@@ -1,3 +1,6 @@
+Dim t0 As Single
+Dim t1 As Single
+
 ' Add Tabs - cust, enrol
 Private Sub add_tabs()
     Sheets.Add After:=Sheets(Sheets.Count)
@@ -35,19 +38,15 @@ End Sub
 Private Sub populate_pivot_table()
 
     ' _______________ Enrol Pivot Table _______________
-    ' y - OB / TSR, Region, District
-    With ActiveSheet.PivotTables("enrol_table").PivotFields("OB / TSR")
-        .Orientation = xlRowField
-        .Position = 1
-    End With
+    ' y - Region, District
     With ActiveSheet.PivotTables("enrol_table").PivotFields("Region")
         .Orientation = xlRowField
-        .Position = 2
+        .Position = 1
         .PivotItems("(blank)").Visible = False
     End With
     With ActiveSheet.PivotTables("enrol_table").PivotFields("District")
         .Orientation = xlRowField
-        .Position = 3
+        .Position = 2
     End With
     ActiveSheet.PivotTables("enrol_table").PivotFields("Region").ShowDetail = False
     
@@ -70,18 +69,14 @@ Private Sub populate_pivot_table()
     ' _______________ Cust Pivot Table _______________
     ' y - OB / TSR, Region, District
     Sheets("cust").Select
-    With ActiveSheet.PivotTables("cust_table").PivotFields("OB / TSR")
-        .Orientation = xlRowField
-        .Position = 1
-    End With
     With ActiveSheet.PivotTables("cust_table").PivotFields("Region")
         .Orientation = xlRowField
-        .Position = 2
+        .Position = 1
         .PivotItems("(blank)").Visible = False
     End With
     With ActiveSheet.PivotTables("cust_table").PivotFields("District")
         .Orientation = xlRowField
-        .Position = 3
+        .Position = 2
     End With
     ActiveSheet.PivotTables("cust_table").PivotFields("Region").ShowDetail = False
     
@@ -103,6 +98,17 @@ Private Sub populate_pivot_table()
    
 End Sub
 
+' Add Slicers - OB / TSR
+Private Sub add_slicers()
+
+    ' enrol - OB / TSR
+    Sheets("enrol").Select
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("enrol_table"), _
+        "OB / TSR").Slicers.Add ActiveSheet, , "OB / TSR", "OB / TSR", _
+        0, 565, 110, 90
+   
+End Sub
+
 Private Sub save_file()
     Dim todays_date
     todays_date = Format(Date$, "yyyy-mm-dd")
@@ -116,11 +122,15 @@ End Sub
 
 Sub enrol_cust_main()
     Application.ScreenUpdating = False
+    t0 = Timer
+    
     add_tabs
     create_pivot_table
     populate_pivot_table
+    add_slicers
     save_file
  
-    MsgBox "enrol_cust_main() completed."
+    t1 = Timer
+    MsgBox "enrol_cust_main() completed: " + Format(t1 - t0, "Fixed") + "s"
     Application.ScreenUpdating = True
 End Sub

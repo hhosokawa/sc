@@ -1,3 +1,6 @@
+Dim t0 As Single
+Dim t1 As Single
+
 '############### 0 - utils ###############
 Function ConvertToLetter(iCol As Integer) As String
    Dim iAlpha As Integer
@@ -146,7 +149,8 @@ End Sub
 Private Sub open_template()
     Workbooks.Open Filename:="P:\_HHOS\MC Model\mc_template.xlsx"
     Range("B1").Select
-    ActiveSheet.Paste
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
 End Sub
 
 
@@ -155,6 +159,7 @@ End Sub
 Sub monte_carlo_main()
     Application.ScreenUpdating = False
     Application.DisplayAlerts = False
+    t0 = Timer
     
     add_tabs
     create_pivot_table
@@ -165,8 +170,8 @@ Sub monte_carlo_main()
     copy_latest_data
     open_template
     
-    MsgBox "monte_carlo_main() completed."
+    t1 = Timer
+    MsgBox "monte_carlo_main() completed. " + Format(t1 - t0, "Fixed") + "s"
     Application.ScreenUpdating = True
     Application.DisplayAlerts = True
 End Sub
-

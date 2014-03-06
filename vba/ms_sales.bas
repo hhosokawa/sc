@@ -1,17 +1,21 @@
+Dim t0 As Single
+Dim t1 As Single
+
 ' Add Tabs - summary, data
 Private Sub add_tabs()
-    Sheets("ms summary").Select
-    Sheets("ms summary").Name = "data"
+    Sheets("ms sales").Select
+    Sheets("ms sales").Name = "data"
     Sheets.Add After:=Sheets(Sheets.Count)
     Sheets("Sheet1").Select
     Sheets("Sheet1").Name = "summary"
 End Sub
 
-' Create Pivot Table - Range(A:V)
+' Create Pivot Table - Range(A:U)
 Private Sub create_pivot_table()
-    Range("A:V").Select
+    Sheets("data").Select
+    Range("A:U").Select
     ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, _
-        SourceData:="data!A:V", _
+        SourceData:="data!A:U", _
         Version:=xlPivotTableVersion14). _
         CreatePivotTable TableDestination:="summary!R1C1", _
         TableName:="PivotTable1", _
@@ -34,6 +38,7 @@ Private Sub populate_pivot_table()
         .Orientation = xlRowField
         .Position = 3
     End With
+    ActiveSheet.PivotTables("PivotTable1").PivotFields("Category B").ShowDetail = False
     ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").ShowDetail = False
     
     ' x - Imputed Revenue, GP, GP %
@@ -68,30 +73,53 @@ Private Sub populate_pivot_table()
     End With
     ActiveSheet.PivotTables("PivotTable1").RowGrand = False
     
-    ' Keep Pivot Table Position Fixed, Remove Field List
+    ' Keep Pivot Table Position Fixed, Light Black Pivot Layout, Remove Field List,
+    ' Expand Category A
     ActiveSheet.PivotTables("PivotTable1").HasAutoFormat = False
+    ActiveSheet.PivotTables("PivotTable1").TableStyle2 = "PivotStyleLight1"
     ActiveWorkbook.ShowPivotTableFieldList = False
+    ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").PivotItems( _
+        "EA").ShowDetail = True
 End Sub
 
-' Add Slicers - District, Fiscal Period, OB or TSR, Region, Solution Group
+' Add Slicers - District, Calendar Month, OB or TSR, Region, Solution Group
 Private Sub add_slicers()
+
+    ' Calendar Month
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
-        "Fiscal Period").Slicers.Add ActiveSheet, , "Fiscal Period", "Fiscal Period", _
-        0, 500, 144, 95
-    ActiveWorkbook.SlicerCaches("Slicer_Fiscal_Period").Slicers("Fiscal Period"). _
+        "Calendar Month").Slicers.Add ActiveSheet, , "Calendar Month", "Calendar Month", _
+        0, 500, 144, 120
+    ActiveWorkbook.SlicerCaches("Slicer_Calendar_Month").Slicers("Calendar Month"). _
         NumberOfColumns = 3
+        
+    ' Region
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "Region").Slicers.Add ActiveSheet, , "Region", "Region", _
-        96, 500, 144, 180
-    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
-        "OB or TSR").Slicers.Add ActiveSheet, , "OB or TSR", "OB or TSR", _
-        0, 645, 144, 140
-    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
-        "District").Slicers.Add ActiveSheet, , "District", "District", _
-        141, 645, 144, 236
+        121, 500, 144, 180
+    ActiveWorkbook.SlicerCaches("Slicer_Region").Slicers("Region").Style = _
+        "SlicerStyleLight2"
+        
+    ' Solution Group
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "Solution Group").Slicers.Add ActiveSheet, , "Solution Group", "Solution Group", _
-        277, 500, 144, 100
+        302, 500, 144, 100
+    ActiveWorkbook.SlicerCaches("Slicer_Solution_Group").Slicers("Solution Group"). _
+        Style = "SlicerStyleLight6"
+    
+    ' OB / TSR
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
+        "OB or TSR").Slicers.Add ActiveSheet, , "OB or TSR", "OB or TSR", _
+        0, 645, 144, 120
+    ActiveWorkbook.SlicerCaches("Slicer_OB_or_TSR").Slicers("OB or TSR").Style = _
+        "SlicerStyleLight4"
+
+    ' District
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
+        "District").Slicers.Add ActiveSheet, , "District", "District", _
+        121, 645, 144, 281
+    ActiveWorkbook.SlicerCaches("Slicer_District").Slicers("District").Style = _
+        "SlicerStyleLight3"
+    
 End Sub
 
 Private Sub save_file()
@@ -107,12 +135,15 @@ End Sub
 
 Sub ms_sales_main()
     Application.ScreenUpdating = False
+    t0 = Timer
+    
     add_tabs
     create_pivot_table
     populate_pivot_table
     add_slicers
     save_file
   
-    MsgBox "ms_sales_main() completed."
+    t1 = Timer
+    MsgBox "ms_sales_main() completed. " + Format(t1 - t0, "Fixed") + "s"
     Application.ScreenUpdating = True
 End Sub
