@@ -9,6 +9,7 @@ from datetime import timedelta, date
 """ io """
 data = {}
 fb_data = tree()
+current_year = 2014
 input0 = 'i/sb_renewals/contract_repo.csv'
 input1 = 'i/sb_renewals/futurebillings.csv'
 output = 'o/sb renewals - %s.csv' % (time.strftime("%Y-%m-%d"))
@@ -103,7 +104,14 @@ def add_renewal_trueup():
         sb_renewal = data[contract]['Type']
         end_date = dparser.parse(data[contract]['Contract End Date']).date()
         start_date = dparser.parse(data[contract]['Contract Start Date']).date()
-        true_up_date = start_date - timedelta(days=31)
+        true_up_date = start_date - timedelta(days=30)
+
+        # True-Up Date (Feb 29 Fix)
+        try:
+            true_up_date = true_up_date.replace(year = current_year)
+        except ValueError:
+            true_up_date = true_up_date.replace(day = 28)
+            true_up_date = true_up_date.replace(year = current_year)
         data[contract]['True Up Date'] = true_up_date.strftime('%Y-%m-%d')
 
         if sb_renewal == 'Renewal':
@@ -113,10 +121,10 @@ def add_renewal_trueup():
 def write_csv():
     headers = ['Contract Number', 'Contract Start Date',
                'Contract End Date','Contract Program Name',
-               'Contract Units', 'Contract Level', 'Master Number',
-               'Master Name', 'Imputed Rev', 'GP', 'Region', 'District',
-               'Master OB Rep Name', 'Fiscal Year', 'Fiscal Month', 'Type',
-               'True Up Date', 'Renewal Date']
+               'Contract Units', 'Master Number', 'Master Name',
+               'Imputed Rev', 'GP', 'Region', 'District', 'Master OB Rep Name',
+               'Fiscal Year', 'Fiscal Month', 'Type', 'True Up Date',
+               'Renewal Date']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
