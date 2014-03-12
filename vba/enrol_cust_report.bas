@@ -13,6 +13,8 @@ End Sub
 
 ' Create Pivot Table - Range(A:S)
 Private Sub create_pivot_table()
+
+    ' cust_data
     Sheets("cust_data").Select
     Range("A:S").Select
     ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, _
@@ -22,6 +24,7 @@ Private Sub create_pivot_table()
         TableName:="cust_table", _
         DefaultVersion:=xlPivotTableVersion14
     
+    ' enrol_data
     Sheets("enrol_data").Select
     Range("A:R").Select
     ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, _
@@ -30,7 +33,7 @@ Private Sub create_pivot_table()
         CreatePivotTable TableDestination:="enrol!R1C1", _
         TableName:="enrol_table", _
         DefaultVersion:=xlPivotTableVersion14
-        
+       
     Sheets("enrol").Select
 End Sub
 
@@ -38,7 +41,7 @@ End Sub
 Private Sub populate_pivot_table()
 
     ' _______________ Enrol Pivot Table _______________
-    ' y - Region, District
+    ' y - Region, District, Master OB Rep Name
     With ActiveSheet.PivotTables("enrol_table").PivotFields("Region")
         .Orientation = xlRowField
         .Position = 1
@@ -48,7 +51,12 @@ Private Sub populate_pivot_table()
         .Orientation = xlRowField
         .Position = 2
     End With
+    With ActiveSheet.PivotTables("enrol_table").PivotFields("Master OB Rep Name")
+        .Orientation = xlRowField
+        .Position = 3
+    End With
     ActiveSheet.PivotTables("enrol_table").PivotFields("Region").ShowDetail = False
+    ActiveSheet.PivotTables("enrol_table").PivotFields("District").ShowDetail = False
     
     ' x - Licensing ProgramName
     With ActiveSheet.PivotTables("enrol_table").PivotFields("Licensing ProgramName")
@@ -67,7 +75,7 @@ Private Sub populate_pivot_table()
     Columns("B:I").HorizontalAlignment = xlCenter
     
     ' _______________ Cust Pivot Table _______________
-    ' y - OB / TSR, Region, District
+    ' y - Region, District, Master OB Rep Name
     Sheets("cust").Select
     With ActiveSheet.PivotTables("cust_table").PivotFields("Region")
         .Orientation = xlRowField
@@ -78,7 +86,12 @@ Private Sub populate_pivot_table()
         .Orientation = xlRowField
         .Position = 2
     End With
+    With ActiveSheet.PivotTables("cust_table").PivotFields("Master OB Rep Name")
+        .Orientation = xlRowField
+        .Position = 3
+    End With
     ActiveSheet.PivotTables("cust_table").PivotFields("Region").ShowDetail = False
+    ActiveSheet.PivotTables("cust_table").PivotFields("District").ShowDetail = False
     
     ' x - Licensing ProgramName
     With ActiveSheet.PivotTables("cust_table").PivotFields("Licensing ProgramName")
@@ -90,12 +103,14 @@ Private Sub populate_pivot_table()
         "cust_table").PivotFields("Contract Number"), _
         "Contract Number ", xlCount
     
-    ' Keep Pivot Table Position Fixed, Light Black Pivot Layout, Remove Field List, Center
+    ' Keep Pivot Table Position Fixed, Light Black Pivot Layout, Remove Field List, Center,
+    ' Remove Row Grand Total - cust_table
     ActiveSheet.PivotTables("cust_table").HasAutoFormat = False
     ActiveSheet.PivotTables("cust_table").TableStyle2 = "PivotStyleLight3"
     ActiveWorkbook.ShowPivotTableFieldList = False
     Columns("B:I").HorizontalAlignment = xlCenter
-   
+    ActiveSheet.PivotTables("cust_table").RowGrand = False
+  
 End Sub
 
 ' Add Slicers - OB / TSR
