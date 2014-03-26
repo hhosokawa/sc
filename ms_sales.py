@@ -4,7 +4,7 @@ from aux_reader import *
 
 """ io """
 
-output = 'o\\ms sales.csv'
+output = 'o\\ms_sales.csv'
 input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
