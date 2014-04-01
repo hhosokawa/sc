@@ -48,11 +48,18 @@ def correct_month(r):
     else:
         return r
 
+def district_tsr_switch(r):
+    # Make TSR Reps roll up to OB/TSR Manager
+    if r['OB or TSR'] == 'TSR':
+        r['District'] = r['OB/TSR Manager'].title()
+    return r
+
 def scan_ms_sales():
     with open(input0) as i0:
         for r in csv.DictReader(i0):
             if determine_new_product(r):
                 correct_month(r)
+                district_tsr_switch(r)
                 rows.append(r)
     print 'scan_ms_sales() complete.'
 
