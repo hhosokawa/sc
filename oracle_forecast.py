@@ -54,20 +54,21 @@ def generate_rows():
             # Rename MS Net Sales / COGS -> MS License and SA
             if desc == 'Net Sales':
                 desc = 'MS License and SA'
-                ms_fees_formula = str(makeformula(year, month, '"631000"', cat))
+                ms_fees_formula = str(makeformula(year,
+                                      month, '"631000"', cat))
                 formula = formula + ' + ' + ms_fees_formula[2:]
                 rev_formula = formula
             elif desc == 'COGS':
                 desc = 'MS License and SA'
 
-        r = (acct, desc, year, month, quarter, cat_desc,
-             formula, rev_formula)
+        r = (acct, desc, year, month, quarter,
+             cat_desc, formula, rev_formula)
         rows.append(r)
     print 'generate_rows() complete.'
 
 def write_csv():
-    headers = ['GL', 'GL Desc', 'Year', 'Month', 'Quarter',
-               'Super Category', 'FM', 'Rev']
+    headers = ['GL', 'GL Desc', 'Year', 'Month',
+               'Quarter', 'Super Category', 'FM', 'Rev']
 
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
