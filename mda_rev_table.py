@@ -53,13 +53,18 @@ def generate_rows():
 
             # Rename MS Net Sales / COGS -> MS License and SA
             if desc == 'Net Sales':
-                desc = 'MS License and SA'
+                desc = 'Net Sales - MS License and SA'
                 ms_fees_formula = str(makeformula(year,
                                       month, '"631000"', cat))
                 formula = formula + ' + ' + ms_fees_formula[2:]
                 rev_formula = formula
-            elif desc == 'COGS':
-                desc = 'MS License and SA'
+
+        # Isolate CC / ESSN / Services
+        else:
+
+            # Ignore 'MS Direct EAs' for CC / ESSN / Services
+            if desc == 'MS Direct EAs' and cat_desc != 'Services':
+                continue
 
         r = (acct, desc, year, month, quarter,
              cat_desc, formula, rev_formula)
