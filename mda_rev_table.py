@@ -9,9 +9,16 @@ output = 'o/mda_rev_table.csv'
 gls = csv_dic('i/mda_rev_table/gl.csv')
 categories = csv_dic('i/mda_rev_table/categories.csv')
 
+months =    range(1,13)
+divs =      ['"*"', '"100"', '"200"']
+years =     ['2014', '2013', '2012', '2011']
+
+""" pictionary """
+
 rows = []
-months = range(1,13)
-years = ['2014', '2013', '2012', '2011']
+div_book = {'"200"' : 'US',
+            '"100"' : 'Canada',
+            '"*"'   : 'Consolidated'}
 quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
                  4: 'Q2', 5: 'Q2', 6: 'Q2',
                  7: 'Q3', 8: 'Q3', 9: 'Q3',
@@ -20,7 +27,7 @@ quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
 ############## utils ###############
 
 # Make Spreadsheet Server Formula
-def makeformula(year, month, acct, cat):
+def makeformula(year, month, acct, cat, div):
     return ('=-' +
             'GXL("A","","TRANSLATED="&"E"&";"&"CURRENCY="&' +
             '"USD"' + '&";"&"BOOK="&' +     # Currency
@@ -28,18 +35,19 @@ def makeformula(year, month, acct, cat):
             year + ',' +                    # Year
             '"PER"' + ',' +                 # PER or LTD
             str(month) + ',' +              # Period
-            '"*"' + ',' +                   # Div
+            div + ',' +                     # Div
             '"*"' + ',' +                   # Dept
             '"*"' + ',' +                   # Territory
             acct + ',' +                    # GL Acct
             cat + ',"*")')                  # Category
 
 def generate_rows():
-    for acct, year, cat, month in product(gls, years, categories, months):
+    for acct, year, cat, month, div in product(gls, years, categories, months, divs):
         desc = gls[acct]
+        div_desc = div_book[div]
         cat_desc = categories[cat]
         quarter = quarterperiod[month]
-        formula = str(makeformula(year, month, acct, cat))
+        formula = str(makeformula(year, month, acct, cat, div))
 
         # Isolate Net Sales / MS Agency Fees
         if desc in ['Net Sales', 'MS Direct EAs']:
@@ -48,32 +56,39 @@ def generate_rows():
         else:
             rev_formula = 0
 
-        # Edit Microsoft Desc and Revenue Fields
+        # Microsoft Edit - Desc and Revenue
         if cat_desc == 'Microsoft':
 
             # Rename MS Net Sales / COGS -> MS License and SA
             if desc == 'Net Sales':
                 desc = 'Net Sales - MS License and SA'
                 ms_fees_formula = str(makeformula(year,
-                                      month, '"631000"', cat))
+                                      month, '"631000"', cat, div))
                 formula = formula + ' + ' + ms_fees_formula[2:]
                 rev_formula = formula
 
-        # Isolate CC / ESSN / Services
+        # Services Edit
+        elif cat_desc == 'Services' and desc == 'Net Sales':
+            ms_fees_formula = str(makeformula(year,
+                                  month, '"631000"', cat, div))
+            formula = formula + ' + ' + ms_fees_formula[2:]
+            rev_formula = formula
+
+        # CC / ESSN Edit
         else:
 
             # Ignore 'MS Direct EAs' for CC / ESSN / Services
             if desc == 'MS Direct EAs' and cat_desc != 'Services':
                 continue
 
-        r = (acct, desc, year, month, quarter,
+        r = (acct, desc, year, month, quarter, div_desc,
              cat_desc, formula, rev_formula)
         rows.append(r)
     print 'generate_rows() complete.'
 
 def write_csv():
-    headers = ['GL', 'GL Desc', 'Year', 'Month',
-               'Quarter', 'Super Category', 'FM', 'Rev']
+    headers = ['GL', 'GL Desc', 'Year', 'Month', 'Quarter',
+               'Division', 'Super Category', 'FM', 'Rev']
 
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
