@@ -9,16 +9,12 @@ output = 'o/mda_rev_table.csv'
 gls = csv_dic('i/mda_rev_table/gl.csv')
 categories = csv_dic('i/mda_rev_table/categories.csv')
 
+rows = []
 months =    range(1,13)
 divs =      ['"*"', '"100"', '"200"']
-years =     ['2014', '2013', '2012', '2011']
+years =     ['2013', '2012', '2011']
+div_book =  {'"200"' : 'US', '"100"' : 'Canada', '"*"' : 'Consolidated'}
 
-""" pictionary """
-
-rows = []
-div_book = {'"200"' : 'US',
-            '"100"' : 'Canada',
-            '"*"'   : 'Consolidated'}
 quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
                  4: 'Q2', 5: 'Q2', 6: 'Q2',
                  7: 'Q3', 8: 'Q3', 9: 'Q3',
@@ -56,42 +52,28 @@ def generate_rows():
         quarter = quarterperiod[month]
         formula = str(makeformula(year, month, acct, cat, div))
 
-        # Isolate Net Sales / MS Agency Fees
-        if desc in ['Net Sales', 'MS Direct EAs']:
-            rev_formula = formula
-        # COGS
-        else:
-            rev_formula = 0
-
-        # Microsoft Edit - Desc and Revenue
+        # Microsoft Edit - (Revenue - MS Agency Fees), Desc
         if cat_desc == 'Microsoft':
-
-            # Rename MS Net Sales / COGS -> MS License and SA
             if desc == 'Net Sales':
-                desc = 'Net Sales - MS License and SA'
                 formula = concat_ms_fee(year, month,  cat, div, formula)
-                rev_formula = formula
 
-        # Services Edit
+        # Services Edit - (Revenue - MS Agency Fees)
         elif cat_desc == 'Services' and desc == 'Net Sales':
             formula = concat_ms_fee(year, month,  cat, div, formula)
-            rev_formula = formula
 
-        # CC / ESSN Edit
+        # CC / ESSN Edit - Ignore 'MS Direct EAs' GL
         else:
-
-            # Ignore 'MS Direct EAs' for CC / ESSN / Services
             if desc == 'MS Direct EAs' and cat_desc != 'Services':
                 continue
 
-        r = (acct, desc, year, month, quarter, div_desc,
-             cat_desc, formula, rev_formula)
+        r = (acct, desc, year, month, quarter,
+             div_desc, cat_desc, formula)
         rows.append(r)
     print 'generate_rows() complete.'
 
 def write_csv():
-    headers = ['GL', 'GL Desc', 'Year', 'Month', 'Quarter',
-               'Division', 'Super Category', 'FM', 'Rev']
+    headers = ['GL', 'GL Desc', 'Year', 'Month',
+               'Quarter', 'Division', 'Super Category', 'FM']
 
     with open(output, 'wb') as o1:
         o1w = csv.writer(o1)
