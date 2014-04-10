@@ -147,10 +147,10 @@ def add_renewal_trueup():
 def write_csv():
     headers = ['Contract Number', 'Contract Start Date',
                'Contract End Date','Contract Program Name',
-               'Contract Units', 'Master Number', 'Master Name',
-               'Imputed Rev', 'GP', 'Region', 'District', 'Master OB Rep Name',
-               'Fiscal Year', 'Fiscal Month', 'Type', 'True Up Date',
-               'Renewal Date']
+               'Contract Units', 'Contract Level', 'Master Number',
+               'Master Name', 'Imputed Rev', 'GP', 'Region', 'District',
+               'Master OB Rep Name', 'Fiscal Year', 'Fiscal Month',
+               'Type', 'True Up Date', 'Renewal Date']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
