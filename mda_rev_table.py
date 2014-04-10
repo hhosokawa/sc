@@ -41,6 +41,13 @@ def makeformula(year, month, acct, cat, div):
             acct + ',' +                    # GL Acct
             cat + ',"*")')                  # Category
 
+# Concat MS Agency Fee Formula
+def concat_ms_fee(year, month, cat, div, formula):
+    ms_fees_formula = str(makeformula(year,
+                          month, '"631000"', cat, div))
+    formula = formula + ' + ' + ms_fees_formula[2:]
+    return formula
+
 def generate_rows():
     for acct, year, cat, month, div in product(gls, years, categories, months, divs):
         desc = gls[acct]
@@ -62,16 +69,12 @@ def generate_rows():
             # Rename MS Net Sales / COGS -> MS License and SA
             if desc == 'Net Sales':
                 desc = 'Net Sales - MS License and SA'
-                ms_fees_formula = str(makeformula(year,
-                                      month, '"631000"', cat, div))
-                formula = formula + ' + ' + ms_fees_formula[2:]
+                formula = concat_ms_fee(year, month,  cat, div, formula)
                 rev_formula = formula
 
         # Services Edit
         elif cat_desc == 'Services' and desc == 'Net Sales':
-            ms_fees_formula = str(makeformula(year,
-                                  month, '"631000"', cat, div))
-            formula = formula + ' + ' + ms_fees_formula[2:]
+            formula = concat_ms_fee(year, month,  cat, div, formula)
             rev_formula = formula
 
         # CC / ESSN Edit
