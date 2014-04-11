@@ -12,7 +12,7 @@ categories = csv_dic('i/mda_rev_table/categories.csv')
 rows = []
 months =    range(1,13)
 divs =      ['"*"', '"100"', '"200"']
-years =     ['2013', '2012', '2011']
+years =     ['2014', '2013', '2012', '2011', '2010']
 div_book =  {'"200"' : 'US', '"100"' : 'Canada', '"*"' : 'Consolidated'}
 
 quarterperiod = {1: 'Q1', 2: 'Q1', 3: 'Q1',
@@ -52,19 +52,9 @@ def generate_rows():
         quarter = quarterperiod[month]
         formula = str(makeformula(year, month, acct, cat, div))
 
-        # Microsoft Edit - (Revenue - MS Agency Fees), Desc
-        if cat_desc == 'Microsoft':
-            if desc == 'Net Sales':
-                formula = concat_ms_fee(year, month,  cat, div, formula)
-
-        # Services Edit - (Revenue - MS Agency Fees)
-        elif cat_desc == 'Services' and desc == 'Net Sales':
+        # Net Sales Edit - (Revenue - MS Agency Fees)
+        if desc == 'Net Sales':
             formula = concat_ms_fee(year, month,  cat, div, formula)
-
-        # CC / ESSN Edit - Ignore 'MS Direct EAs' GL
-        else:
-            if desc == 'MS Direct EAs' and cat_desc != 'Services':
-                continue
 
         r = (acct, desc, year, month, quarter,
              div_desc, cat_desc, formula)
