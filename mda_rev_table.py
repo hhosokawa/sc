@@ -36,12 +36,6 @@ def makeformula(year, qtr, acct, cat, div):
             cat + ',' +                     # Category
             job + ')')                      # Job Number
 
-# Concat MS Agency Fee Formula
-def concat_ms_fee(year, qtr, cat, div, formula):
-    ms_fees_formula = str(makeformula(year, qtr, '"631000"', cat, div))
-    formula = formula + ' + ' + ms_fees_formula[2:]
-    return formula
-
 def generate_rows():
     for acct, year, cat, qtr, div in product(gls, years, categories,
                                              qtrs, divs):
@@ -52,7 +46,8 @@ def generate_rows():
 
         # Net Sales Edit - (Revenue - MS Agency Fees)
         if desc == 'Net Sales':
-            formula = concat_ms_fee(year, qtr, cat, div, formula)
+            ms_fees_formula = str(makeformula(year, qtr, '"631000"', cat, div))
+            formula = formula + ' + ' + ms_fees_formula[2:]
 
         r = (acct, desc, year, qtr, div_desc, cat_desc, formula)
         rows.append(r)
