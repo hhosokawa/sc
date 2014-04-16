@@ -52,36 +52,22 @@ def calc_gp(r):
 
     # GP Fee Matrix
     start_date = dparser.parse(r['Contract Payment Date'])
-    if dparser.parse('2013-09-30') < start_date:
+    if (dparser.parse('2013-09-30') < start_date and
+        r['Type'] == 'Scheduled Billing'):
 
         # ESA 3.0 date < 2013-09-30
-        if 0 <= units <= 749:           percent = 0.06
-        elif 750 <= units <= 2399:      percent = 0.06
-        elif 2400 <= units <= 5999:     percent = 0.055
-        elif 6000 <= units <= 14999:    percent = 0.033
-        elif units >= 15000:            percent = 0.03
-        else:                           percent = 0.048
+        if 0 <= units <= 749:           percent = 0.03
+        elif 750 <= units <= 2399:      percent = 0.03
+        elif 2400 <= units <= 5999:     percent = 0.029
+        elif 6000 <= units <= 14999:    percent = 0.023
+        elif units >= 15000:            percent = 0.02
+        else:                           percent = 0.026
+        return imputed_rev * percent
+
     else:
 
-        # ESA 4.0 - Renewal
-        if r['Type'] == 'Renewal':
-            if 0 <= units <= 749:           percent = 0.085
-            elif 750 <= units <= 2399:      percent = 0.0488
-            elif 2400 <= units <= 5999:     percent = 0.0375
-            elif 6000 <= units <= 14999:    percent = 0.0113
-            elif units >= 15000:            percent = 0.0083
-            else:                           percent = 0.0382
+        return 0
 
-        # ESA 4.0 - Scheduled Billings
-        else:
-            if 0 <= units <= 749:           percent = 0.025
-            elif 750 <= units <= 2399:      percent = 0.01125
-            elif 2400 <= units <= 5999:     percent = 0.01
-            elif 6000 <= units <= 14999:    percent = 0.00625
-            elif units >= 15000:            percent = 0.0045
-            else:                           percent = 0.0114
-
-    return imputed_rev * percent
 
 def get_region_district(r):
     if r['Master Division'] and r['Master Divloc']:
