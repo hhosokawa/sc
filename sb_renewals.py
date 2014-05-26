@@ -63,11 +63,8 @@ def calc_gp(r):
         elif units >= 15000:            percent = 0.02
         else:                           percent = 0.026
         return imputed_rev * percent
-
     else:
-
         return 0
-
 
 def get_region_district(r):
     if r['Master Division'] and r['Master Divloc']:
