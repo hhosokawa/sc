@@ -117,15 +117,21 @@ def add_renewal_trueup():
 
         # True-Up Date (Feb 29 Fix)
         try:
-            true_up_date = true_up_date.replace(year = current_year)
+            if true_up_date.year == current_year:
+                true_up_date = true_up_date.replace(year = current_year + 1)
+            else:
+                true_up_date = true_up_date.replace(year = current_year)
         except ValueError:
             true_up_date = true_up_date.replace(day = 28)
-            true_up_date = true_up_date.replace(year = current_year)
+            if true_up_date.year == current_year:
+                true_up_date = true_up_date.replace(year = current_year + 1)
+            else:
+                true_up_date = true_up_date.replace(year = current_year)
         data[contract]['True Up Date'] = true_up_date.strftime('%Y-%m-%d')
 
         if sb_renewal == 'Renewal':
             renewal_date = end_date + timedelta(days = 1)
-            data[contract]['Renewal Date'] =renewal_date.strftime('%Y-%m-%d')
+            data[contract]['Renewal Date'] = renewal_date.strftime('%Y-%m-%d')
 
 def write_csv():
     headers = ['Contract Number', 'Contract Start Date',
