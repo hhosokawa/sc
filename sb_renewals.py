@@ -128,10 +128,12 @@ def add_renewal_trueup():
             else:
                 true_up_date = true_up_date.replace(year = current_year)
         data[contract]['True Up Date'] = true_up_date.strftime('%Y-%m-%d')
+        data[contract]['True Up Month'] = true_up_date.strftime('%m')
 
         if sb_renewal == 'Renewal':
             renewal_date = end_date + timedelta(days = 1)
             data[contract]['Renewal Date'] = renewal_date.strftime('%Y-%m-%d')
+            data[contract]['Renewal Month'] = renewal_date.strftime('%m')
 
 def write_csv():
     headers = ['Contract Number', 'Contract Start Date',
@@ -139,7 +141,8 @@ def write_csv():
                'Contract Units', 'Contract Level', 'Master Number',
                'Master Name', 'Imputed Rev', 'GP', 'Region', 'District',
                'Master OB Rep Name', 'Fiscal Year', 'Fiscal Month',
-               'Type', 'True Up Date', 'Renewal Date']
+               'Type', 'True Up Date', 'Renewal Date', 'True Up Month',
+               'Renewal Month']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
