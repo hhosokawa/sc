@@ -8,6 +8,8 @@ output = 'o\\ms_sales.csv'
 input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
+
+cloud_items = csv_dic('i\\ms_sales\\cloud_items.csv')
 venprogram = csv_dic('i\\ms_sales\\dictvenprograms.csv')
 majoraccts = csv_dic('i\\ms_sales\\enrol - major customers.csv')
 
@@ -37,6 +39,7 @@ def scan_referrals():
         for r in csv.DictReader(i1): refclean(r)
 
 def refclean(r):
+    # Referral Number ID Classification
     # Category B Classification
     catB = r['Referral Source']
     catC = ''
@@ -90,8 +93,16 @@ def refclean(r):
     # Other Classification
     else: catA = 'Other'
 
+    # Product Number ID Classification
+    if r['Product Item Number'] in cloud_items:
+        catA = 'CLOUD'
+        catB = r['Product Item Desc'].title()
+    elif 'AZURE' in r['Referral Notes']:
+        catA = 'AZURE'
+
     # Absorb into Dictionary
-    order[r['Referral Number']] = (catA, catB, catC)
+    order_item_id = r['Referral Number'] + r['Product Item Number']
+    order[order_item_id] = (catA, catB, catC)
     return
 
 
@@ -120,10 +131,15 @@ def salesclean(r):
 
 # Insert Category for Order
 def add_cat(r):
-    if r['Order Number'] in order:
-        r['Category A'] = order[r['Order Number']][0]
-        r['Category B'] = order[r['Order Number']][1]
-        r['Category C'] = order[r['Order Number']][2]
+    if r['Sale or Referral'] == 'Referral':
+        order_id = r['Order Number'] + r['Item Number']
+    else:
+        order_id = r['Order Number']
+
+    if order_id in order:
+        r['Category A'] = order[order_id][0]
+        r['Category B'] = order[order_id][1]
+        r['Category C'] = order[order_id][2]
     else:
         r['Category A'] = 'N/A'
         r['Category B'] = 'N/A'
