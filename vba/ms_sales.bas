@@ -3,8 +3,8 @@ Dim t1 As Single
 
 ' Add Tabs - summary, data
 Private Sub add_tabs()
-    Sheets("ms sales").Select
-    Sheets("ms sales").Name = "data"
+    Sheets("ms_sales").Select
+    Sheets("ms_sales").Name = "data"
     Sheets.Add After:=Sheets(Sheets.Count)
     Sheets("Sheet1").Select
     Sheets("Sheet1").Name = "summary"
@@ -13,9 +13,9 @@ End Sub
 ' Create Pivot Table - Range(A:U)
 Private Sub create_pivot_table()
     Sheets("data").Select
-    Range("A:U").Select
+    Range("A:S").Select
     ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, _
-        SourceData:="data!A:U", _
+        SourceData:="data!A:S", _
         Version:=xlPivotTableVersion14). _
         CreatePivotTable TableDestination:="summary!R1C1", _
         TableName:="PivotTable1", _
