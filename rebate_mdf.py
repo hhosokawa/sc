@@ -12,7 +12,7 @@ categories = csv_dic('i/rebate_mdf/categories.csv')
 
 rows = []
 qtrs =      range(1,5)
-years =     range(2013, 2015)
+years =     range(2014, 2015)
 divs =      {'"200"' : 'US',
              '"097"' : 'US',
              '"100"' : 'Canada',
@@ -45,7 +45,7 @@ def generate_rows():
         cat_desc = categories[cat]
         vendor_desc = vendors[vendor]
         formula = str(makeformula(year, qtr, acct, cat, div, vendor))
-        r = (acct, desc, year, qtr, div_desc, cat_desc, vendor, formula)
+        r = (acct, desc, year, qtr, div_desc, cat_desc, vendor_desc, formula)
         rows.append(r)
     print 'generate_rows() complete.'
 
