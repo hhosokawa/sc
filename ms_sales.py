@@ -95,10 +95,11 @@ def refclean(r):
 
     # Product Number ID Classification
     if r['Product Item Number'] in cloud_items:
-        catA = 'CLOUD'
+        catA = 'Cloud'
         catB = r['Product Item Desc'].title()
+        catC = ''
     elif 'AZURE' in r['Referral Notes']:
-        catA = 'AZURE'
+        catA = 'Azure'
 
     # Absorb into Dictionary
     order_item_id = r['Referral Number'] + r['Product Item Number']

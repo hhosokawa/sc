@@ -12,7 +12,7 @@ categories = csv_dic('i/rebate_mdf/categories.csv')
 
 rows = []
 qtrs =      range(1,5)
-years =     range(2014, 2015)
+years =     range(2012, 2015)
 divs =      {'"200"' : 'US',
              '"097"' : 'US',
              '"100"' : 'Canada',
