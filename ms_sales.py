@@ -79,7 +79,7 @@ def refclean(r):
         catC = ref_revtype.get(r['Referral Rev Type'], 'Other')
 
 	# MS OSA Classification
-	elif r['Referral Source'] == 'MS OSA':
+    elif r['Referral Source'] == 'MS OSA':
         catA = 'EA'
         catB = r['Referral Source']
         catC = r['Product Item Desc'].title()
