@@ -7,25 +7,14 @@ import time
 
 output = 'o/rebate_mdf.csv'
 cats = csv_dic('i/rebate_mdf/categories.csv')
-cats = {'"*"':'CONSOL'}
 gls = csv_dic('i/rebate_mdf/gl.csv')
 
 rows = []
 qtrs = range(1,5)
-years = range(2009, 2015)
-books = {'"SC Canada"' : ('Canada', '"M"'),
-         '"SC Consol - US"' : ('Consolidated', '"E"'),
-         '"SC United States"' : ('US', '"E"')}
+years = range(2013, 2015)
+books = {'"SC Consol - US"' : ('Consolidated', '"E"')}
 
 ############## utils ###############
-
-# Create Custom FM Formula
-def create_FM(translate, book, year, qtr, gl, cat):
-    net_rev = str(makeformula(translate, book, year, qtr, gl, cat))
-    cogs_gl = '""^^000007_GL_Account""'
-    cogs = str(makeformula(translate, book, year, qtr, cogs_gl, cat))
-    fm_formula = net_rev + '+' + cogs[1:]
-    return fm_formula
 
 # Make Spreadsheet Server Formula
 def makeformula(translate, book, year, qtr, gl, cat):
@@ -52,10 +41,7 @@ def generate_rows():
         cat_desc = cats[cat]
         desc = gls[gl]
 
-        if desc == 'FM':
-            formula = create_FM(translate, book, year, qtr, gl, cat)
-        else:
-            formula = str(makeformula(translate, book, year, qtr, gl, cat))
+        formula = str(makeformula(translate, book, year, qtr, gl, cat))
         r = (gl, desc, year, qtr, book_desc, cat_desc, formula)
         rows.append(r)
     print 'generate_rows() complete.'
