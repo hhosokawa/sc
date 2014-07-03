@@ -1,14 +1,14 @@
-import time
-import pandas as pd
 from aux_reader import *
+import pandas as pd
+import time
 
 """ io """
 
 nnea_df =       pd.read_csv('i/nnea/nnea.csv')
 tsr_reps =      csv_dic('i/nnea/tsr reps.csv')
 
-divregion =     csv_dic('auxiliary/div-region.csv')
 divdistrict =   csv_dic('auxiliary/div-district.csv')
+divregion =     csv_dic('auxiliary/div-region.csv')
 
 current_time =  time.strftime("%Y-%m-%d")
 output =        'P:/_HHOS/Microsoft/NNEA Summary - %s.xls' % (current_time)

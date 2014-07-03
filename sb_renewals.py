@@ -1,10 +1,9 @@
-import csv
-import time
-import pprint
 from aux_reader import *
-import dateutil.parser as dparser
 from collections import OrderedDict
+import csv
 from datetime import timedelta, date
+import dateutil.parser as dparser
+import time
 
 """ io """
 data = {}
@@ -14,8 +13,8 @@ input0 = 'i/sb_renewals/contract_repo.csv'
 input1 = 'i/sb_renewals/futurebillings.csv'
 output = 'P:/_HHOS/Microsoft/SB Renewals - %s.csv' % (time.strftime("%Y-%m-%d"))
 
-divregion = csv_dic('auxiliary/div-region.csv')
 divdistrict = csv_dic('auxiliary/div-district.csv')
+divregion = csv_dic('auxiliary/div-region.csv')
 
 ############## utils ###############
 
