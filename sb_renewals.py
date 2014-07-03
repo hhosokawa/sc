@@ -99,7 +99,7 @@ def scan_contract_repo():
                         r['Fiscal Month'] = pay_date.strftime('%m')
                     else:
                         continue
-                    r['GP'] = calc_gp(r)
+                    r['GP'] = 0
                     r['Imputed Rev'] = r['Contract Payment Amount']
                     r['Region'], r['District'] = get_region_district(r)
 
