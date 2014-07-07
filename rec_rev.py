@@ -3,7 +3,7 @@ import csv
 import time
 
 input0 = 'i/rec_rev/bi.csv'
-output = 'o/rec_rev.csv'
+output = 'o/rate_volume.csv'
 
 rev_rec_flag = ['SWBNDL', 'HWMTN', 'SWMTN', 'CLOUDN',
                 'SWSUB', 'CLOUD', 'TRAIN']
@@ -24,10 +24,9 @@ def loop_row(i0, ow):
 
         if (r['Sale or Referral'] == 'Referral' or
             r['Revenue Recognition ID'] == 'MSRV' or
-            r['Super Category'] == 'Managed Services'):
+            r['Super Category'] == 'Managed Services' or
+            r['Revenue Recognition ID'] in rev_rec_flag):
             r['Item Class'] = 'Recurring Revenue'
-        elif r['Revenue Recognition ID'] in rev_rec_flag:
-            r['Item Class'] = 'Potentially Recurring Revenue'
         elif (gp > 1000 and rev > 10000):
             r['Item Class'] = 'Project'
         else:
