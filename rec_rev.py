@@ -3,7 +3,7 @@ import csv
 import time
 
 input0 = 'i/rec_rev/bi.csv'
-output = 'o/rate_volume.csv'
+output = 'o/rec_rev.csv'
 
 rev_rec_flag = ['SWBNDL', 'HWMTN', 'SWMTN', 'CLOUDN',
                 'SWSUB', 'CLOUD', 'TRAIN']
@@ -19,8 +19,11 @@ def get_headers():
 def loop_row(i0, ow):
     i0r = csv.DictReader(i0)
     for r in i0r:
-        gp = float(r['GP (includes Freight)'])
-        rev = float(r['Revenue (includes Freight)'])
+        try:
+            gp = float(r['GP (includes Freight)'])
+            rev = float(r['Revenue (includes Freight)'])
+        except:
+            gp, rev  = 0, 0
 
         if (r['Sale or Referral'] == 'Referral' or
             r['Revenue Recognition ID'] == 'MSRV' or
