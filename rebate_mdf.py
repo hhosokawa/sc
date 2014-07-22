@@ -9,7 +9,7 @@ input_dir = 'i/rebate_mdf/'
 output = 'o/rebate_mdf.csv'
 
 # Pictionary
-af = {'A':'Actual', 'B':'Plan'}
+ap = {'A':'Actual', 'B':'Plan'}
 categories = csv_dic('i/rebate_mdf/auxiliary/categories.csv')
 div = {'100':'Canada', '200':'US'}
 gl_parent = csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv')
@@ -19,11 +19,11 @@ vendors = csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
 
 ############### utils ###############
 
-def scan_row(r, actual_forecast, year, qtr):
+def scan_row(r, actual_plan, year, qtr):
     r.pop('', None)
+    r['Actual / Plan'] = ap.get(actual_plan, '')
     r['Amount'] = r['Amount'].replace(',', '')
     r['Amount'] = float(r['Amount']) * -1
-    r['Actual / Plan'] = af.get(actual_forecast, '')
     r['Division'] = div.get(r['Division'], r['Division'])
     r['GL Parent'] = gl_parent.get(r['Description'], r['Description'])
     r['Quarter'] = qtr
@@ -38,7 +38,7 @@ def scan_row(r, actual_forecast, year, qtr):
         r['Marketing Sub Category'] = job_numbers[r['Project']][2]
     else:
         r['Corporate or Custom'] = 'Corporate'
-        r['Marketing Category'] = 'Corporate' 
+        r['Marketing Category'] = 'Corporate'
         r['Marketing Sub Category'] = 'Corporate'
     if r['Amount'] != 0:
         rows.append(r)
@@ -46,13 +46,13 @@ def scan_row(r, actual_forecast, year, qtr):
 def scan_oracle_csv():
     for file in os.listdir(input_dir):
         if file.endswith(".csv"):
-            actual_forecast, year, qtr = file.split('_')
+            actual_plan, year, qtr = file.split('_')
             qtr = qtr[:2]
             file_path = input_dir + file
             input_file = csv.DictReader(open(file_path))
 
             for r in input_file:
-                r = scan_row(r, actual_forecast, year, qtr)
+                r = scan_row(r, actual_plan, year, qtr)
             print file
 
 def write_csv():
