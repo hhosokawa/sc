@@ -1,25 +1,24 @@
 from aux_reader import *
 import csv
 import os
-from pprint import pprint
 import time
 
 # io
 input_dir = 'i/rebate_mdf/'
 output = 'o/rebate_mdf.csv'
+rows = []
 
 # Pictionary
-ap = {'A':'Actual', 'B':'Plan'}
-categories = csv_dic('i/rebate_mdf/auxiliary/categories.csv')
-div = {'100':'Canada', '200':'US'}
-gl_parent = csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv')
-job_numbers = csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 3)
-rows = []
-vendors = csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
+ap =            {'A':'Actual', 'B':'Plan'}
+categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv')
+div =           {'100':'Canada', '200':'US'}
+gl_parent =     csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv')
+job_numbers =   csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 3)
+vendors =       csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
 
 ############### utils ###############
 
-def scan_row(r, actual_plan, year, qtr):
+def scan_oracle(r, actual_plan, year, qtr):
     r.pop('', None)
     r['Actual / Plan'] = ap.get(actual_plan, '')
     r['Amount'] = r['Amount'].replace(',', '')
@@ -43,16 +42,17 @@ def scan_row(r, actual_plan, year, qtr):
     if r['Amount'] != 0:
         rows.append(r)
 
-def scan_oracle_csv():
+def scan_csv():
     for file in os.listdir(input_dir):
+        file_path = input_dir + file
+
+        # Oracle - Rebate / MDF
         if file.endswith(".csv"):
             actual_plan, year, qtr = file.split('_')
             qtr = qtr[:2]
-            file_path = input_dir + file
             input_file = csv.DictReader(open(file_path))
-
             for r in input_file:
-                r = scan_row(r, actual_plan, year, qtr)
+                scan_oracle(r, actual_plan, year, qtr)
             print file
 
 def write_csv():
@@ -73,7 +73,7 @@ def write_csv():
         
 if __name__ == '__main__':
     t0 = time.clock()
-    scan_oracle_csv()
+    scan_csv()
     write_csv()
     t1 = time.clock()
     print 'rebate_mdf.py complete.', t1-t0
