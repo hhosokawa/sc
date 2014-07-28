@@ -4,9 +4,9 @@ from aux_reader import *
 
 """ io """
 
-enrol_df  =     pd.read_csv('i\\enrol_cust\\enrol.csv',
+enrol_df  =     pd.read_csv('i\\enrol_customer\\enrol.csv',
                             encoding = "ISO-8859-1")
-tsr_dict  =     csv_dic('i\\enrol_cust\\tsr reps.csv')
+tsr_dict  =     csv_dic('i\\enrol_customer\\tsr reps.csv')
 divregion =     csv_dic('auxiliary\\div-region.csv')
 divdistrict =   csv_dic('auxiliary\\div-district.csv')
 
