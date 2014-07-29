@@ -14,7 +14,6 @@ categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv')
 div =           {'100':'Canada', '200':'US'}
 gl_parent =     csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv')
 job_numbers =   csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 3)
-region =        csv_dic('i/rebate_mdf/auxiliary/region.csv', 2)
 vendors =       csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
 
 ############### utils ###############
@@ -27,7 +26,6 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Division'] = div.get(r['Division'], r['Division'])
     r['GL Parent'] = gl_parent.get(r['Description'], r['Description'])
     r['Quarter'] = qtr
-    r['Region'] = region.get(r['Territory'], r['Territory'])[1]
     r['Super Category'] = categories.get(r['Category'], r['Category'])
     r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
     r['Year'] = year
@@ -60,8 +58,8 @@ def scan_csv():
 def write_csv():
     headers = ['Actual / Plan', 'Amount', 'Corporate or Custom',
                'Description', 'Division', 'GL Parent', 'Marketing Category',
-               'Marketing Sub Category', 'Project', 'Quarter', 'Region',
-               'Super Category', 'Vendor', 'Year']
+               'Marketing Sub Category', 'Project', 'Quarter', 'Super Category', 
+               'Vendor', 'Year']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
