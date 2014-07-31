@@ -1,6 +1,7 @@
 from aux_reader import *
 import csv
 import os
+from pprint import pprint
 import time
 
 # io
@@ -10,14 +11,43 @@ rows = []
 
 # Pictionary
 ap =            {'A':'Actual', 'B':'Plan'}
+bi_categories = csv_dic('i/rebate_mdf/auxiliary/bi_categories.csv')
+bi_vendors =    csv_dic('i/rebate_mdf/auxiliary/bi_vendors.csv', 2)
 categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv')
-div =           {'100':'Canada', '200':'US'}
+div =           {'100':'Canada', '200':'United States'}
 gl_parent =     csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv')
 job_numbers =   csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 3)
 vendors =       csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
 
 ############### utils ###############
 
+def scan_bi(r):
+    r['Actual / Plan'] = 'Actual'
+    r['Quarter'] = 'Q' + r['Fiscal Quarter']
+    r['Super Category'] = bi_categories.get(r['SCC Category'], r['SCC Category'])
+    r['Year'] = r['Calendar Year']
+
+    # BI Vendor -> Oracle Vendor Assignment
+    can_us_vendors = ['CISCO PRESS', 'CISCO SYSTEMS', 'EMC CORPORATION', 
+                      'HEWLETT PACKARD', 'IBM', 'LENOVO', 'NETAPP']
+    if (r['Managed Vendor Name'] in can_us_vendors and
+        r['Division'] == 'United States'):
+        r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'],
+                                     r['Managed Vendor Name'])[1]
+    r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'], 
+                                 r['Managed Vendor Name'])[0]
+
+    # Revenue / COGS GL
+    r['GL Parent'] = 'Revenue'
+    r['Amount'] = float(r['Virtually Adjusted Revenue'])
+    if r['Amount'] != 0:
+        rows.append(r.copy())
+    r['GL Parent'] = 'COGS'       
+    r['Amount'] = -(float(r['Virtually Adjusted Revenue']) - 
+                    float(r['Virtually Adjusted GP']))
+    if r['Amount'] != 0:
+        rows.append(r.copy())
+    
 def scan_oracle(r, actual_plan, year, qtr):
     r.pop('', None)
     r['Actual / Plan'] = ap.get(actual_plan, '')
@@ -46,8 +76,15 @@ def scan_csv():
     for file in os.listdir(input_dir):
         file_path = input_dir + file
 
+        # BI - FM
+        if file == 'bi_fm.csv':
+            input_file = csv.DictReader(open(file_path))
+            for r in input_file:
+                scan_bi(r)
+            print file            
+
         # Oracle - Rebate / MDF
-        if file.endswith(".csv"):
+        elif file.endswith(".csv"):
             actual_plan, year, qtr = file.split('_')
             qtr = qtr[:2]
             input_file = csv.DictReader(open(file_path))
