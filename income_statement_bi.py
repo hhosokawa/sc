@@ -13,7 +13,7 @@ rows = []
 bi_categories = csv_dic('i/income_statement_bi/auxiliary/bi_categories.csv')
 bi_vendors =    csv_dic('i/income_statement_bi/auxiliary/bi_vendors.csv', 2)
 categories =    csv_dic('i/income_statement_bi/auxiliary/categories.csv', 2)
-divs =           {'100':'Canada', '200':'United States'}
+divs =          {'100':'Canada', '200':'United States'}
 gl_parent =     csv_dic('i/income_statement_bi/auxiliary/gl_parent.csv', 2)
 vendors =       csv_dic('i/income_statement_bi/auxiliary/vendors.csv')
 
