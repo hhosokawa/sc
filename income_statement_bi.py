@@ -13,7 +13,8 @@ rows = []
 bi_categories = csv_dic('i/income_statement_bi/auxiliary/bi_categories.csv')
 bi_vendors =    csv_dic('i/income_statement_bi/auxiliary/bi_vendors.csv', 2)
 categories =    csv_dic('i/income_statement_bi/auxiliary/categories.csv', 2)
-divs =          {'100':'Canada', '200':'United States'}
+divs =          csv_dic('i/income_statement_bi/auxiliary/divs.csv')
+departments =   csv_dic('i/income_statement_bi/auxiliary/departments.csv', 2)
 gl_parent =     csv_dic('i/income_statement_bi/auxiliary/gl_parent.csv', 2)
 vendors =       csv_dic('i/income_statement_bi/auxiliary/vendors.csv')
 
@@ -35,13 +36,8 @@ def scan_bi(r):
                                  r['Managed Vendor Name'])[0]
 
     # Revenue / COGS GL
-    r['GL Parent'] = 'Net Sales'
-    r['Amount'] = float(r['Virtually Adjusted Revenue'])
-    if r['Amount'] != 0:
-        rows.append(r.copy())
-    r['GL Parent'] = 'Cost of Sales'       
-    r['Amount'] = -(float(r['Virtually Adjusted Revenue']) - 
-                    float(r['Virtually Adjusted GP']))
+    r['GL Parent'] = 'Field Margin'
+    r['Amount'] = float(r['Virtually Adjusted GP'])
     if r['Amount'] != 0:
         rows.append(r.copy())
 
@@ -55,6 +51,8 @@ def scan_oracle(r, year, qtr):
     r['GL Parent'] = gl_parent.get(r['GL Account'], r['Description'])[1]
     r['Quarter'] = qtr
     r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
+    if r['Department'] in departments:
+        r['Super Category'] = departments[r['Department']][1]
     r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
     r['Year'] = year
 
@@ -83,8 +81,8 @@ def scan_csv():
 
 def write_csv():
     headers = ['Amount', 'Category',  'GL Account', 'GL Parent', 
-               'Description', 'Division', 'Quarter', 'SCC Category', 
-               'Super Category', 'Territory', 'Vendor', 'Year']
+               'Description', 'Division', 'Quarter', 'Solution Group',
+               'SCC Category', 'Super Category', 'Territory', 'Vendor', 'Year']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
