@@ -15,9 +15,9 @@ bi_categories = csv_dic('i/rebate_mdf/auxiliary/bi_categories.csv')
 bi_vendors =    csv_dic('i/rebate_mdf/auxiliary/bi_vendors.csv', 2)
 categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv')
 departments =   csv_dic('i/rebate_mdf/auxiliary/departments.csv', 2)
-div =           {'100':'Canada', '200':'United States'}
+div =           csv_dic('i/rebate_mdf/auxiliary/divs.csv')
 gl_parent =     csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv', 2)
-job_numbers =   csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 3)
+job_numbers =   csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 4)
 vendors =       csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
 
 ############### utils ###############
@@ -48,7 +48,7 @@ def scan_bi(r):
                     float(r['Virtually Adjusted GP']))
     if r['Amount'] != 0:
         rows.append(r.copy())
-    r['GL Parent'] = 'Field Margin'       
+    r['GL Parent'] = 'Field Margin'
     r['Amount'] = float(r['Virtually Adjusted GP'])
     if r['Amount'] != 0:
         rows.append(r.copy())
@@ -70,6 +70,7 @@ def scan_oracle(r, actual_plan, year, qtr):
         r['Corporate or Custom'] = job_numbers[r['Project']][0]
         r['Marketing Category'] = job_numbers[r['Project']][1]
         r['Marketing Sub Category'] = job_numbers[r['Project']][2]
+        r['Marketing Details'] = r['Project'] + ' - ' + job_numbers[r['Project']][3]
     else:
         r['Corporate or Custom'] = 'Corporate'
         r['Marketing Category'] = 'Corporate'
@@ -105,8 +106,8 @@ def scan_csv():
 def write_csv():
     headers = ['Actual / Plan', 'Amount', 'Corporate or Custom', 'Description', 
                'Department', 'Division', 'GL Parent', 'Marketing Category',
-               'Marketing Sub Category', 'Project', 'Quarter', 'Super Category',
-               'Vendor', 'Year']
+               'Marketing Sub Category', 'Marketing Details','Project', 
+               'Quarter', 'Super Category', 'Vendor', 'Year']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
