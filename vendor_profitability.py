@@ -75,16 +75,14 @@ def scan_oracle(r, year, qtr):
             r['GL A'] = 'Total Other Costs'
             r['GL B'] = 'PS Resource Costs'
     if dept in departments:
-        r['Super Category'] = departments[r['Department']][1]
         if gl == 'Compensation':
+            r['Super Category'] = departments[dept][1]
             r['GL A'] = 'Cost of Pre Sales & PS Resources'
             r['GL B'] = 'BD Compensation Costs'
         elif gl == 'SG&A':
+            r['Super Category'] = departments[dept][1]
             r['GL A'] = 'Cost of Pre Sales & PS Resources'
             r['GL B'] = 'BD SG&A'
-        if r['GL A'] == 'Funded Head Revenue':
-            r['GL A'] = 'Cost of Pre Sales & PS Resources'
-            r['GL B'] = 'Funded Head Revenue'
 
     if r['Amount'] != 0:
         rows.append(r)
@@ -143,4 +141,4 @@ if __name__ == '__main__':
     scan_csv()
     write_csv()
     t1 = time.clock()
-    print 'income_statement.py complete.', t1-t0
+    print 'vendor_profitability.py complete.', t1-t0
