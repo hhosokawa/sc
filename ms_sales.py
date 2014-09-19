@@ -9,7 +9,7 @@ input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
 
-cloud_items = csv_dic('i\\ms_sales\\cloud_items.csv')
+#cloud_items = csv_dic('i\\ms_sales\\cloud_items.csv')
 majoraccts = csv_dic('i\\ms_sales\\enrol - major customers.csv')
 venprogram = csv_dic('i\\ms_sales\\dictvenprograms.csv')
 
@@ -100,13 +100,13 @@ def refclean(r):
     else: catA = 'Other'
 
     # Product Number ID Classification
-    if r['Product Item Number'] in cloud_items:
-        catA = 'EA'
-        catB = 'Cloud'
-        catC = r['Product Item Desc'].title()
-    elif 'AZURE' in r['Referral Notes']:
-        catA = 'EA'
-        catB = 'Azure'
+    #if r['Product Item Number'] in cloud_items:
+    #    catA = 'EA'
+    #    catB = 'Cloud'
+    #    catC = r['Product Item Desc'].title()
+    #elif 'AZURE' in r['Referral Notes']:
+    #    catA = 'EA'
+    #    catB = 'Azure'
 
     # Absorb into Dictionary
     order_item_id = r['Referral Number'] + r['Product Item Number']
