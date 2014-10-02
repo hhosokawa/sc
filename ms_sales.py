@@ -33,6 +33,7 @@ def get_header():
     header = tuple(sorted(header, key=lambda item: item[0]))
     return header
 
+
 # Referral Clean
 def scan_referrals():
     with open(input1) as i1:
@@ -98,19 +99,12 @@ def refclean(r):
 
     # Other Classification
     else: catA = 'Other'
-
-    # Product Number ID Classification
-    #if r['Product Item Number'] in cloud_items:
-    #    catA = 'EA'
-    #    catB = 'Cloud'
-    #    catC = r['Product Item Desc'].title()
-    #elif 'AZURE' in r['Referral Notes']:
-    #    catA = 'EA'
-    #    catB = 'Azure'
+    if 'AZURE' in r['Referral Notes']:
+        catA = 'EA'
+        catB = 'Azure'
 
     # Absorb into Dictionary
-    order_item_id = r['Referral Number'] + r['Product Item Number']
-    order[order_item_id] = (catA, catB, catC)
+    order[r['Referral Number']] = (catA, catB, catC)
     return
 
 
@@ -139,15 +133,10 @@ def salesclean(r):
 
 # Insert Category for Order
 def add_cat(r):
-    if r['Sale or Referral'] == 'Referral':
-        order_id = r['Order Number'] + r['Item Number']
-    else:
-        order_id = r['Order Number']
-
-    if order_id in order:
-        r['Category A'] = order[order_id][0]
-        r['Category B'] = order[order_id][1]
-        r['Category C'] = order[order_id][2]
+    if r['Order Number'] in order:
+        r['Category A'] = order[r['Order Number']][0]
+        r['Category B'] = order[r['Order Number']][1]
+        r['Category C'] = order[r['Order Number']][2]
     else:
         r['Category A'] = 'N/A'
         r['Category B'] = 'N/A'
