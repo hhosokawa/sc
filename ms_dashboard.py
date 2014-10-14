@@ -19,7 +19,7 @@ years = range(2011, 2015)
 
 # Unique Contracts
 def scan_ms_contracts():
-    U = tree()
+    U = tree() # Initialize Matrix
     for r in csv.DictReader(open(input_ms_contracts)):
         start = parse(r['Contract Start Date'])
         end = parse(r['Contract End Date'])
@@ -44,7 +44,7 @@ def scan_ms_contracts():
 
 # Unique Customers
 def scan_ms_sales():
-    U = tree()
+    U = tree() # Initialize Matrix
     for r in csv.DictReader(open(input_ms_sales)):
         master_class = r['Master Classification']
         y = int(r['Calendar Year'])
@@ -58,15 +58,14 @@ def scan_ms_sales():
     print '\n','Unique Customers'
     print '================'
     for y, q in product(years, range(1,5)):
-        for program in U[y][q].keys():
-            print y,q,program,len(U[y][q][program])
+        for master_class in U[y][q].keys():
+            print y,q,master_class,len(U[y][q][master_class])
 
 ############### main ###############
 
 if __name__ == '__main__':
     t0 = time.clock()
     scan_ms_contracts()
-    scan_ms_sales()
-    print_customers()
-    t0 = time.clock()
+    #scan_ms_sales()
+    t1 = time.clock()
     print 'ms_dashboard complete.', t1-t0
