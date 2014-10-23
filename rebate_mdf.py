@@ -38,20 +38,23 @@ def scan_bi(r):
     r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'], 
                                  r['Managed Vendor Name'])[0]
 
-    # Revenue / COGS GL
+    # Imputed Revenue, Revenue, COGS, Field Margin GL
+    r['GL Parent'] = 'Imputed Revenue'
+    r['Amount'] = float(r['Virtually Adjusted Imputed Revenue'])
+    if r['Amount'] != 0: rows.append(r.copy())
+
     r['GL Parent'] = 'Revenue'
     r['Amount'] = float(r['Virtually Adjusted Revenue'])
-    if r['Amount'] != 0:
-        rows.append(r.copy())
+    if r['Amount'] != 0: rows.append(r.copy())
+
     r['GL Parent'] = 'COGS'       
     r['Amount'] = -(float(r['Virtually Adjusted Revenue']) - 
                     float(r['Virtually Adjusted GP']))
-    if r['Amount'] != 0:
-        rows.append(r.copy())
+    if r['Amount'] != 0: rows.append(r.copy())
+
     r['GL Parent'] = 'Field Margin'
     r['Amount'] = float(r['Virtually Adjusted GP'])
-    if r['Amount'] != 0:
-        rows.append(r.copy())
+    if r['Amount'] != 0: rows.append(r.copy())
     
 def scan_oracle(r, actual_plan, year, qtr):
     r.pop('', None)
