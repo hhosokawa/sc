@@ -26,7 +26,8 @@ ref_revtype = {'AO': 'EA Add-On',
 def get_header():
     header = set()
     with open(input3) as i3: header.update(csv.DictReader(i3).fieldnames)
-    new_fields = set(['Category A', 'Category B', 'Category C'])
+    new_fields = set(['Category A', 'Category B', 'Category C', 
+                      'Adjusted Quarter', 'Adjusted Month'])
     header = new_fields | header
     try: header.remove('')
     except KeyError: pass

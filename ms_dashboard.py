@@ -65,7 +65,7 @@ def scan_ms_sales():
 
 if __name__ == '__main__':
     t0 = time.clock()
-    #scan_ms_contracts()
-    scan_ms_sales()
+    scan_ms_contracts()
+    #scan_ms_sales()
     t1 = time.clock()
     print 'ms_dashboard complete.', t1-t0
