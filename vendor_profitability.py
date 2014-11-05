@@ -31,6 +31,9 @@ def scan_bi(r):
         r['Division'] == 'United States'):
         r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'],
                                      r['Managed Vendor Name'])[1]
+        print r['Vendor']
+        print r
+        raw_input()
     r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'], 
                                  r['Managed Vendor Name'])[0]
 
@@ -39,6 +42,13 @@ def scan_bi(r):
     r['Amount'] = float(r['Virtually Adjusted GP'])
     if r['Amount'] != 0:
         rows.append(r.copy())
+
+    # Revenue /  FM - GL
+    r['GL A'] = 'Revenue'
+    r['Amount'] = float(r['Virtually Adjusted Revenue'])
+    if r['Amount'] != 0:
+        rows.append(r.copy())
+
 
 def scan_oracle(r, year, qtr):
     r.pop('', None)

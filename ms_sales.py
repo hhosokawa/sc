@@ -9,7 +9,6 @@ input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
 
-#cloud_items = csv_dic('i\\ms_sales\\cloud_items.csv')
 majoraccts = csv_dic('i\\ms_sales\\enrol - major customers.csv')
 venprogram = csv_dic('i\\ms_sales\\dictvenprograms.csv')
 
@@ -43,7 +42,6 @@ def scan_referrals():
 def refclean(r):
     # Referral Number ID Classification
     # Category B Classification
-    catB = r['Referral Source']
     catC = ''
 
     # ESA 3.0 Classification
