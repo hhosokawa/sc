@@ -13,7 +13,7 @@ rows = []
 ap =            {'A':'Actual', 'B':'Plan'}
 bi_categories = csv_dic('i/rebate_mdf/auxiliary/bi_categories.csv')
 bi_vendors =    csv_dic('i/rebate_mdf/auxiliary/bi_vendors.csv', 2)
-categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv')
+categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv', 2)
 departments =   csv_dic('i/rebate_mdf/auxiliary/departments.csv', 2)
 div =           csv_dic('i/rebate_mdf/auxiliary/divs.csv')
 gl_parent =     csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv', 2)
@@ -64,7 +64,8 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Division'] = div.get(r['Division'], r['Division'])
     r['GL Parent'] = gl_parent.get(r['GL Account'], r['Description'])[1]
     r['Quarter'] = qtr
-    r['Super Category'] = categories.get(r['Category'], r['Category'])
+    r['SCC Category'] = categories.get(r['Category'], 'Corporate')[0]
+    r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
     r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
     r['Year'] = year
 
