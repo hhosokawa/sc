@@ -88,7 +88,7 @@ def scan_csv():
 def write_csv():
     headers = ['Amount', 'Category', 'Department', 'GL Account', 'GL A', 'GL B', 
                'Description', 'Division', 'Quarter', 'SCC Category', 
-               'Solution Group', 'Super Category', 'Vendor', 'Year']
+               'Solution Type', 'Super Category', 'Vendor', 'Year']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
