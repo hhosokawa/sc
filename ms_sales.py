@@ -9,6 +9,7 @@ input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
 
+#cloud_items = csv_dic('i\\ms_sales\\cloud_items.csv')
 majoraccts = csv_dic('i\\ms_sales\\enrol - major customers.csv')
 venprogram = csv_dic('i\\ms_sales\\dictvenprograms.csv')
 
@@ -25,8 +26,7 @@ ref_revtype = {'AO': 'EA Add-On',
 def get_header():
     header = set()
     with open(input3) as i3: header.update(csv.DictReader(i3).fieldnames)
-    new_fields = set(['Category A', 'Category B', 'Category C', 
-                      'Adjusted Quarter', 'Adjusted Month'])
+    new_fields = set(['Category A', 'Category B', 'Category C'])
     header = new_fields | header
     try: header.remove('')
     except KeyError: pass
@@ -42,6 +42,7 @@ def scan_referrals():
 def refclean(r):
     # Referral Number ID Classification
     # Category B Classification
+    catB = r['Referral Source']
     catC = ''
 
     # ESA 3.0 Classification

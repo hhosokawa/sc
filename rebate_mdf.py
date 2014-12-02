@@ -35,8 +35,15 @@ def scan_bi(r):
         r['Division'] == 'United States'):
         r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'],
                                      r['Managed Vendor Name'])[1]
-    r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'], 
-                                 r['Managed Vendor Name'])[0]
+    elif r['Managed Vendor Name'] in bi_vendors:
+        r['Vendor'] = bi_vendors[r['Managed Vendor Name']][0]
+    else:
+        r['Vendor'] = 'Other Vendors'
+
+    # 2015 Cisco Super Category
+    if 'Cisco' in r['Vendor']:
+        r['SCC Category'] = 'Cisco'
+        r['Super Category'] = 'Cisco'
 
     # Imputed Revenue, Revenue, COGS, Field Margin GL
     r['GL Parent'] = 'Imputed Revenue'
@@ -67,6 +74,11 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['SCC Category'] = categories.get(r['Category'], 'Corporate')[0]
     r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
     r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
+
+    # 2015 Cisco Super Category
+    if 'Cisco' in r['Vendor']:
+        r['SCC Category'] = 'Cisco'
+        r['Super Category'] = 'Cisco'
     r['Year'] = year
 
     # Job Number Assignment
@@ -108,7 +120,7 @@ def scan_csv():
             print file
 
 def write_csv():
-    headers = ['Actual / Plan', 'Amount', 'Corporate or Custom', 'Description', 
+    headers = ['Amount', 'Corporate or Custom', 'Description', 
                'Department', 'Division', 'GL Parent', 'Marketing Category',
                'Marketing Sub Category', 'Marketing Details', 'Project', 
                'Quarter', 'SCC Category', 'Solution Group', 'Solution Type', 
@@ -121,7 +133,7 @@ def write_csv():
         for r in rows:
             o0w.writerow(r)
     print 'write_csv() completed.'
-        
+
 ############### main ###############
         
 if __name__ == '__main__':
