@@ -9,14 +9,14 @@ input1 = 'i\\ms_sales\\ref.csv'
 input2 = 'i\\ms_sales\\sales.csv'
 input3 = 'i\\ms_sales\\bi.csv'
 
-#cloud_items = csv_dic('i\\ms_sales\\cloud_items.csv')
 majoraccts = csv_dic('i\\ms_sales\\enrol - major customers.csv')
 venprogram = csv_dic('i\\ms_sales\\dictvenprograms.csv')
 
 order = {}
 ref_revtype = {'AO': 'EA Add-On',
                'N': 'EA New',
-               'RC': 'EA Recurring',
+               'RB': 'EA Annual Billings',
+               'RC': 'EA Manage and Deploy',
                'RN': 'EA Renewal',
                'TU': 'EA True-Up'}
 
