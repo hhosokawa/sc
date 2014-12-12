@@ -67,15 +67,15 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Division'] = div.get(r['Division'], r['Division'])
     r['GL Parent'] = gl_parent.get(r['GL Account'], r['Description'])[1]
     r['Quarter'] = qtr
-    r['SCC Category'] = categories.get(r['Category'], 'Corporate')[0]
+    r['SCC Category'] = r['Category']
     r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
     r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
+    r['Year'] = year
 
     # 2015 Cisco Super Category
-    if 'Cisco' in r['Vendor']:
+    if 'Cisco' in r['Vendor'] and r['Category'] not in ['421', '422', '425']:
         r['SCC Category'] = 'Cisco'
         r['Super Category'] = 'Cisco'
-    r['Year'] = year
 
     # Job Number Assignment
     if (r['Project'][:3] in job_numbers or r['Project'] in job_numbers):
@@ -88,10 +88,6 @@ def scan_oracle(r, actual_plan, year, qtr):
         r['Marketing Category'] = 'Corporate'
         r['Marketing Sub Category'] = 'Corporate'
 
-    # BD Dept -> Super Category Assignment
-    if r['Department'] in departments and r['GL Parent'] == 'Operating expenses':
-        r['Super Category'] = departments[r['Department']][1]
-        
     if r['Amount'] != 0:
         rows.append(r)
 
@@ -101,10 +97,7 @@ def scan_csv():
 
         # BI - FM
         if file == 'bi_fm.csv':
-            input_file = csv.DictReader(open(file_path))
-            for r in input_file:
-                scan_bi(r)
-            print file            
+            pass
 
         # Oracle - Rebate / MDF
         elif file.endswith(".csv"):
