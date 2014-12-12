@@ -45,11 +45,7 @@ def scan_bi(r):
         r['SCC Category'] = 'Cisco'
         r['Super Category'] = 'Cisco'
 
-    # Imputed Revenue, Revenue, COGS, Field Margin GL
-    r['GL Parent'] = 'Imputed Revenue'
-    r['Amount'] = float(r['Virtually Adjusted Imputed Revenue'])
-    if r['Amount'] != 0: rows.append(r.copy())
-
+    # Revenue, COGS, Field Margin GL
     r['GL Parent'] = 'Revenue'
     r['Amount'] = float(r['Virtually Adjusted Revenue'])
     if r['Amount'] != 0: rows.append(r.copy())
