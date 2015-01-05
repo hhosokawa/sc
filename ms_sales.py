@@ -103,6 +103,11 @@ def refclean(r):
         catA = 'EA'
         catB = 'Azure'
 
+    # US Govt Credit Referral #407783
+    if r['Order Number'] == '407783':
+        catA = 'Select'
+        catB = ''
+
     # Absorb into Dictionary
     order[r['Referral Number']] = (catA, catB, catC)
     return

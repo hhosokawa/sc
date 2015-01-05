@@ -67,7 +67,7 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Division'] = div.get(r['Division'], r['Division'])
     r['GL Parent'] = gl_parent.get(r['GL Account'], r['Description'])[1]
     r['Quarter'] = qtr
-    r['SCC Category'] = r['Category']
+    r['SCC Category'] = categories.get(r['Category'], 'Corporate')[0]
     r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
     r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
     r['Year'] = year
