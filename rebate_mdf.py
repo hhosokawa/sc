@@ -69,7 +69,7 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Quarter'] = qtr
     r['SCC Category'] = categories.get(r['Category'], 'Corporate')[0]
     r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
-    r['Vendor'] = vendors.get(r['Vendor'], r['Vendor'])
+    r['Vendor'] = vendors.get(r['Vendor'], 'All Other')
     r['Year'] = year
 
     # 2015 Cisco Super Category
