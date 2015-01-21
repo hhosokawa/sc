@@ -104,7 +104,7 @@ def refclean(r):
         catB = 'Azure'
 
     # US Govt Credit Referral #407783
-    if r['Order Number'] == '407783':
+    if r['Referral Number'] == '407783':
         catA = 'Select'
         catB = ''
 

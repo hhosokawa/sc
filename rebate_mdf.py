@@ -64,6 +64,7 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Actual / Plan'] = ap.get(actual_plan, '')
     r['Amount'] = r['Amount'].replace(',', '')
     r['Amount'] = float(r['Amount']) * -1
+    r['Department'] = departments.get(r['Department'], r['Department'])[0]
     r['Division'] = div.get(r['Division'], r['Division'])
     r['GL Parent'] = gl_parent.get(r['GL Account'], r['Description'])[1]
     r['Quarter'] = qtr
@@ -73,9 +74,9 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Year'] = year
 
     # 2015 Cisco Super Category
-    if 'Cisco' in r['Vendor'] and r['Category'] not in ['421', '422', '425']:
-        r['SCC Category'] = 'Cisco'
-        r['Super Category'] = 'Cisco'
+    #if 'Cisco' in r['Vendor'] and (r['Category'] not in ['421', '422', '425']):
+    #    r['SCC Category'] = 'Cisco'
+    #    r['Super Category'] = 'Cisco'
 
     # Job Number Assignment
     if (r['Project'][:3] in job_numbers or r['Project'] in job_numbers):
