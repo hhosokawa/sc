@@ -74,9 +74,9 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Year'] = year
 
     # 2015 Cisco Super Category
-    #if 'Cisco' in r['Vendor'] and (r['Category'] not in ['421', '422', '425']):
-    #    r['SCC Category'] = 'Cisco'
-    #    r['Super Category'] = 'Cisco'
+    if ('CISCO' in r['Vendor']) and (r['Category'] not in ['421', '422', '425']):
+        r['SCC Category'] = 'Cisco'
+        r['Super Category'] = 'Cisco'
 
     # Job Number Assignment
     if (r['Project'][:3] in job_numbers or r['Project'] in job_numbers):
