@@ -26,15 +26,14 @@ ref_revtype = {'AO': 'EA Add-On',
 def get_header():
     header = set()
     with open(input3) as i3: header.update(csv.DictReader(i3).fieldnames)
-    new_fields = set(['Category A', 'Category B', 'Category C'])
+    new_fields = set(['Category A', 'Category B', 'Category C', 'Level'])
     header = new_fields | header
     try: header.remove('')
     except KeyError: pass
     header = tuple(sorted(header, key=lambda item: item[0]))
     return header
 
-
-# Referral Clean
+# _______ Referral Clean _______
 def scan_referrals():
     with open(input1) as i1:
         for r in csv.DictReader(i1): refclean(r)
@@ -113,7 +112,7 @@ def refclean(r):
     return
 
 
-# Sales Clean
+# _______ Sales Clean _______
 def scan_sales():
     with open(input2) as i2:
         for r in csv.DictReader(i2):
@@ -136,6 +135,7 @@ def salesclean(r):
     order[r['Order Number']] = (catA, catB, catC)
     return
 
+# _______ BI data _______
 # Insert Category for Order
 def add_cat(r):
     if r['Order Number'] in order:
@@ -148,6 +148,20 @@ def add_cat(r):
         r['Category C'] = 'N/A'
     return r
 
+# Insert Customer Level (A1, A2, B, etc.)
+def add_customer_level(r):
+    try:
+        pc_count = int(r['Master PC Count'])
+    except ValueError:
+        pc_count = 0
+    if 0 <= pc_count <= 749:            r['Level'] = 'A1'
+    elif 750 <= pc_count <= 2399:       r['Level'] = 'A2'
+    elif 2400 <= pc_count <= 5999:      r['Level'] = 'B'
+    elif 6000 <= pc_count <= 15000:     r['Level'] = 'C'
+    elif pc_count > 15000:              r['Level'] = 'D'
+    else:                               r['Level'] = 'A1'
+    return r
+
 def write_csv():
     with open(output, 'wb') as o:
         writer = csv.writer(o)
@@ -158,6 +172,7 @@ def write_csv():
         with open(input3) as i3:
             for r in csv.DictReader(i3):
                 add_cat(r)
+                add_customer_level(r)
                 ow.writerow(r)
 
 ############### ms_sales_main() ###############
