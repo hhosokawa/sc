@@ -6,8 +6,8 @@ from pprint import pprint
 import time
 
 """ io """
-output = 'o/ms_forecast.csv'
 input1 = 'i/ms_forecast/toad_data.csv'
+output = 'o/ms_forecast.csv'
 
 district_dict = csv_dic('auxiliary/div-district.csv')
 region_dict = csv_dic('auxiliary/div-region.csv')
@@ -23,19 +23,21 @@ def scan_toad_data():
             r['Period'] = r['Period'][1:]       # Remove P1, P2, Pn
             if r['Manage&Deploy'] == 'Yes':     # Imputed Revenue = 0
                 r['TOTALREVENUE'] = 0
-        
-            
 
-  
+
+
+
             rows.append(r)
     print 'completed scan_toad_data()'
 
 def write_csv():
-    headers = ['BRANCH_NAME', 'CONTRACTID', 'DISTRICT_NAME', 'DIVISION', 
-               'GP_FORECAST', 'Manage&Deploy', 'Manual Add', 'NAME', 'OB_NAME',
-               'OB_TSR', 'OB_TSR_FLAG', 'PAYMENTTYPE_POTYPE', 'Period', 
-               'REGION_NAME', 'TOTALREVENUE']
-    
+    headers = ['BRANCH_NAME', 'CONTRACTID', 'DISTRICT_NAME', 'DIVISION',
+               'GP_FORECAST', 'Manage&Deploy', 'Manual Add', 'NAME',
+               'OB_NAME', 'OB_TSR', 'OB_TSR_FLAG', 'PAYMENTDATE',
+               'PAYMENTTYPE_POTYPE', 'Period', 'REGION_NAME',
+               'RENEWAL_REVENUE', 'TOTALREVENUE', 'VENDORCONTRACTID',
+               'VENDOR_INVOICE']
+
     with open(output, 'wb') as o1:
         dw = csv.DictWriter(o1, fieldnames = sorted(headers))
         dw.writerow(dict((h,h) for h in headers))

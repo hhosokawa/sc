@@ -85,9 +85,9 @@ def scan_oracle(r, actual_plan, year, qtr):
         r['Marketing Sub Category'] = job_numbers[r['Project']][2]
         r['Marketing Details'] = r['Project'] + ' - ' + job_numbers[r['Project']][3]
     else:
-        r['Corporate or Custom'] = 'Corporate'
-        r['Marketing Category'] = 'Corporate'
-        r['Marketing Sub Category'] = 'Corporate'
+        r['Corporate or Custom'] = 'Default'
+        r['Marketing Category'] = 'Default'
+        r['Marketing Sub Category'] = 'Default'
 
     if r['Amount'] != 0:
         rows.append(r)
