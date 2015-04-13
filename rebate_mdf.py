@@ -66,10 +66,17 @@ def scan_oracle(r, actual_plan, year, qtr):
     r['Amount'] = float(r['Amount']) * -1
     r['Department'] = departments.get(r['Department'], r['Department'])[0]
     r['Division'] = div.get(r['Division'], r['Division'])
-    r['GL Parent'] = gl_parent.get(r['GL Account'], r['Description'])[1]
+    if r['GL Account'] in gl_parent:
+        r['GL Parent'] = gl_parent[r['GL Account']][1]
+    else:
+        r['GL Parent'] = r['GL Account']
     r['Quarter'] = qtr
-    r['SCC Category'] = categories.get(r['Category'], 'Corporate')[0]
-    r['Super Category'] = categories.get(r['Category'], 'Corporate')[1]
+    if r['Category'] in categories:
+        r['SCC Category'] = categories[r['Category']][0]
+        r['Super Category'] = categories[r['Category']][1]
+    else:
+        r['SCC Category'] = 'Corporate'
+        r['Super Category'] = 'Corporate'
     r['Vendor'] = vendors.get(r['Vendor'], 'All Other')
     r['Year'] = year
 
@@ -114,7 +121,7 @@ def write_csv():
                'Department', 'Division', 'GL Parent', 'Marketing Category',
                'Marketing Sub Category', 'Marketing Details', 'Project', 
                'Quarter', 'SCC Category', 'Solution Group', 'Solution Type', 
-               'Super Category', 'Vendor', 'Year']
+               'Super Category', 'Vendor', 'Year', 'Actual / Plan']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
