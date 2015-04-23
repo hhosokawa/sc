@@ -77,19 +77,12 @@ def clean_bi(r, actual_plan):
         if r['Amount'] != 0:
             rows.append(r)
 
-            # Append SC Consolidated
-            r_copy = r.copy()
-            r_copy['Amount'] = r_copy['USD GP']
-            r_copy['Book'] = 'SC Consol - US'
-            r_copy['Currency'] = 'USD'
-            rows.append(r_copy)
-
     # Plan
     elif r['Actual/Plan'] == 'Plan':
 
         # Clean SC Canada / SC United States
-        r['Amount'] = r['Rep GP Plan']
-        if r['OB/TSR Division'] == 'Canada':
+        r['Amount'] = r['Branch GP Plan']
+        if r['Division'] == 'Canada':
             r['Book'] = 'SC Canada'
             r['Currency'] = 'CAD'
         else:
@@ -102,21 +95,14 @@ def clean_bi(r, actual_plan):
         if r:
             if r['Amount'] != 0:
                 rows.append(r)
-   
-                # Append SC Consolidated
-                r_copy = r.copy()
-                r_copy['Book'] = 'SC Consol - US'
-                r_copy['Currency'] = 'USD'
-                rows.append(r_copy)
 
 # BI - Clean BI Plan Region / District
 def clean_plan_region_district(r):
-    district = r['OB/TSR District']
-    r['District'] = r['OB/TSR District']
+    district = r['District']
     try:
         # Remove Region text
-        if 'Region' in r['OB/TSR Region']:
-            r['Region'] = r['OB/TSR Region'].replace('Region', '')
+        if 'Region' in r['Region']:
+            r['Region'] = r['Region'].replace('Region', '')
             r['Region'] = r['Region'].strip()
             
         if district in ['CA Corporate', 'CA SMB District']:
@@ -124,15 +110,6 @@ def clean_plan_region_district(r):
             r['Region'] = 'Canada'
         elif district in ['Atlanta Corporate Center', 'Chicago Corporate Center',
                           'Inactive (US Branches)', 'US Corporate']:
-            r['Region'] = 'Corporate'
-        elif (district == 'N/A' and r['OB or TSR'] != 'TSR'):
-            r['District'] = 'Corporate'
-            r['Region'] = 'Corporate'
-            r['Amount'] = 0 # Ignore N/A District Plan Amount
-        # Clean 'TSR' -> 'TSD'
-        elif r['OB or TSR'] == 'TSR':
-            r['District'] = 'Corporate'
-            r['OB or TSR'] = 'TSD'
             r['Region'] = 'Corporate'
         return r
     except TypeError:
@@ -144,7 +121,8 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
     # Clean Formatting, Assign GL, Region Hierarchies
     r.pop('', None)
     r['Actual/Plan'] = ap[actual_plan]
-    if ',' in r['Amount']: r['Amount'] = r['Amount'].replace(',', '')
+    if ',' in r['Amount']: 
+        r['Amount'] = r['Amount'].replace(',', '')
     r['Amount'] = float(r['Amount'])
     r['Book'] = book
     r['Currency'] = currency
@@ -169,15 +147,18 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
     else:
         r['Discretionary Expense'] = False
     
-    # If Amount != 0, append to output
-    if r['Amount'] != 0:
+    # If criteria met, append to output
+    if ((r['Amount'] != 0) and 
+        (r['Book'] != 'SC Consol - US') and
+        (r['Discretionary Expense'] == True)):
         rows.append(r)
         
 # Crate new hierarchy - Category A-D
 def create_hierarchy():
     rows_copy = []
     for r in rows:
-        if r['OB or TSR'] in ['TSD', 'Telesales', 'TSR']:
+        if (r['OB or TSR'] in ['TSD', 'Telesales', 'TSR'] and 
+            r['Region'] != 'US Govt'):
             r['Category A'] = 'Telesales / TSD / Corporate'
             r['Category B'] = r['OB or TSR']
             r['Category C'] = r['GL Parent']
