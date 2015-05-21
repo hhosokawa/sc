@@ -7,20 +7,22 @@ import os
 import time
 
 # io
-input_dir = 'i/sga_sales_report/'       # Update
-output = 'o/sga_sales_report.xlsx'  
+input_dir = 'i/sales_expense_report/'       # Update
+output = 'P:/_HHOS/Sales Expense Reporting/data/oracle_sales_expense.csv'
+output1 = 'P:/_HHOS/Sales Expense Reporting/data/discoverer_supplier_name.csv'
+output2 = 'P:/_HHOS/Sales Expense Reporting/data/discoverer_employee_expense.csv'
 headcount_dict = {}
 rows = []
 supplier_name_rows = []
 
 # Pictionary
 ap = {'A':'Actual', 'B':'Plan'}
-departments = csv_dic('i/sga_sales_report/auxiliary/departments.csv', 2)
-headcount = csv_dic('i/sga_sales_report/auxiliary/headcount.csv', 6)    # Update
-hierarchies = csv_dic('i/sga_sales_report/auxiliary/hierarchies.csv', 2)
-territories = csv_dic('i/sga_sales_report/auxiliary/territories.csv', 3)
+departments = csv_dic('i/sales_expense_report/auxiliary/departments.csv', 2)
+headcount = csv_dic('i/sales_expense_report/auxiliary/headcount.csv', 6)    # Update
+hierarchies = csv_dic('i/sales_expense_report/auxiliary/hierarchies.csv', 2)
+territories = csv_dic('i/sales_expense_report/auxiliary/territories.csv', 3)
 
-############### Data Extract ###############
+############### Data Cleanse ###############
 # Scan Input Directory
 def scan_csv():
     for file in os.listdir(input_dir):
@@ -173,16 +175,22 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
 # C) Discoverer - Expense Report clean up
 def clean_expense_report(r):
     if r['Employee Number'] in headcount:
-        department = headcount[r['Employee Number']][1]
+        department = headcount[r['Employee Number']][4]
+        department = department.zfill(4)
+        division = headcount[r['Employee Number']][3]
         
         # Collect only Outside Sales / Telesales Expense Reports
-        if ('Outside Sales' in department) or ('Telesales' in department):
+        if (department in departments) and (department != '0000'):
             unique_id = r['Employee Number'] + r['Invoice Num']
             if unique_id not in headcount_dict:
                 divloc = headcount[r['Employee Number']][5]
                 r['District'] = territories[divloc][1]
                 r['Functional Group'] = headcount[r['Employee Number']][1]
                 r['Region'] = territories[divloc][2]
+                if r['Region'] == 'Corporate' and division == '100':
+                    r['Region'] = 'Canada'
+                elif r['Region'] == 'Corporate' and division == '200':
+                    r['Region'] = 'US Corporate'
                 r.pop('Amount COUNT', None)
                 headcount_dict[unique_id] = r
                 
@@ -206,8 +214,8 @@ def clean_supplier_name_report(r):
                     r['District'] = territories.get(r['Territory'], '000')[1]
                     r['Period Name'] = parse(r['Creation Date']).month
                     r['Region'] = territories.get(r['Territory'], '000')[2]
-if float(r['Line Amount SUM']) != 0:
-                        supplier_name_rows.append(r)
+                    if float(r['Line Amount SUM']) != 0:
+                            supplier_name_rows.append(r)
 
 # Create new hierarchy - Category A-D
 def create_hierarchy():
@@ -234,20 +242,52 @@ def create_hierarchy():
     return rows_copy
 
 ############### Data Output ###############
-def write_xlsx():
-    pprint(rows[:5])
-    print '\n'
-    pprint(supplier_name_rows[:5])
-    print '\n'
-    for x in headcount_dict:
-        print headcount_dict[x]
-        raw_input()
+def write_csv():
+    # Oracle - Sales Expense Report
+    headers = ['Actual/Plan', 'Amount', 'Book', 'Currency', 'Category A',
+               'Category B', 'Category C', 'Category D', 'Description',
+               'Discretionary Expense', 'District', 'GL Account', 
+               'GL GrandParent', 'GL Parent', 'OB or TSR', 'Period', 'Quarter', 
+               'Region', 'Solution Group', 'Territory', 'Year']
 
+    with open(output, 'wb') as o0:
+        o0w = csv.DictWriter(o0, delimiter=',',
+                             fieldnames=headers, extrasaction='ignore')
+        o0w.writerow(dict((fn, fn) for fn in headers))
+        for r in rows:
+            o0w.writerow(r)
+    
+    # Discoverer - Supplier Name Report
+    headers = ['Cat', 'Creation Date', 'Department', 'Division', 'GL Account',
+               'GL Description', 'GL Parent', 'Invoice Date', 'Invoice Number',
+               'Line Amount SUM', 'Period Name', 'Project', 'Region', 'Supplier Name',
+               'Territory']
+
+    with open(output1, 'wb') as o1:
+        o1w = csv.DictWriter(o1, delimiter=',',
+                             fieldnames=headers, extrasaction='ignore')
+        o1w.writerow(dict((fn, fn) for fn in headers))
+        for r in supplier_name_rows:
+            o1w.writerow(r)
+            
+    # Discoverer - Employee Audit Expense Report + Headcount info
+    headers = ['District', 'Employee Name', 'Employee Number', 
+               'Functional Group',  'Invoice Num', 'Overrider Approver Name',
+               'Receipts Received Date', 'Region', 'Report Submitted Date']    
+
+    with open(output2, 'wb') as o2:
+        o2w = csv.DictWriter(o2, delimiter=',',
+                             fieldnames=headers, extrasaction='ignore')
+        o2w.writerow(dict((fn, fn) for fn in headers))
+        for id in headcount_dict:
+            o2w.writerow(headcount_dict[id])
+    print 'write_csv() complete.'
+             
 ############### main ###############
 if __name__ == '__main__':
     t0 = time.clock()
     scan_csv()
     rows = create_hierarchy()
-    write_xlsx()
+    write_csv()
     t1 = time.clock()
-    print 'sga_sales_report.py complete.', t1-t0
+    print 'sales_expense_report.py complete.', t1-t0
