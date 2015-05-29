@@ -23,19 +23,13 @@ def scan_csv():
     for file in os.listdir(input_dir):
         file_path = input_dir + file
 
-        # B) Discoverer - Employee Expense Audit Report
-        elif file == 'Employee Expense Audit Report.csv':
+        # Clean Payables Invoice Distribution
+        if 'Payables' in file:
             input_file = csv.DictReader(open(file_path))
             for r in input_file:
-                clean_expense_report(r)
+                clean_payables(r)
                 
-        # C) Discoverer - Supplier Name Sales Expense
-        elif file == 'sales_report_supplier_name.csv':
-            input_file = csv.DictReader(open(file_path))
-            for r in input_file:
-                clean_supplier_name_report(r)
-
-        # D) Oracle - SG & A Expenses
+        # Clean Oracle - Sales, Meal, Travel Expenses
         elif file.endswith(".csv"):
             year, period, book, currency, actual_plan = file.split('_')
             actual_plan = actual_plan[:1]
@@ -44,8 +38,11 @@ def scan_csv():
                 clean_oracle(r, year, period, book, currency, actual_plan)
     print 'scan_csv() complete.'
 
-# A) BI - Field Margin
-def clean_bi(r, actual_plan):
+# Clean Payables
+def clean_payables(r):
+
+    pprint(r)
+    raw_input()
     # Assign correct headers
     r['Actual/Plan'] = ap[actual_plan]
     r['GL GrandParent'] = 'Field Margin'
@@ -102,131 +99,29 @@ def clean_bi(r, actual_plan):
             if r['Amount'] != 0:
                 rows.append(r)
 
-# A) BI - Clean BI Plan Region / District
-def clean_plan_region_district(r):
-    district = r['District']
-    try:
-        # Remove Region text
-        if 'Region' in r['Region']:
-            r['Region'] = r['Region'].replace('Region', '')
-            r['Region'] = r['Region'].strip()
-            
-        if district in ['CA Corporate', 'CA SMB District']:
-            r['District'] = 'CA Corporate'
-            r['Region'] = 'Canada'
-        elif district in ['Atlanta Corporate Center', 'Chicago Corporate Center',
-                          'Inactive (US Branches)', 'US Corporate']:
-            r['Region'] = 'Corporate'
-        return r
-    except TypeError:
-        pass
-
-# B) Oracle - Spreadsheet Server
+# Clean Oracle - Sales, Travel, Meal expenses
 def clean_oracle(r, year, period, book, currency, actual_plan):
 
-    # Clean Formatting, Assign GL, Region Hierarchies
-    r.pop('', None)
-    r['Actual/Plan'] = ap[actual_plan]
-    if ',' in r['Amount']: 
-        r['Amount'] = r['Amount'].replace(',', '')
-    r['Amount'] = float(r['Amount'])
-    r['Book'] = book
-    r['Currency'] = currency
-    if r['Department'] in departments:
-        r['OB or TSR'] = departments[r['Department']][1]
-    else:
-        r['OB or TSR'] = 'Corporate'
-    r['GL Parent'] = hierarchies.get(r['GL Account'], None)[1]
-    r['Period'] = int(period)
-    if 1 <= r['Period'] <= 3:       r['Quarter'] = 1
-    elif 4 <= r['Period'] <= 6:     r['Quarter'] = 2
-    elif 7 <= r['Period'] <= 9:     r['Quarter'] = 3
-    elif 10 <= r['Period'] <= 12:   r['Quarter'] = 4
-    divloc = r['Territory']
-    r['Territory'], r['District'], r['Region'] = territories.get(divloc, None)
-    r['Year'] = year
-    
-    # Determine if row is a discretionary expense
-    if r['GL Parent'] in ['Meal Expense', 'Sales Expense', 'Travel & Entertainment']:
-        r['Discretionary Expense'] = True
-        r['GL GrandParent'] = 'Sales Expense'
-    else:
-        r['Discretionary Expense'] = False
-    
-    # If criteria met, append to output
-    if ((r['Amount'] != 0) and 
-        (r['Book'] != 'SC Consol - US') and
-        (r['Discretionary Expense'] == True)):
-        rows.append(r)
+    if r['Category_'] != 'Purchase Invoices':
+        r.pop('', None)
+        if ',' in r['Base Credit']: 
+            r['Base Credit'] = r['Base Credit'].replace(',', '')
+        if ',' in r['Base Debit']: 
+            r['Base Debit'] = r['Base Debit'].replace(',', '')
+        r['Amount'] = float(r['Base Debit']) - float(r['Base Credit'])
+        _, r['District'], r['Region'] = territories[r['Territory']]
 
-# C) Discoverer - Expense Report clean up
-def clean_expense_report(r):
-    if r['Employee Number'] in headcount:
-        department = headcount[r['Employee Number']][4]
-        department = department.zfill(4)
-        division = headcount[r['Employee Number']][3]
-        
-        # Collect only Outside Sales / Telesales Expense Reports
-        if (department in departments) and (department != '0000'):
-            unique_id = r['Employee Number'] + r['Invoice Num']
-            if unique_id not in headcount_dict:
-                divloc = headcount[r['Employee Number']][5]
-                r['District'] = territories[divloc][1]
-                r['Functional Group'] = headcount[r['Employee Number']][1]
-                r['Region'] = territories[divloc][2]
-                if r['Region'] == 'Corporate' and division == '100':
-                    r['Region'] = 'Canada'
-                elif r['Region'] == 'Corporate' and division == '200':
-                    r['Region'] = 'US Corporate'
-                r.pop('Amount COUNT', None)
-                headcount_dict[unique_id] = r
+        if r['Region'] == 'Corporate':
+            if r['Division'] == '100':
+                r['District'] = 'CA Corporate'
+                r['Region'] = 'Canada'
+            else:
+                r['District'] = 'US Corporate'
+                r['Region'] = 'US Corporate'
                 
-# D) Discoverer - Supplier Name Expense Report clean up
-def clean_supplier_name_report(r):
-    if r['GL Account'] in hierarchies:
-        r['GL Description'] = hierarchies[r['GL Account']][0]
-        r['GL Parent'] = hierarchies[r['GL Account']][1]
-    
-        # Determine if row is a discretionary expense
-        if r['GL Parent'] in ['Meal Expense', 'Sales Expense', 'Travel & Entertainment']:
-            create_date = parse(r['Creation Date'])
-            past_date = datetime(2015,01,01)
-            present_date = datetime.now()
-            
-            # Determine if expense is within current year
-            if present_date >= create_date >= past_date:
-                
-                # Determine if OB / Telesales related expense
-                if r['Department'] != '0000' and r['Department'] in departments:
-                    r['District'] = territories.get(r['Territory'], '000')[1]
-                    r['Period Name'] = parse(r['Creation Date']).month
-                    r['Region'] = territories.get(r['Territory'], '000')[2]
-                    if float(r['Line Amount SUM']) != 0:
-                            supplier_name_rows.append(r)
+        pprint(r)
+        raw_input()
 
-# Create new hierarchy - Category A-D
-def create_hierarchy():
-    rows_copy = []
-    for r in rows:
-        if (r['OB or TSR'] in ['TSD', 'Telesales', 'TSR'] and 
-            r['Region'] != 'US Govt'):
-            r['Category A'] = 'Telesales / TSD / Corporate'
-            r['Category B'] = r['OB or TSR']
-            r['Category C'] = r['GL Parent']
-            r['Category D'] = r['GL Parent']
-        elif r['Region'] in ['Corporate', 'US Corporate']:
-            r['Category A'] = 'Telesales / TSD / Corporate'
-            r['Category B'] = 'Corporate'
-            r['Category C'] = r['GL Parent']
-            r['Category D'] = r['GL Parent']
-        else:
-            r['Category A'] = 'Regions'
-            r['Category B'] = r['Region']
-            r['Category C'] = r['District']
-            r['Category D'] = r['GL Parent']
-        rows_copy.append(r)
-    print 'create_hierarchy() complete.'
-    return rows_copy
 
 ############### Data Output ###############
 def write_csv():
