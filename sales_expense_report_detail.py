@@ -14,6 +14,7 @@ rows = []
 # Pictionary
 ap = {'A':'Actual', 'B':'Plan'}
 departments = csv_dic('i/sales_expense_report_detail/auxiliary/departments.csv', 2)
+employee_names = csv_dic('i/sales_expense_report_detail/auxiliary/Employee Expense Audit Report.csv')
 hierarchies = csv_dic('i/sales_expense_report_detail/auxiliary/hierarchies.csv', 2)
 territories = csv_dic('i/sales_expense_report_detail/auxiliary/territories.csv', 3)
 
@@ -41,64 +42,17 @@ def scan_csv():
 # Clean Payables
 def clean_payables(r):
 
+    if ',' in r['Invoice Distribution Functional Amount']:
+        r['Amount'] = float(r['Invoice Distribution Functional Amount'].replace(',',''))
+    else:
+        r['Amount'] = float(r['Invoice Distribution Functional Amount'])
+    if r['Department'] in departments:
+        r['Department Desc'] = departments[r['Department']][1]
+    else:
+        r['Department Desc'] = ''        
     pprint(r)
     raw_input()
-    # Assign correct headers
-    r['Actual/Plan'] = ap[actual_plan]
-    r['GL GrandParent'] = 'Field Margin'
-    r['GL Parent'] = 'Field Margin'
-    r['Period'] = r['Fiscal Period']
-    r['Quarter'] = r['Fiscal Quarter']
-    r['Year'] = r['Calendar Year']
-
-    # Clean CA Corporate -> Canada
-    if ((r.get('Region','') == 'CA Corporate') 
-    or (r.get('OB/TSR Region', '') == 'CA Corporate')):
-        r['Region'] = 'Canada'
-        r['District'] = 'CA Corporate'
-        
-    # If 'OB / TSR' == blank or 'IS' -> 'TSD'
-    if r.get('OB or TSR', '') in ['','IS']:
-        r['OB or TSR'] = 'TSD'
-        
-    # Actuals
-    if r['Actual/Plan'] == 'Actual':
-
-        if 'Region' in r['Region']:
-            r['Region'] = r['Region'].replace('Region', '')
-            r['Region'] = r['Region'].strip()
-
-        # Clean SC Canada / SC United States
-        r['Amount'] = r['Virtually Adjusted GP']
-        if r['Division'] == 'Canada':
-            r['Book'] = 'SC Canada'
-            r['Currency'] = 'CAD'
-        else:
-            r['Book'] = 'SC United States'
-            r['Currency'] = 'USD'
-
-        if r['Amount'] != 0:
-            rows.append(r)
-
-    # Plan
-    elif r['Actual/Plan'] == 'Plan':
-
-        # Clean SC Canada / SC United States
-        r['Amount'] = r['Branch GP Plan']
-        if r['Division'] == 'Canada':
-            r['Book'] = 'SC Canada'
-            r['Currency'] = 'CAD'
-        else:
-            r['Book'] = 'SC United States'
-            r['Currency'] = 'USD'
-
-        # Clean Region / District
-        r = clean_plan_region_district(r)
-
-        if r:
-            if r['Amount'] != 0:
-                rows.append(r)
-
+    
 # Clean Oracle - Sales, Travel, Meal expenses
 def clean_oracle(r, year, period, book, currency, actual_plan):
 
@@ -110,7 +64,11 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
             r['Base Debit'] = r['Base Debit'].replace(',', '')
         r['Amount'] = float(r['Base Debit']) - float(r['Base Credit'])
         _, r['District'], r['Region'] = territories[r['Territory']]
-
+        if r['Department'] in departments:
+            r['Department Desc'] = departments[r['Department']][1]
+        else:
+            r['Department Desc'] = ''
+        r['GL Parent'] = hierarchies[r['GL Account']][1]
         if r['Region'] == 'Corporate':
             if r['Division'] == '100':
                 r['District'] = 'CA Corporate'
@@ -118,10 +76,11 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
             else:
                 r['District'] = 'US Corporate'
                 r['Region'] = 'US Corporate'
-                
-        pprint(r)
-        raw_input()
-
+        if '.' in r['Line Description']:
+            r['Line Description'] = r['Line Description'].replace('.', '')
+        r['Supplier Name'] = employee_names.get(r['Line Description'],'')
+        if r['Amount'] != 0:
+            rows.append(r)
 
 ############### Data Output ###############
 def write_csv():
