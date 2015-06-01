@@ -61,7 +61,8 @@ def clean_payables(r):
         else:
             r['District'] = 'US Corporate'
             r['Region'] = 'US Corporate'    
-    # GL Parent
+    # GL Description / Parent
+    r['GL Description'] = hierarchies[r['GL Account']][0]
     r['GL Parent'] = hierarchies[r['GL Account']][1]
     # Period / Year
     dt = parse(r['Period Name'])
@@ -96,7 +97,8 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
             else:
                 r['District'] = 'US Corporate'
                 r['Region'] = 'US Corporate'
-        # GL Parent
+        # GL Description / Parent
+        r['GL Description'] = hierarchies[r['GL Account']][0]
         r['GL Parent'] = hierarchies[r['GL Account']][1]
         # Supplier name via Line Description
         if '.' in r['Line Description']:
@@ -108,7 +110,7 @@ def clean_oracle(r, year, period, book, currency, actual_plan):
 ############### Data Output ###############
 def write_csv():
     # Oracle - Sales Expense Report
-    headers = ['Amount', 'Category', 'Category_', 'Department', 
+    headers = ['Amount', 'Category', 'Category_', 'Department', 'GL Description',
                'Department Desc', 'Distribution Line Type Code', 'District', 
                'Division', 'GL Account', 'GL Parent', 'Invoice Description', 
                'Line Description', 'Period', 'Region', 'Source_', 
