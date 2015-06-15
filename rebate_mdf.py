@@ -11,8 +11,6 @@ rows = []
 
 # Pictionary
 ap =            {'A':'Actual', 'B':'Plan'}
-bi_categories = csv_dic('i/rebate_mdf/auxiliary/bi_categories.csv')
-bi_vendors =    csv_dic('i/rebate_mdf/auxiliary/bi_vendors.csv', 2)
 categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv', 2)
 departments =   csv_dic('i/rebate_mdf/auxiliary/departments.csv', 2)
 div =           csv_dic('i/rebate_mdf/auxiliary/divs.csv')
@@ -21,43 +19,6 @@ job_numbers =   csv_dic('i/rebate_mdf/auxiliary/job_numbers.csv', 4)
 vendors =       csv_dic('i/rebate_mdf/auxiliary/vendors.csv')
 
 ############### utils ###############
-
-def scan_bi(r):
-    r['Actual / Plan'] = 'Actual'
-    r['Quarter'] = 'Q' + r['Fiscal Quarter']
-    r['Super Category'] = bi_categories.get(r['SCC Category'], r['SCC Category'])
-    r['Year'] = r['Calendar Year']
-
-    # BI Vendor -> Oracle Vendor Assignment
-    can_us_vendors = ['CISCO PRESS', 'CISCO SYSTEMS', 'EMC CORPORATION', 
-                      'HEWLETT PACKARD', 'IBM', 'LENOVO', 'NETAPP']
-    if (r['Managed Vendor Name'] in can_us_vendors and
-        r['Division'] == 'United States'):
-        r['Vendor'] = bi_vendors.get(r['Managed Vendor Name'],
-                                     r['Managed Vendor Name'])[1]
-    elif r['Managed Vendor Name'] in bi_vendors:
-        r['Vendor'] = bi_vendors[r['Managed Vendor Name']][0]
-    else:
-        r['Vendor'] = 'Other Vendors'
-
-    # 2015 Cisco Super Category
-    if 'Cisco' in r['Vendor']:
-        r['SCC Category'] = 'Cisco'
-        r['Super Category'] = 'Cisco'
-
-    # Revenue, COGS, Field Margin GL
-    r['GL Parent'] = 'Revenue'
-    r['Amount'] = float(r['Virtually Adjusted Revenue'])
-    if r['Amount'] != 0: rows.append(r.copy())
-
-    r['GL Parent'] = 'COGS'       
-    r['Amount'] = -(float(r['Virtually Adjusted Revenue']) - 
-                    float(r['Virtually Adjusted GP']))
-    if r['Amount'] != 0: rows.append(r.copy())
-
-    r['GL Parent'] = 'Field Margin'
-    r['Amount'] = float(r['Virtually Adjusted GP'])
-    if r['Amount'] != 0: rows.append(r.copy())
     
 def scan_oracle(r, actual_plan, year, qtr):
     r.pop('', None)
@@ -79,6 +40,9 @@ def scan_oracle(r, actual_plan, year, qtr):
         r['Super Category'] = 'Corporate'
     r['Vendor'] = vendors.get(r['Vendor'], 'All Other')
     r['Year'] = year
+    
+    pprint(r)
+    raw_input()
 
     # 2015 Cisco Super Category
     if ('CISCO' in r['Vendor']) and (r['Category'] not in ['421', '422', '425']):
@@ -103,12 +67,8 @@ def scan_csv():
     for file in os.listdir(input_dir):
         file_path = input_dir + file
 
-        # BI - FM
-        if file == 'bi_fm.csv':
-            pass
-
         # Oracle - Rebate / MDF
-        elif file.endswith(".csv"):
+        if file.endswith(".csv"):
             actual_plan, year, qtr = file.split('_')
             qtr = qtr[:2]
             input_file = csv.DictReader(open(file_path))

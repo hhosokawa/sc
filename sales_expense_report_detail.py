@@ -1,7 +1,6 @@
 from aux_reader import *
 from datetime import datetime
 from dateutil.parser import parse
-from openpyxl import Workbook
 from pprint import pprint
 import os
 import time
@@ -14,7 +13,7 @@ rows = []
 # Pictionary
 ap = {'A':'Actual', 'B':'Plan'}
 departments = csv_dic('i/sales_expense_report_detail/auxiliary/departments.csv', 2)
-employee_names = csv_dic('i/sales_expense_report_detail/auxiliary/Employee Expense Audit Report.csv')
+employee_names = csv_dic('i/sales_expense_report_detail/auxiliary/Employee Expense Audit Report.csv') # Update
 hierarchies = csv_dic('i/sales_expense_report_detail/auxiliary/hierarchies.csv', 2)
 territories = csv_dic('i/sales_expense_report_detail/auxiliary/territories.csv', 3)
 
