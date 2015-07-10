@@ -11,7 +11,7 @@ rows = []
 
 # Pictionary
 ap =            {'A':'Actual', 'B':'Plan'}
-categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv', 2)
+categories =    csv_dic('i/rebate_mdf/auxiliary/categories.csv', 3)
 departments =   csv_dic('i/rebate_mdf/auxiliary/departments.csv', 2)
 div =           csv_dic('i/rebate_mdf/auxiliary/divs.csv')
 gl_parent =     csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv', 2)
@@ -30,25 +30,26 @@ def scan_oracle(r, actual_plan, year, qtr):
     if r['GL Account'] in gl_parent:
         r['GL Parent'] = gl_parent[r['GL Account']][1]
     else:
-        r['GL Parent'] = r['GL Account']
+        r['GL Parent'] = ''
     r['Quarter'] = qtr
     if r['Category'] in categories:
         r['SCC Category'] = categories[r['Category']][0]
         r['Super Category'] = categories[r['Category']][1]
+        r['Super Category 2'] = categories[r['Category']][2]
     else:
         r['SCC Category'] = 'Corporate'
         r['Super Category'] = 'Corporate'
+        r['Super Category 2'] = 'Corporate'
     r['Vendor'] = vendors.get(r['Vendor'], 'All Other')
     r['Year'] = year
-    
-    pprint(r)
-    raw_input()
 
-    # 2015 Cisco Super Category
-    if ('CISCO' in r['Vendor']) and (r['Category'] not in ['421', '422', '425']):
+    # Non-2015 Cisco Super Category
+    if (('CISCO' in r['Vendor']) and (r['Category'] not in ['421', '422', '425']) and
+        r['Year'] != 2015):
         r['SCC Category'] = 'Cisco'
-        r['Super Category'] = 'Cisco'
-
+        r['Super Category'] = 'Cisco'  
+        r['Super Category 2'] = 'Cisco'
+    
     # Job Number Assignment
     if (r['Project'][:3] in job_numbers or r['Project'] in job_numbers):
         r['Corporate or Custom'] = job_numbers[r['Project']][0]
@@ -59,7 +60,7 @@ def scan_oracle(r, actual_plan, year, qtr):
         r['Corporate or Custom'] = 'Default'
         r['Marketing Category'] = 'Default'
         r['Marketing Sub Category'] = 'Default'
-
+       
     if r['Amount'] != 0:
         rows.append(r)
 
@@ -77,11 +78,12 @@ def scan_csv():
             print file
 
 def write_csv():
-    headers = ['Amount', 'Corporate or Custom', 'Category', 'Description', 'Department',
-               'Department Desc', 'Division', 'GL Parent', 'Marketing Category',
-               'Marketing Sub Category', 'Marketing Details', 'Project', 
-               'Quarter', 'SCC Category', 'Solution Group', 'Solution Type', 
-               'Super Category', 'Territory', 'Vendor', 'Year', 'Actual / Plan']
+    headers = ['Actual / Plan', 'Amount', 'BD Dept', 'Corporate or Custom', 
+               'Category', 'Description', 'Department', 'Department Desc', 'Division', 
+               'GL Parent', 'Marketing Category', 'Marketing Sub Category', 
+               'Marketing Details', 'Project', 'Quarter', 'SCC Category', 
+               'Solution Group', 'Solution Type', 'Super Category', 
+               'Super Category 2', 'Territory', 'Vendor', 'Year']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
