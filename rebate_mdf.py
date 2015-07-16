@@ -79,11 +79,11 @@ def scan_csv():
 
 def write_csv():
     headers = ['Actual / Plan', 'Amount', 'BD Dept', 'Corporate or Custom', 
-               'Category', 'Description', 'Department', 'Department Desc', 'Division', 
-               'GL Parent', 'Marketing Category', 'Marketing Sub Category', 
-               'Marketing Details', 'Project', 'Quarter', 'SCC Category', 
-               'Solution Group', 'Solution Type', 'Super Category', 
-               'Super Category 2', 'Territory', 'Vendor', 'Year']
+               'Category', 'Description', 'Department', 'Department Desc', 
+               'Department Filter','Division', 'GL Parent', 'Marketing Category', 
+               'Marketing Sub Category', 'Marketing Details', 'Project', 
+               'Quarter', 'SCC Category', 'Solution Group', 'Solution Type', 
+               'Super Category', 'Super Category 2', 'Territory', 'Vendor', 'Year']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
