@@ -6,6 +6,7 @@ import time
 
 output = 'o/ms_sales.csv'
 input1 = 'i/ms_sales/bi.csv'
+referral_enrollment = csv_dic('i/ms_sales/referral_enrollment.csv')
 super_prodtype = csv_dic('i/ms_sales/super_prodtype.csv')
 
 ############### utils ###############
@@ -14,7 +15,8 @@ super_prodtype = csv_dic('i/ms_sales/super_prodtype.csv')
 def get_header():
     header = set()
     with open(input1) as i1: header.update(csv.DictReader(i1).fieldnames)
-    new_fields = set(['Category A', 'Category B', 'Category C', 'Level'])
+    new_fields = set(['Category A', 'Category B', 'Category C', 
+                      'Level', 'Enrollment Number'])
     header = new_fields | header
     try: header.remove('')
     except KeyError: pass
@@ -31,7 +33,7 @@ def add_cat(r):
     elif r['Sale or Referral'] == 'Referral':
         r['Category A'] = r['Referral Source']
         r['Category B'] = r['Referral Revenue Type']
-        r['Category C'] = r['Referral Notes']
+        r['Enrollment Number'] = referral_enrollment.get(r['Order Number'],'')
     return r
 
 # Insert Customer Level (A1, A2, B, etc.)
