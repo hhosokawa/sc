@@ -1,5 +1,3 @@
-Dim t0 As Single
-Dim t1 As Single
 
 ' Add Tabs - summary, data
 Private Sub add_tabs()
@@ -10,12 +8,12 @@ Private Sub add_tabs()
     Sheets("Sheet1").Name = "summary"
 End Sub
 
-' Create Pivot Table - Range(A:U)
+' Create Pivot Table - Range(A:X)
 Private Sub create_pivot_table()
     Sheets("data").Select
-    Range("A:S").Select
+    Range("A:X").Select
     ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, _
-        SourceData:="data!A:S", _
+        SourceData:="data!A:X", _
         Version:=xlPivotTableVersion14). _
         CreatePivotTable TableDestination:="summary!R1C1", _
         TableName:="PivotTable1", _
@@ -25,18 +23,22 @@ End Sub
 
 ' Populate Pivot Table
 Private Sub populate_pivot_table()
-    ' y - Category A, B, C
-    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A")
+    ' y - Category Sale or Referral, A, B, C
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Sale or Referral")
         .Orientation = xlRowField
         .Position = 1
     End With
-    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category B")
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A")
         .Orientation = xlRowField
         .Position = 2
     End With
-    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category C")
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category B")
         .Orientation = xlRowField
         .Position = 3
+    End With
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category C")
+        .Orientation = xlRowField
+        .Position = 4
     End With
     ActiveSheet.PivotTables("PivotTable1").PivotFields("Category B").ShowDetail = False
     ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").ShowDetail = False
@@ -78,8 +80,6 @@ Private Sub populate_pivot_table()
     ActiveSheet.PivotTables("PivotTable1").HasAutoFormat = False
     ActiveSheet.PivotTables("PivotTable1").TableStyle2 = "PivotStyleLight1"
     ActiveWorkbook.ShowPivotTableFieldList = False
-    ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").PivotItems( _
-        "EA").ShowDetail = True
 End Sub
 
 ' Add Slicers - District, Calendar Month, OB or TSR, Region, Solution Group
@@ -88,37 +88,49 @@ Private Sub add_slicers()
     ' Calendar Month
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "Calendar Month").Slicers.Add ActiveSheet, , "Calendar Month", "Calendar Month", _
-        0, 500, 144, 120
+        0, 700, 144, 120
     ActiveWorkbook.SlicerCaches("Slicer_Calendar_Month").Slicers("Calendar Month"). _
         NumberOfColumns = 3
         
     ' Region
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "Region").Slicers.Add ActiveSheet, , "Region", "Region", _
-        121, 500, 144, 180
+        121, 700, 144, 180
     ActiveWorkbook.SlicerCaches("Slicer_Region").Slicers("Region").Style = _
         "SlicerStyleLight2"
         
     ' Solution Group
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "Solution Group").Slicers.Add ActiveSheet, , "Solution Group", "Solution Group", _
-        302, 500, 144, 100
+        302, 700, 144, 100
     ActiveWorkbook.SlicerCaches("Slicer_Solution_Group").Slicers("Solution Group"). _
         Style = "SlicerStyleLight6"
     
     ' OB / TSR
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "OB or TSR").Slicers.Add ActiveSheet, , "OB or TSR", "OB or TSR", _
-        0, 645, 144, 120
+        0, 845, 144, 120
     ActiveWorkbook.SlicerCaches("Slicer_OB_or_TSR").Slicers("OB or TSR").Style = _
         "SlicerStyleLight4"
 
     ' District
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
         "District").Slicers.Add ActiveSheet, , "District", "District", _
-        121, 645, 144, 281
+        121, 845, 144, 401
     ActiveWorkbook.SlicerCaches("Slicer_District").Slicers("District").Style = _
         "SlicerStyleLight3"
+        
+    ' Level
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
+        "Level").Slicers.Add ActiveSheet, , "Level", "Level", _
+        403, 700, 144, 120
+    ActiveWorkbook.SlicerCaches("Slicer_Level").Slicers("Level").Style = _
+        "SlicerStyleLight3"
+        
+    ' Level
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("PivotTable1"), _
+        "OB/TSR (Rep Team Name)").Slicers.Add ActiveSheet, , "OB/TSR (Rep Team Name)", "OB/TSR (Rep Team Name)", _
+        0, 990, 144, 120
     
 End Sub
 
@@ -134,6 +146,8 @@ End Sub
 '############### ms_sales_main() ###############
 
 Sub ms_sales_main()
+    Dim t0 As Single
+    Dim t1 As Single
     Application.ScreenUpdating = False
     t0 = Timer
     
@@ -147,3 +161,6 @@ Sub ms_sales_main()
     MsgBox "ms_sales_main() completed. " + Format(t1 - t0, "Fixed") + "s"
     Application.ScreenUpdating = True
 End Sub
+
+
+

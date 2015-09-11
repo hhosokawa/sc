@@ -113,14 +113,27 @@ Private Sub populate_pivot_table()
   
 End Sub
 
-' Add Slicers - OB / TSR
+' Add Slicers - OB / TSR, Contract Program Name
 Private Sub add_slicers()
 
-    ' enrol - OB / TSR
+    ' enrol - OB / TSR, Contract Program Name
     Sheets("enrol").Select
     ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("enrol_table"), _
         "OB / TSR").Slicers.Add ActiveSheet, , "OB / TSR", "OB / TSR", _
-        0, 565, 110, 90
+        0, 565, 144, 94
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("enrol_table"), _
+        "Contract Program Name").Slicers.Add ActiveSheet, , "Contract Program Name", _
+        "Contract Program Name", 105, 565, 144, 187.5
+    
+    ' cust - OB / TSR, Contract Program Name
+    Sheets("cust").Select
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("cust_table"), _
+        "Contract Program Name").Slicers.Add ActiveSheet, , "Contract Program Name 1", _
+        "Contract Program Name", 92, 266, 144, 187.5
+    ActiveWorkbook.SlicerCaches.Add(ActiveSheet.PivotTables("cust_table"), _
+        "OB / TSR").Slicers.Add ActiveSheet, , "OB / TSR 1", "OB / TSR", 0, 266 _
+        , 144, 90
+   
    
 End Sub
 
@@ -128,7 +141,7 @@ Private Sub save_file()
     Dim todays_date
     todays_date = Format(Date$, "yyyy-mm-dd")
     ActiveWorkbook.SaveAs Filename:= _
-        "P:\_HHOS\Microsoft\Enrol Cust - " & todays_date & ".xlsx", FileFormat:= _
+        "P:\_HHOS\Microsoft\Enrol Customer - " & todays_date & ".xlsx", FileFormat:= _
         xlOpenXMLWorkbook, CreateBackup:=False
     Range("A1").Select
 End Sub
@@ -149,3 +162,5 @@ Sub enrol_cust_main()
     MsgBox "enrol_cust_main() completed: " + Format(t1 - t0, "Fixed") + "s"
     Application.ScreenUpdating = True
 End Sub
+
+
