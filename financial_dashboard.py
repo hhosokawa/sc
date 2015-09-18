@@ -13,7 +13,7 @@ rows = []
 # Pictionary
 categories = csv_dic('i/financial_dashboard/auxiliary/categories.csv', 2)
 divisions = {'100':'Canada', '200':'United States'}
-gl_parent = csv_dic('i/rebate_mdf/auxiliary/gl_parent.csv', 2)
+gl_parent = csv_dic('i/financial_dashboard/auxiliary/gl_parent.csv', 2)
 territories = csv_dic('i/financial_dashboard/auxiliary/territories.csv')
 vendors = csv_dic('i/financial_dashboard/auxiliary/vendors.csv')
 
@@ -27,6 +27,7 @@ def scan_csv():
         if file == 'bi.csv':
             input_file = csv.DictReader(open(file_path))
             for r in input_file:
+                clean_bi(r)
                 rows.append(r)
                 
         # Oracle - Rebate and MDF Revenue / Expense
@@ -37,6 +38,17 @@ def scan_csv():
             for r in input_file:
                 clean_oracle(r, year, period)
     print 'scan_csv() complete.'
+    
+# BI - Create Category A,B,C hierarchy
+def clean_bi(r):
+    if r['Solution Group'] == 'SERVICES':
+        r['Category A'] = r['Solution Type']
+    else:
+        r['Category A'] = r['Super Category']
+        r['Category B'] = r['SCC Category']
+    r['Category C'] = r['Solution Group']
+    r['Category C GP'] = r['USD GP']
+    return r
 
 # Oracle - Rebate and MDF Revenue / Expense
 def clean_oracle(r, year, period):
@@ -64,6 +76,13 @@ def clean_oracle(r, year, period):
         r['SCC Category'], r['Super Category'] = categories[r['Category']]
     else:
         r['SCC Category'], r['Super Category'] = r['Category'], r['Category']
+        
+    # Create Category C hierarchy
+    if r['Description'] == 'Rebate revenue':
+        r['Category C'] = 'REBATE'
+    else:
+        r['Category C'] = 'MDF GP'
+    r['Category C GP'] = r['Amount']
 
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
@@ -75,11 +94,11 @@ def clean_oracle(r, year, period):
 
 ############### Data Output ###############
 def write_csv():
-    headers = ['Calendar Year', 'Category', 'Department', 'Description', 'Division', 
-               'Fiscal Period', 'Fiscal Quarter', 'GL Account', 'Managed Vendor Name', 
-               'Region', 'SCC Category', 'Solution Group', 'Solution Type', 
-               'Super Category', 'USD GP', 'USD Imputed Revenue', 'USD MDF GP', 
-               'USD Rebate', 'USD Revenue']
+    headers = ['Calendar Year', 'Category', 'Category A', 'Category B', 'Category C',
+               'Category C GP', 'Department', 'Description', 'Division', 'Fiscal Period', 
+               'Fiscal Quarter', 'GL Account', 'Managed Vendor Name', 'Region', 
+               'SCC Category', 'Solution Group', 'Solution Type', 'Super Category', 
+               'USD GP', 'USD Imputed Revenue', 'USD MDF GP', 'USD Rebate', 'USD Revenue']
 
     with open(output, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
