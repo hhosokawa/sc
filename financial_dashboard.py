@@ -82,10 +82,10 @@ def clean_oracle(r, year, period):
         r['Category C'] = 'REBATE'
     else:
         r['Category C'] = 'MDF GP'
-    r['Category C GP'] = r['Amount']
-
+    
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
+        r['Category C GP'] = r['Amount'] * -1
         if r['GL Parent'] == 'Rebates':
             r['USD Rebate'] = float(r['Amount']) * -1
         else:
