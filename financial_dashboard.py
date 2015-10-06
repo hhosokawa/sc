@@ -82,6 +82,12 @@ def clean_oracle(r, year, period):
         r['Category C'] = 'REBATE'
     else:
         r['Category C'] = 'MDF GP'
+        
+    # Fix "All Other" Manged Vendor Name for Microsoft and Cisco
+    if (r['Super Category'] == 'Microsoft') and (r['Managed Vendor Name'] == 'All Other'):
+        r['Managed Vendor Name'] = 'MICROSOFT'
+    elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
+        r['Managed Vendor Name'] = 'CISCO SYSTEMS'
     
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
