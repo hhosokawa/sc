@@ -46,6 +46,14 @@ def clean_bi(r):
     else:
         r['Category A'] = r['Super Category']
         r['Category B'] = r['SCC Category']
+        
+    # Fix "All Other" Managed Vendor Name for Microsoft and Cisco
+    if (r['Super Category'] == 'Microsoft') and (r['Managed Vendor Name'] == 'All Other'):
+        r['Managed Vendor Name'] = 'MICROSOFT'
+    elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
+        r['Managed Vendor Name'] = 'CISCO SYSTEMS'        
+
+    # Assign Category C
     r['Category C'] = r['Solution Group']
     r['Category C GP'] = r['USD GP']
     return r
@@ -83,19 +91,24 @@ def clean_oracle(r, year, period):
     else:
         r['Category C'] = 'MDF GP'
         
-    # Fix "All Other" Manged Vendor Name for Microsoft and Cisco
+    # Correct Canada - US East -> Canada - Canada Region
+    if (r['Division'] == 'Canada') and (r['Region'] == 'US East Region'):
+        r['Region'] = 'Canada Region'
+        
+    # Fix "All Other" Managed Vendor Name for Microsoft and Cisco
     if (r['Super Category'] == 'Microsoft') and (r['Managed Vendor Name'] == 'All Other'):
         r['Managed Vendor Name'] = 'MICROSOFT'
     elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
-        r['Managed Vendor Name'] = 'CISCO SYSTEMS'
-    
+        r['Managed Vendor Name'] = 'CISCO SYSTEMS'  
+        
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
-        r['Category C GP'] = r['Amount'] * -1
         if r['GL Parent'] == 'Rebates':
             r['USD Rebate'] = float(r['Amount']) * -1
+            r['Category C GP'] = r['USD Rebate']
         else:
             r['USD MDF GP'] = float(r['Amount']) * -1
+            r['Category C GP'] = r['USD MDF GP']
         rows.append(r)
 
 ############### Data Output ###############
