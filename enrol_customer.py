@@ -1,8 +1,14 @@
 import time
 import pandas as pd
-from aux_reader import *
+import csv
 
 """ io """
+
+# Converts Csv -> Dictionary
+def csv_dic(filename):     # Converts CSV to dict
+    reader = csv.reader(open(filename, "rb"))
+    my_dict = dict((k, v) for k, v in reader)
+    return my_dict
 
 enrol_df  =     pd.read_csv('i\\enrol_customer\\enrol.csv',
                             encoding = "ISO-8859-1")
