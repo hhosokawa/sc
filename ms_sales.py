@@ -1,11 +1,17 @@
-from aux_reader import *
 import csv
 import time
 
 """ io """
+INPUT1 = 'i/ms_sales/bi.csv'
+OUTPUT = 'o/ms_sales.csv'
 
-output = 'o/ms_sales.csv'
-input1 = 'i/ms_sales/bi.csv'
+# Converts Csv -> Dictionary
+def csv_dic(filename):
+    reader = csv.reader(open(filename, "rb"))
+    my_dict = dict((k, v) for k, v in reader)
+    return my_dict
+
+# Pictionary
 referral_enrollment = csv_dic('i/ms_sales/referral_enrollment.csv')
 super_prodtype = csv_dic('i/ms_sales/super_prodtype.csv')
 
@@ -14,7 +20,7 @@ super_prodtype = csv_dic('i/ms_sales/super_prodtype.csv')
 # Obtain Headers
 def get_header():
     header = set()
-    with open(input1) as i1: header.update(csv.DictReader(i1).fieldnames)
+    with open(INPUT1) as i1: header.update(csv.DictReader(i1).fieldnames)
     new_fields = set(['Category A', 'Category B', 'Category C', 
                       'Level', 'Enrollment Number'])
     header = new_fields | header
@@ -51,13 +57,13 @@ def add_customer_level(r):
     return r
 
 def write_csv():
-    with open(output, 'wb') as o:
+    with open(OUTPUT, 'wb') as o:
         writer = csv.writer(o)
         ow = csv.DictWriter(o, fieldnames=header)
         writer.writerows([header])
 
         # BI Data + Product Catagory Data
-        with open(input1) as i1:
+        with open(INPUT1) as i1:
             for r in csv.DictReader(i1):
                 add_cat(r)
                 add_customer_level(r)

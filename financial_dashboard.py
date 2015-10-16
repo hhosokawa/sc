@@ -1,16 +1,22 @@
-from aux_reader import *
-from datetime import datetime
-from dateutil.parser import parse
-from pprint import pprint
+import csv
 import os
 import time
 
 # io
-input_dir = 'i/financial_dashboard/'
-output = 'o/financial_dashboard.csv'
-rows = []
+INPUT_DIR = 'i/financial_dashboard/'
+OUTPUT = 'o/financial_dashboard.csv'
+
+# Converts csv -> Dictionary
+def csv_dic(filename, style = 1):     # Converts CSV to dict
+    reader = csv.reader(open(filename, "rb"))
+    if style == 1: 
+        my_dict = dict((k, v) for k, v in reader)
+    elif style == 2:
+        my_dict = dict((k, (v1, v2)) for k, v1, v2 in reader)
+    return my_dict
 
 # Pictionary
+rows = []
 categories = csv_dic('i/financial_dashboard/auxiliary/categories.csv', 2)
 divisions = {'100':'Canada', '200':'United States'}
 gl_parent = csv_dic('i/financial_dashboard/auxiliary/gl_parent.csv', 2)
@@ -20,8 +26,8 @@ vendors = csv_dic('i/financial_dashboard/auxiliary/vendors.csv')
 ############### Data Cleanse ###############
 # Scan Input Directory
 def scan_csv():
-    for file in os.listdir(input_dir):
-        file_path = input_dir + file
+    for file in os.listdir(INPUT_DIR):
+        file_path = INPUT_DIR + file
 
         # BI - Field Margin
         if file == 'bi.csv':
@@ -119,7 +125,7 @@ def write_csv():
                'SCC Category', 'Solution Group', 'Solution Type', 'Super Category', 
                'USD GP', 'USD Imputed Revenue', 'USD MDF GP', 'USD Rebate', 'USD Revenue']
 
-    with open(output, 'wb') as o0:
+    with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
                              fieldnames=headers, extrasaction='ignore')
         o0w.writerow(dict((fn, fn) for fn in headers))
