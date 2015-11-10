@@ -139,4 +139,4 @@ if __name__ == '__main__':
     scan_csv()
     write_csv()
     t1 = time.clock()
-    print 'sales_expense_report.py complete.', t1-t0
+    print 'financial_dashboard.py complete.', t1-t0
