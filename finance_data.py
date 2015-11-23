@@ -1,10 +1,11 @@
 import csv
 import os
+from pprint import pprint
 import time
 
 # io
-INPUT_DIR = 'i/financial_dashboard/'
-OUTPUT = 'o/financial_dashboard.csv'
+INPUT_DIR = 'i/finance_data/'
+OUTPUT = 'o/finance_data.csv'
 
 # Converts csv -> Dictionary
 def csv_dic(filename, style = 1):     # Converts CSV to dict
@@ -17,63 +18,55 @@ def csv_dic(filename, style = 1):     # Converts CSV to dict
 
 # Pictionary
 rows = []
-categories = csv_dic('i/financial_dashboard/auxiliary/categories.csv', 2)
+categories = csv_dic('i/finance_data/dictionaries/categories.csv', 2)
 divisions = {'100':'Canada', '200':'United States'}
-gl_parent = csv_dic('i/financial_dashboard/auxiliary/gl_parent.csv', 2)
-territories = csv_dic('i/financial_dashboard/auxiliary/territories.csv')
-vendors = csv_dic('i/financial_dashboard/auxiliary/vendors.csv')
+gl_parent = csv_dic('i/finance_data/dictionaries/gl_parent.csv', 2)
+gl_parent_reporting = csv_dic('i/finance_data/dictionaries/gl_parent_reporting.csv', 2)
+territories = csv_dic('i/finance_data/dictionaries/territories.csv')
+vendors = csv_dic('i/finance_data/dictionaries/vendors.csv')
 
 ############### Data Cleanse ###############
 # Scan Input Directory
 def scan_csv():
-    for file in os.listdir(INPUT_DIR):
-        file_path = INPUT_DIR + file
+    for f in os.listdir(INPUT_DIR):
+        file_path = INPUT_DIR + f
 
         # BI - Field Margin
-        if file == 'bi.csv':
+        if f == 'bi.csv':
             input_file = csv.DictReader(open(file_path))
             for r in input_file:
                 clean_bi(r)
-                rows.append(r)
                 
         # Oracle - Rebate and MDF Revenue / Expense
-        elif file.endswith(".csv"):
-            year, period = file.split('_')
-            period = int(period[:-4])    # remove .csv extension
+        elif f.endswith(".csv"):
+            year, period, book = f.split('_')
+            book = book[:-4]    # remove .csv extension
+            period = int(period)
             input_file = csv.DictReader(open(file_path))
             for r in input_file:
-                clean_oracle(r, year, period)
+                clean_oracle(r, year, period, book)
     print 'scan_csv() complete.'
-    
-# BI - Create Category A,B,C hierarchy
-def clean_bi(r):
-    if r['Solution Group'] == 'SERVICES':
-        r['Category A'] = r['Solution Type']
-    else:
-        r['Category A'] = r['Super Category']
-        r['Category B'] = r['SCC Category']
-        
-    # Fix "All Other" Managed Vendor Name for Microsoft and Cisco
-    if (r['Super Category'] == 'Microsoft') and (r['Managed Vendor Name'] == 'All Other'):
-        r['Managed Vendor Name'] = 'MICROSOFT'
-    elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
-        r['Managed Vendor Name'] = 'CISCO SYSTEMS'        
-
-    # Assign Category C
-    r['Category C'] = r['Solution Group']
-    r['Category C GP'] = r['USD GP']
-    return r
 
 # Oracle - Rebate and MDF Revenue / Expense
-def clean_oracle(r, year, period):
+def clean_bi(r):
+    r['USD COGS'] = float(r['USD Revenue']) - float(r['USD GP'])
+    r['Virtually Adjsuted COGS'] = (float(r['Virtually Adjusted Revenue']) - 
+                                    float(r['Virtually Adjusted GP']))
+    r['Amount'] = r['USD COGS']
+    r['GL Parent (Reporting)'] = 'USD COGS'
+    rows.append(r)
+
+def clean_oracle(r, year, period, book):
     
     # Clean Formatting
     r.pop('', None)
     if ',' in r['Amount']: 
         r['Amount'] = r['Amount'].replace(',', '')
+    r['Book'] = book
     r['Calendar Year'] = year
     r['Division'] = divisions.get(r['Division'], r['Division'])
-    r['GL Parent'] = gl_parent.get(r['GL Account'], None)[1]
+    r['GL Parent (Sharon)'] = gl_parent.get(r['GL Account'], None)[1]
+    r['GL Parent (Reporting)'] = gl_parent_reporting.get(r['GL Account'], None)[1]
     r['Fiscal Period'] = period
     if 1 <= period <= 3:       r['Fiscal Quarter'] = 1
     elif 4 <= period <= 6:     r['Fiscal Quarter'] = 2
@@ -91,12 +84,6 @@ def clean_oracle(r, year, period):
     else:
         r['SCC Category'], r['Super Category'] = r['Category'], r['Category']
         
-    # Create Category C hierarchy
-    if r['Description'] == 'Rebate revenue':
-        r['Category C'] = 'REBATE'
-    else:
-        r['Category C'] = 'MDF GP'
-        
     # Correct Canada - US East -> Canada - Canada Region
     if (r['Division'] == 'Canada') and (r['Region'] == 'US East Region'):
         r['Region'] = 'Canada Region'
@@ -105,29 +92,30 @@ def clean_oracle(r, year, period):
     if (r['Super Category'] == 'Microsoft') and (r['Managed Vendor Name'] == 'All Other'):
         r['Managed Vendor Name'] = 'MICROSOFT'
     elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
-        r['Managed Vendor Name'] = 'CISCO SYSTEMS'  
+        r['Managed Vendor Name'] = 'CISCO SYSTEMS'
+
+    # Create Number - Name Fields
+    r['Category Number Name'] = str(r['Category']) + '-' + r['SCC Category']
+    r['GL Number Name'] = str(r['GL Account']) + '-' + r['Description']
+    r['Vendor Number Name'] = str(r['Vendor']) + '-' + r['Managed Vendor Name']
         
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
-        if r['GL Parent'] == 'Rebates':
-            r['USD Rebate'] = float(r['Amount']) * -1
-            r['Category C GP'] = r['USD Rebate']
-        else:
-            r['USD MDF GP'] = float(r['Amount']) * -1
-            r['Category C GP'] = r['USD MDF GP']
+        r['Amount'] = float(r['Amount']) * -1
         rows.append(r)
 
 ############### Data Output ###############
 def write_csv():
-    headers = sorted(['Calendar Year', 'Category', 'Category A', 'Category B', 
-                      'Category C', 'Category C GP', 'Department', 'Description', 
-                      'Division', 'Fiscal Period', 'Fiscal Quarter', 'GL Account', 
-                      'Managed Vendor Name', 'Region', 'SCC Category', 
-                      'Solution Group', 'Solution Type', 'Super Category', 
-                      'USD GP', 'USD Imputed Revenue', 'USD MDF GP', 
-                      'USD Rebate', 'USD Revenue', 'Territory',
-                      'Branch', 'Master NAICS Industry', 
-                      'Unique Master Master Name'])
+    headers = sorted(['Calendar Year', 'Fiscal Quarter', 'Fiscal Period', 'Division',
+                      'Region', 'District', 'Branch', 'OB or TSR', 'Unique Master Master Name',
+                      'Super Category', 'SCC Category', 'Managed Vendor Name',  
+                      'Solution Group', 'Solution Type', 'Sale or Referral',
+                      'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue',
+                      'Virtually Adjusted GP', 'USD Imputed Revenue', 'USD Revenue',
+                      'USD GP', 'Category', 'Department', 'Description', 'GL Account',
+                      'GL Parent (Sharon)', 'Territory', 'Vendor', 'Amount', 'Book',
+                      'GL Parent (Reporting)', 'Vendor Number Name', 'Category Number Name',
+                      'USD COGS', 'Virtually Adjusted COGS', 'GL Number Name'])
 
     with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
@@ -143,4 +131,4 @@ if __name__ == '__main__':
     scan_csv()
     write_csv()
     t1 = time.clock()
-    print 'financial_dashboard.py complete.', t1-t0
+    print 'sales_expense_report.py complete.', t1-t0
