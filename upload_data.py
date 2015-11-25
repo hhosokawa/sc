@@ -1,11 +1,10 @@
 import csv
 import os
-from pprint import pprint
 import time
 
 # io
-INPUT_DIR = 'i/finance_data/'
-OUTPUT = 'o/finance_data.csv'
+INPUT_DIR = 'i/upload_data/'
+OUTPUT = 'o/upload_data.csv'
 
 # Converts csv -> Dictionary
 def csv_dic(filename, style = 1):     # Converts CSV to dict
@@ -18,12 +17,12 @@ def csv_dic(filename, style = 1):     # Converts CSV to dict
 
 # Pictionary
 rows = []
-categories = csv_dic('i/finance_data/dictionaries/categories.csv', 2)
+categories = csv_dic('i/upload_data/dictionaries/categories.csv', 2)
 divisions = {'100':'Canada', '200':'United States'}
-gl_parent = csv_dic('i/finance_data/dictionaries/gl_parent.csv', 2)
-gl_parent_reporting = csv_dic('i/finance_data/dictionaries/gl_parent_reporting.csv', 2)
-territories = csv_dic('i/finance_data/dictionaries/territories.csv')
-vendors = csv_dic('i/finance_data/dictionaries/vendors.csv')
+gl_parent = csv_dic('i/upload_data/dictionaries/gl_parent.csv', 2)
+gl_parent_reporting = csv_dic('i/upload_data/dictionaries/gl_parent_reporting.csv', 2)
+territories = csv_dic('i/upload_data/dictionaries/territories.csv')
+vendors = csv_dic('i/upload_data/dictionaries/vendors.csv')
 
 ############### Data Cleanse ###############
 # Scan Input Directory
@@ -31,14 +30,8 @@ def scan_csv():
     for f in os.listdir(INPUT_DIR):
         file_path = INPUT_DIR + f
 
-        # BI - Field Margin
-        if f == 'bi.csv':
-            input_file = csv.DictReader(open(file_path))
-            for r in input_file:
-                clean_bi(r)
-                
         # Oracle - Rebate and MDF Revenue / Expense
-        elif f.endswith(".csv"):
+        if f.endswith(".csv"):
             year, period, book = f.split('_')
             book = book[:-4]    # remove .csv extension
             period = int(period)
@@ -46,15 +39,6 @@ def scan_csv():
             for r in input_file:
                 clean_oracle(r, year, period, book)
     print 'scan_csv() complete.'
-
-# Oracle - Rebate and MDF Revenue / Expense
-def clean_bi(r):
-    r['USD COGS'] = float(r['USD Revenue']) - float(r['USD GP'])
-    r['Virtually Adjsuted COGS'] = (float(r['Virtually Adjusted Revenue']) - 
-                                    float(r['Virtually Adjusted GP']))
-    r['Amount'] = r['USD COGS']
-    r['GL Parent (Reporting)'] = 'USD COGS'
-    rows.append(r)
 
 def clean_oracle(r, year, period, book):
     
@@ -93,6 +77,12 @@ def clean_oracle(r, year, period, book):
         r['Managed Vendor Name'] = 'MICROSOFT'
     elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
         r['Managed Vendor Name'] = 'CISCO SYSTEMS'
+        
+    # Fix "CISCO SYSTEMS" in non "Services"
+        
+    # Fix "Microsoft" Super Category with "0704" Dept -> "Other" Super Category
+    if r['Super Category'] == 'Microsoft' and r['Department'] == '0704':
+        r['Super Category'] = 'Other'
 
     # Create Number - Name Fields
     r['Category Number Name'] = str(r['Category']) + '-' + r['SCC Category']
@@ -102,20 +92,21 @@ def clean_oracle(r, year, period, book):
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
         r['Amount'] = float(r['Amount']) * -1
+        r = r.copy()
         rows.append(r)
+        # Create Consolidated Division
+        r['Division'] = 'Consolidated'
+        r2 = r.copy()
+        rows.append(r2)
 
 ############### Data Output ###############
 def write_csv():
     headers = sorted(['Calendar Year', 'Fiscal Quarter', 'Fiscal Period', 'Division',
-                      'Region', 'District', 'Branch', 'OB or TSR', 'Unique Master Master Name',
-                      'Super Category', 'SCC Category', 'Managed Vendor Name',  
-                      'Solution Group', 'Solution Type', 'Sale or Referral',
-                      'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue',
-                      'Virtually Adjusted GP', 'USD Imputed Revenue', 'USD Revenue',
-                      'USD GP', 'Category', 'Department', 'Description', 'GL Account',
+                      'Region', 'Super Category', 'SCC Category', 'Managed Vendor Name',  
+                      'Category', 'Department', 'Description', 'GL Account',
                       'GL Parent (Sharon)', 'Territory', 'Vendor', 'Amount', 'Book',
                       'GL Parent (Reporting)', 'Vendor Number Name', 'Category Number Name',
-                      'USD COGS', 'Virtually Adjusted COGS', 'GL Number Name'])
+                      'GL Number Name'])
 
     with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
@@ -131,4 +122,4 @@ if __name__ == '__main__':
     scan_csv()
     write_csv()
     t1 = time.clock()
-    print 'sales_expense_report.py complete.', t1-t0
+    print 'upload_data.py complete.', t1-t0
