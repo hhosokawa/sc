@@ -82,7 +82,7 @@ with open(OUTPUT_CSV, 'w') as f:
                         new_monthly_branch_v = branch_v * new_monthly_v
                         if new_monthly_branch_v != 0:
                             # Assign Region
-                            region = territories.get(div_100_branch_split_header)
+                            region = territories.get(div_200_branch_split_header)
                             r = ','.join([div, department, str(div_200_branch_split_header), 
                                           str(gl), category, '000000', vendor, '000', 
                                           '000000', month, str(new_monthly_branch_v), gl_parent,
@@ -91,6 +91,7 @@ with open(OUTPUT_CSV, 'w') as f:
                        
             # All other GLs: Don't split Division.
             else:
+                region = 'Corporate'
                 r = ','.join([div, department, '000', str(gl), category, 
                               '000000', vendor, '000', '000000', month, 
                               str(new_monthly_v), gl_parent, super_category, 
