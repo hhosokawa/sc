@@ -11,24 +11,29 @@ End Sub
 ' Create Pivot Table - Range(A:X)
 Private Sub create_pivot_table()
     Sheets("data").Select
-    Range("A:X").Select
-    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, _
-        SourceData:="data!A:X", _
-        Version:=xlPivotTableVersion14). _
-        CreatePivotTable TableDestination:="summary!R1C1", _
-        TableName:="PivotTable1", _
-        DefaultVersion:=xlPivotTableVersion14
+    Columns("A:Y").Select
+    ActiveSheet.ListObjects.Add(xlSrcRange, Range("$A:$Y"), , xlYes).Name = _
+        "Table1"
+    ActiveSheet.ListObjects("Table1").TableStyle = "TableStyleLight1"
+    
+    Columns("A:Y").Select
+    Range("Table1[[#Headers],[Virtually Adjusted Revenue]]").Activate
+    Sheets.Add
+    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+        "Table1", Version:=xlPivotTableVersion14).CreatePivotTable TableDestination _
+        :="summary!R1C1", TableName:="PivotTable1", DefaultVersion:= _
+        xlPivotTableVersion14
     Sheets("summary").Select
 End Sub
 
 ' Populate Pivot Table
 Private Sub populate_pivot_table()
     ' y - Category Sale or Referral, A, B, C
-    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Sale or Referral")
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A")
         .Orientation = xlRowField
         .Position = 1
     End With
-    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A")
+    With ActiveSheet.PivotTables("PivotTable1").PivotFields("Sale or Referral")
         .Orientation = xlRowField
         .Position = 2
     End With
@@ -41,7 +46,7 @@ Private Sub populate_pivot_table()
         .Position = 4
     End With
     ActiveSheet.PivotTables("PivotTable1").PivotFields("Category B").ShowDetail = False
-    ActiveSheet.PivotTables("PivotTable1").PivotFields("Category A").ShowDetail = False
+    ActiveSheet.PivotTables("PivotTable1").PivotFields("Sale or Referral").ShowDetail = False
     
     ' x - Imputed Revenue, GP, GP %
     ActiveSheet.PivotTables("PivotTable1").AddDataField ActiveSheet.PivotTables( _

@@ -4,6 +4,7 @@ import time
 """ io """
 INPUT1 = 'i/ms_sales/bi.csv'
 OUTPUT = 'o/ms_sales.csv'
+enrollment_ids = set()
 
 # Converts Csv -> Dictionary
 def csv_dic(filename):
@@ -22,7 +23,7 @@ def get_header():
     header = set()
     with open(INPUT1) as i1: header.update(csv.DictReader(i1).fieldnames)
     new_fields = set(['Category A', 'Category B', 'Category C', 
-                      'Level', 'Enrollment Number'])
+                      'Level', 'Enrollment Number', 'Unique Enrollment ID'])
     header = new_fields | header
     try: header.remove('')
     except KeyError: pass
@@ -40,6 +41,11 @@ def add_cat(r):
         r['Category A'] = r['Referral Source']
         r['Category B'] = r['Referral Revenue Type']
         r['Enrollment Number'] = referral_enrollment.get(r['Order Number'],'')
+        enrollment_id = r['Calendar Year'] + r['Calendar Month'] + r['Category B'] + r['Enrollment Number']
+        # Include Unique Enrollment IDs for 
+        if enrollment_id not in enrollment_ids:
+            enrollment_ids.add(enrollment_id)
+            r['Unique Enrollment ID'] = enrollment_id
     return r
 
 # Insert Customer Level (A1, A2, B, etc.)
