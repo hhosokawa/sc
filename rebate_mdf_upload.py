@@ -28,6 +28,10 @@ rows = annual_forecast.index
 # Pictionary
 categories = csv_dic('i/rebate_mdf_upload/auxiliary/categories.csv')
 gl_parents = csv_dic('i/rebate_mdf_upload/auxiliary/gl_parent.csv')
+quarters = {'1':'1', '2':'1', '3':'1', 
+            '4':'2', '5':'2', '6':'2', 
+            '7':'3', '8':'3', '9':'3', 
+            '10':'4', '11':'4', '12':'4'}
 territories = csv_dic('i/rebate_mdf_upload/auxiliary/territories.csv')
 vendors = csv_dic('i/rebate_mdf_upload/auxiliary/vendors.csv')
 
@@ -37,10 +41,13 @@ with open(OUTPUT_CSV, 'w') as f:
     # Write Headers
     r = ','.join(['Division', 'Department', 'Territory', 'GL', 'Category', 
                   'Project', 'Vendor', 'Interco', 'Future', 'Month', 'Amount',
-                  'GL Parent', 'Super Category', 'Region', 'Vendor Name', '\n'])
+                  'GL Parent', 'Super Category', 'Region', 'Vendor Name', 'Quarter',
+                  '\n'])
     f.write(r)
     
     for row, month, gl_split_header in product(rows, months, gl_split_headers):
+        # Assign Month->Quarter
+        quarter = quarters[month]
         # Calculate (Annual * Month * GL Split) Combination Total
         v = annual_forecast['2016_Annual'][row]
         monthly_v = monthly_seasonality[month][row]
@@ -73,7 +80,7 @@ with open(OUTPUT_CSV, 'w') as f:
                             r = ','.join([div, department, str(div_100_branch_split_header), 
                                           str(gl), category, '000000', vendor, '000', 
                                           '000000', month, str(new_monthly_branch_v), gl_parent,
-                                          super_category, region, vendor_name, '\n'])
+                                          super_category, region, vendor_name, quarter, '\n'])
                             f.write(r)
                        
                 elif div == '200':
@@ -86,16 +93,16 @@ with open(OUTPUT_CSV, 'w') as f:
                             r = ','.join([div, department, str(div_200_branch_split_header), 
                                           str(gl), category, '000000', vendor, '000', 
                                           '000000', month, str(new_monthly_branch_v), gl_parent,
-                                          super_category, region, vendor_name, '\n'])
+                                          super_category, region, vendor_name, quarter, '\n'])
                             f.write(r)
                        
-            # All other GLs: Don't split Division.
+            # All other GLs: Don't split Division -> Branches (Territory)
             else:
                 region = 'Corporate'
                 r = ','.join([div, department, '000', str(gl), category, 
                               '000000', vendor, '000', '000000', month, 
                               str(new_monthly_v), gl_parent, super_category, 
-                              region, vendor_name, '\n'])
+                              region, vendor_name, quarter, '\n'])
                 f.write(r)
 
 t1 = time.clock()
