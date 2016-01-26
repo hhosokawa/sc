@@ -36,12 +36,16 @@ def clean_bi(r):
     if (r['Super Category'] == 'Microsoft') and (r['Managed Vendor Name'] == 'All Other'):
         r['Managed Vendor Name'] = 'MICROSOFT'
     elif (r['Super Category'] == 'Cisco') and (r['Managed Vendor Name'] == 'All Other'):
-        r['Managed Vendor Name'] = 'CISCO SYSTEMS'        
+        r['Managed Vendor Name'] = 'CISCO SYSTEMS'
+        
+    # Create USD / Virtually Adjusted PRODUCT / SERVICES GP Columns
+    if r['Solution Group'] == 'PRODUCT':
+        r['USD Product GP'] = r['USD GP']
+        r['Virtually Adjusted Product GP'] = r['Virtually Adjusted GP']
+    elif r['Solution Group'] == 'SERVICES':
+        r['USD Services GP'] = r['USD GP']
+        r['Virtually Adjusted Services GP'] = r['Virtually Adjusted GP']
 
-    # Assign Category C
-    r['Category C'] = r['Solution Group']
-    r['Category C Amount'] = r['USD GP']
-    
     # Assign COGS
     for h in ['USD GP', 'USD Revenue', 'Virtually Adjusted Revenue', 'Virtually Adjusted GP']:
         if '$' in r[h]:
@@ -109,16 +113,17 @@ def clean_oracle(r, book, period, year):
 ############### Data Output ###############
 def scan_csv():
     headers = sorted(['Amount', 'Book', 'Branch', 'Calendar Year', 'Category', 'Category A', 
-               'Category B', 'Category C', 'Category C Amount', 'Department', 
-               'Description', 'District', 'Division', 'Fiscal Period', 'Fiscal Quarter', 
-               'GL Account', 'GL Parent', 'Managed Vendor Name', 'Master ID', 'Master Name', 
-               'Region', 'SCC Category', 'Solution Group', 'Solution Type', 
-               'Super Category', 'Territory', 'USD GP', 'USD Imputed Revenue', 
-               'USD Revenue', 'Unique Master Master Name','Virtually Adjusted GP', 
-               'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue', 
+               'Category B', 'Department', 'Description', 'District', 'Division', 
+               'Fiscal Period', 'Fiscal Quarter', 'GL Account', 'GL Parent', 
+               'Managed Vendor Name', 'Master ID', 'Master Name', 'Region', 
+               'SCC Category', 'Solution Group', 'Solution Type', 'Super Category', 
+               'Territory', 'USD GP', 'USD Imputed Revenue', 'USD Revenue', 
+               'Unique Master Master Name','Virtually Adjusted GP', 'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue', 
                'Virtually Adjusted Rebates', 'USD Rebates', 'USD Marketing Revenue',
                'Virtually Adjusted Marketing Revenue', 'USD Marketing Expense',
-               'Virtually Adjusted Marketing Expense', 'USD COGS', 'Virtually Adjusted COGS'])
+               'Virtually Adjusted Marketing Expense', 'USD COGS', 'Virtually Adjusted COGS',
+               'Virtually Adjusted Product GP', 'Virtually Adjusted Services GP', 
+               'USD Product GP', 'Virtually Adjusted Services GP'])
 
     with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
