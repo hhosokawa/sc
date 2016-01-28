@@ -40,11 +40,11 @@ def clean_bi(r):
         
     # Create USD / Virtually Adjusted PRODUCT / SERVICES GP Columns
     if r['Solution Group'] == 'PRODUCT':
-        r['USD Product GP'] = r['USD GP']
-        r['Virtually Adjusted Product GP'] = r['Virtually Adjusted GP']
+        r['Native Currency Product FM'] = r['Virtually Adjusted GP']
+        r['USD Product FM'] = r['USD GP']
     elif r['Solution Group'] == 'SERVICES':
-        r['USD Services GP'] = r['USD GP']
-        r['Virtually Adjusted Services GP'] = r['Virtually Adjusted GP']
+        r['Native Currency Services FM'] = r['Virtually Adjusted GP']
+        r['USD Services FM'] = r['USD GP']
 
     # Assign COGS
     for h in ['USD GP', 'USD Revenue', 'Virtually Adjusted Revenue', 'Virtually Adjusted GP']:
@@ -54,6 +54,10 @@ def clean_bi(r):
             r[h] = r[h].replace(',', '')
     r['USD COGS'] = float(r['USD Revenue']) - float(r['USD GP'])
     r['Virtually Adjusted COGS'] = float(r['Virtually Adjusted Revenue']) - float(r['Virtually Adjusted GP'])
+    
+    # Rename GP -> FM
+    r['USD FM'] = r['USD GP']
+    r['Virtually Adjusted FM'] = r['Virtually Adjusted GP']
     return r
     
 # 2) Oracle - Rebate and MDF Revenue / Expense
@@ -103,11 +107,19 @@ def clean_oracle(r, book, period, year):
     
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
+        # Split Rebate, MDF Revenue, Co op Expense into columns
         if book == 'SC Consol - US':
             header_name = 'USD' + ' ' + r['GL Parent']
         else:
             header_name = 'Virtually Adjusted' + ' ' + r['GL Parent']
         r[header_name] = float(r['Amount']) * -1
+        
+        # Merge Rebate and MDF Revenue -> GP column
+        if ('Rebate' in r['GL Parent']) or ('Marketing Revenue' in r['GL Parent']):
+            if book == 'SC Consol - US':
+                r['USD GP'] = r[header_name]
+            else:
+                r['Virtually Adjusted GP'] = r[header_name]
         return r
 
 ############### Data Output ###############
@@ -117,13 +129,15 @@ def scan_csv():
                'Fiscal Period', 'Fiscal Quarter', 'GL Account', 'GL Parent', 
                'Managed Vendor Name', 'Master ID', 'Master Name', 'Region', 
                'SCC Category', 'Solution Group', 'Solution Type', 'Super Category', 
-               'Territory', 'USD GP', 'USD Imputed Revenue', 'USD Revenue', 
-               'Unique Master Master Name','Virtually Adjusted GP', 'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue', 
+               'Territory', 'USD FM', 'USD Imputed Revenue', 'USD Revenue', 
+               'Unique Master Master Name','Virtually Adjusted FM', 
+               'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue', 
                'Virtually Adjusted Rebates', 'USD Rebates', 'USD Marketing Revenue',
                'Virtually Adjusted Marketing Revenue', 'USD Marketing Expense',
                'Virtually Adjusted Marketing Expense', 'USD COGS', 'Virtually Adjusted COGS',
-               'Virtually Adjusted Product GP', 'Virtually Adjusted Services GP', 
-               'USD Product GP', 'Virtually Adjusted Services GP'])
+               'Native Currency Product FM', 'Native Currency Services FM', 
+               'USD Product FM', 'USD Services FM', 'OB or TSR', 'USD GP',
+               'Virtually Adjusted GP'])
 
     with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
