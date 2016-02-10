@@ -33,6 +33,7 @@ quarters = {'1':'1', '2':'1', '3':'1',
             '7':'3', '8':'3', '9':'3', 
             '10':'4', '11':'4', '12':'4'}
 territories = csv_dic('i/rebate_mdf_upload/auxiliary/territories.csv')
+TSD_OB = {999998:0.188455, 999999:0.811545} # 999998:TSD, 999999:OB Allocation
 vendors = csv_dic('i/rebate_mdf_upload/auxiliary/vendors.csv')
 
 ############### Main ###############
@@ -68,7 +69,7 @@ with open(OUTPUT_CSV, 'w') as f:
             if div == '100':
                 new_monthly_v = new_monthly_v * (1/usd_cad_fx)      # USD -> CAD
 
-            # Rebate: Split Division -> Branches (Territory)
+            # Rebate: Split Division -> Branches (Territory) -> Sales Channel
             if gl == 795110:
                 if div == '100':
                     for div_100_branch_split_header in div_100_branch_split_headers:

@@ -17,8 +17,10 @@ def csv_dic(filename, style = 1):     # Converts CSV to dict
     return my_dict
 
 # Dictionaries
+buying_accounts = csv_dic('i/finance_data/dictionaries/buying_accounts.csv')
 categories = csv_dic('i/finance_data/dictionaries/categories.csv', 2)
 divisions = {'100':'Canada', '200':'United States'}
+explored_masters = []
 gl_parent = csv_dic('i/finance_data/dictionaries/gl_parent.csv', 2)
 territories = csv_dic('i/finance_data/dictionaries/territories.csv')
 vendors = csv_dic('i/finance_data/dictionaries/vendors.csv')
@@ -40,10 +42,10 @@ def clean_bi(r):
         
     # Create USD / Virtually Adjusted PRODUCT / SERVICES GP Columns
     if r['Solution Group'] == 'PRODUCT':
-        r['Native Currency Product FM'] = r['Virtually Adjusted GP']
+        r['Virtually Adjusted Product FM'] = r['Virtually Adjusted GP']
         r['USD Product FM'] = r['USD GP']
     elif r['Solution Group'] == 'SERVICES':
-        r['Native Currency Services FM'] = r['Virtually Adjusted GP']
+        r['Virtually Adjusted Services FM'] = r['Virtually Adjusted GP']
         r['USD Services FM'] = r['USD GP']
 
     # Assign COGS
@@ -58,6 +60,14 @@ def clean_bi(r):
     # Rename GP -> FM
     r['USD FM'] = r['USD GP']
     r['Virtually Adjusted FM'] = r['Virtually Adjusted GP']
+    
+    # Assign Buying Account to Master ID + Year
+    master_number_year = r['Master ID'] + '_' + r['Calendar Year']
+    if (master_number_year in buying_accounts) and (master_number_year not in explored_masters):
+        r['Buying Account'] = True
+        explored_masters.append(master_number_year)
+    else:
+        r['Buying Account'] = False
     return r
     
 # 2) Oracle - Rebate and MDF Revenue / Expense
@@ -104,6 +114,13 @@ def clean_oracle(r, book, period, year):
     # 2013-2014 Cisco Super Category
     if (r['Managed Vendor Name'] == 'CISCO SYSTEMS') and (r['Calendar Year'] in [2013,2014]):
         r['Super Category'] = 'Cisco'
+        
+    # Custom Category
+    if r['Super Category'] == 'Client Software':
+        r['Custom Category A'] = r['SCC Category']
+        r['Custom Category B'] = r['Managed Vendor Name']
+    else:
+        r['Custom Category A'] = r['Managed Vendor Name']
     
     # If Amount != 0, include in rows
     if float(r['Amount']) != 0:
@@ -111,7 +128,7 @@ def clean_oracle(r, book, period, year):
         if book == 'SC Consol - US':
             header_name = 'USD' + ' ' + r['GL Parent']
         else:
-            header_name = 'Virtually Adjusted' + ' ' + r['GL Parent']
+            header_name = 'Mixed Currency' + ' ' + r['GL Parent']
         r[header_name] = float(r['Amount']) * -1
         
         # Merge Rebate and MDF Revenue -> GP column
@@ -132,12 +149,13 @@ def scan_csv():
                'Territory', 'USD FM', 'USD Imputed Revenue', 'USD Revenue', 
                'Unique Master Master Name','Virtually Adjusted FM', 
                'Virtually Adjusted Imputed Revenue', 'Virtually Adjusted Revenue', 
-               'Virtually Adjusted Rebates', 'USD Rebates', 'USD Marketing Revenue',
-               'Virtually Adjusted Marketing Revenue', 'USD Marketing Expense',
-               'Virtually Adjusted Marketing Expense', 'USD COGS', 'Virtually Adjusted COGS',
-               'Native Currency Product FM', 'Native Currency Services FM', 
+               'Mixed Currency Rebates', 'USD Rebates', 'USD Marketing Revenue',
+               'Mixed Currency Marketing Revenue', 'USD Marketing Expense',
+               'Mixed Currency Marketing Expense', 'USD COGS', 'Virtually Adjusted COGS',
+               'Virtually Adjusted Product FM', 'Virtually Adjusted Services FM', 
                'USD Product FM', 'USD Services FM', 'OB or TSR', 'USD GP',
-               'Virtually Adjusted GP'])
+               'Virtually Adjusted GP', 'Buying Account', 'Vendor', 'Custom Category A',
+               'Custom Category B'])
 
     with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',
