@@ -23,7 +23,7 @@ def get_header():
     header = set()
     with open(INPUT) as i1: header.update(csv.DictReader(i1).fieldnames)
     new_fields = set(['Category A', 'Category B', 'Level', 'Unique Enrollment ID',
-                      'Contract Units'])
+                      'Contract Units', 'Sub 500'])
     header = new_fields | header
     try: header.remove('')
     except KeyError: pass
@@ -41,7 +41,9 @@ def add_cat(r):
         r['Category B'] = r['Referral Revenue Type']
         
         # Add Desktop Count
-        r['Contract Units'] = int(contract_number_units.get(r['Referral Enrollment ID'], 0))
+        r['Contract Units'] = contract_number_units.get(r['Referral Enrollment ID'], 0)
+        if r['Contract Units']: 
+            r['Contract Units'] = int(r['Contract Units'])
         
         # Include Unique Enrollment IDs
         enrollment_id = r['Calendar Year'] + r['Calendar Month'] + r['Category B'] + r['Referral Enrollment ID']
@@ -53,17 +55,35 @@ def add_cat(r):
 def add_customer_level(r):
     # Determine Customer Level (A1, A2, B, etc.)
     if r['Sale or Referral'] == 'Sale':
+        r['Level'] = 'N/A'
+        r['Sub 500'] = 'FALSE'
         return r
     elif r['Sale or Referral'] == 'Referral':
         seat_count = r['Contract Units']
-        if 1 <= seat_count <= 250:          r['Level'] = 'A1 EA 0-250'
-        elif 251 <= seat_count <= 500:      r['Level'] = 'A1 EA 251-500'
-        elif 501 <= seat_count <= 749:      r['Level'] = 'A1 EA 501-749'
-        elif 750 <= seat_count <= 2399:     r['Level'] = 'A2'
-        elif 2400 <= seat_count <= 5999:    r['Level'] = 'B'
-        elif 6000 <= seat_count <= 15000:   r['Level'] = 'C'
-        elif seat_count > 15000:            r['Level'] = 'D'
-        else:                               r['Level'] = 'N/A'
+        if 1 <= seat_count <= 250:          
+            r['Level'] = 'A1 EA 0-250'
+            r['Sub 500'] = 'TRUE'
+        elif 251 <= seat_count <= 500:      
+            r['Level'] = 'A1 EA 251-500'
+            r['Sub 500'] = 'TRUE'
+        elif 501 <= seat_count <= 749:      
+            r['Level'] = 'A1 EA 501-749'
+            r['Sub 500'] = 'FALSE'
+        elif 750 <= seat_count <= 2399:     
+            r['Level'] = 'A2'
+            r['Sub 500'] = 'FALSE'
+        elif 2400 <= seat_count <= 5999:    
+            r['Level'] = 'B'
+            r['Sub 500'] = 'FALSE'
+        elif 6000 <= seat_count <= 15000:   
+            r['Level'] = 'C'
+            r['Sub 500'] = 'FALSE'
+        elif (seat_count > 15000) and seat_count:            
+            r['Level'] = 'D'
+            r['Sub 500'] = 'FALSE'
+        else:                               
+            r['Level'] = 'N/A'
+            r['Sub 500'] = 'FALSE'
         return r
         
 def write_csv():
