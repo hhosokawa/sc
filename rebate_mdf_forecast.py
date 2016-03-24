@@ -67,7 +67,7 @@ def scan_csv():
     headers = sorted(['Amount', 'Book', 'Year', 'Category', 'Department', 'Description', 
                'Division', 'Period', 'Quarter', 'GL Account', 'GL Parent', 
                'Vendor Name', 'Region', 'SCC Category', 'Super Category', 
-               'Territory', 'Actual-Plan'])
+               'Territory', 'Actual-Plan', 'Project'])
 
     with open(OUTPUT, 'wb') as o0:
         o0w = csv.DictWriter(o0, delimiter=',',

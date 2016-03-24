@@ -33,7 +33,6 @@ quarters = {'1':'1', '2':'1', '3':'1',
             '7':'3', '8':'3', '9':'3', 
             '10':'4', '11':'4', '12':'4'}
 territories = csv_dic('i/rebate_mdf_upload/auxiliary/territories.csv')
-TSD_OB = {999998:0.188455, 999999:0.811545} # 999998:TSD, 999999:OB Allocation
 vendors = csv_dic('i/rebate_mdf_upload/auxiliary/vendors.csv')
 
 ############### Main ###############
@@ -43,7 +42,7 @@ with open(OUTPUT_CSV, 'w') as f:
     r = ','.join(['Division', 'Department', 'Territory', 'GL', 'Category', 
                   'Project', 'Vendor', 'Interco', 'Future', 'Month', 'Amount',
                   'GL Parent', 'Super Category', 'Region', 'Vendor Name', 'Quarter',
-                  '\n'])
+                  'USD Amount', '\n', ])
     f.write(r)
     
     for row, month, gl_split_header in product(rows, months, gl_split_headers):
@@ -79,14 +78,17 @@ with open(OUTPUT_CSV, 'w') as f:
                             # Assign Region
                             region = territories.get(div_100_branch_split_header)
                             # Split into OB / TSD
-                            for sales_channel in TSD_OB:
-                                percentage_split = TSD_OB[sales_channel]
-                                new_monthly_branch_sales_channel_v = new_monthly_branch_v * percentage_split
-                                r = ','.join([div, department, str(div_100_branch_split_header), 
-                                            str(gl), category, '000000', vendor, '000', 
-                                            str(sales_channel), month, str(new_monthly_branch_sales_channel_v), gl_parent,
-                                            super_category, region, vendor_name, quarter, '\n'])
-                                f.write(r)
+                            if div_100_branch_split_header == '000':
+                                project_number = '999998'
+                            else:
+                                project_number = '999999'
+                            USD_new_monthly_branch_v = usd_cad_fx * new_monthly_branch_v
+                            r = ','.join([div, department, str(div_100_branch_split_header), 
+                                          str(gl), category, project_number, vendor, '000', 
+                                          '000000', month, str(new_monthly_branch_v), gl_parent,
+                                          super_category, region, vendor_name, quarter, 
+                                          str(USD_new_monthly_branch_v), '\n'])
+                            f.write(r)
                        
                 elif div == '200':
                     for div_200_branch_split_header in div_200_branch_split_headers:
@@ -96,14 +98,17 @@ with open(OUTPUT_CSV, 'w') as f:
                             # Assign Region
                             region = territories.get(div_200_branch_split_header)
                             # Split into OB / TSD
-                            for sales_channel in TSD_OB:
-                                percentage_split = TSD_OB[sales_channel]
-                                new_monthly_branch_sales_channel_v = new_monthly_branch_v * percentage_split
-                                r = ','.join([div, department, str(div_200_branch_split_header), 
-                                              str(gl), category, '000000', vendor, '000', 
-                                              str(sales_channel), month, str(new_monthly_branch_sales_channel_v), gl_parent,
-                                              super_category, region, vendor_name, quarter, '\n'])
-                                f.write(r)
+                            if div_200_branch_split_header == '000':
+                                project_number = '999998'
+                            else:
+                                project_number = '999999'
+
+                            r = ','.join([div, department, str(div_200_branch_split_header), 
+                                          str(gl), category, project_number, vendor, '000', 
+                                          '000000', month, str(new_monthly_branch_v), gl_parent,
+                                          super_category, region, vendor_name, quarter, 
+                                          str(new_monthly_branch_v), '\n'])
+                            f.write(r)
                        
             # All other GLs: Don't split Division -> Branches (Territory)
             else:
